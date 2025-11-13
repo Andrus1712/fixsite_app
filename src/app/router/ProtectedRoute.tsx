@@ -9,13 +9,18 @@ import {
     updateTenants,
 } from "../../features/auth/store/authSlice";
 import { useEffect } from "react";
+import { useAlerts } from "../../shared/components";
 
 const ProtectedRoute = () => {
     const { isAuthenticated, data, currentRole, currentToken, currentTenant } =
         useAppSelector((state) => state.auth);
-        
 
-    const { data: permissions, refetch } = useGetPermissionsByRoleQuery(
+    const {
+        data: permissions,
+        refetch,
+        error,
+        isError,
+    } = useGetPermissionsByRoleQuery(
         {
             roleId: currentRole?.id || 0,
             userId: data?.user?.id || 0,
@@ -24,6 +29,19 @@ const ProtectedRoute = () => {
             skip: !isAuthenticated || !data?.user?.id,
         }
     );
+
+    const { showError } = useAlerts();
+
+    useEffect(() => {
+        if (isError) {
+            const errorMessage =
+                "data" in error!
+                    ? (error.data as any)?.message ||
+                      "Error al obtener las órdenes"
+                    : error?.message || "Error al obtener las órdenes";
+            showError(errorMessage, "Error", 10000);
+        }
+    }, [isError, error]);
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;

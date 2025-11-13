@@ -42,7 +42,7 @@ export const baseApi = createApi({
     baseQuery: baseQueryWithReauth,
 
     // Tags para el caching y la invalidación (centralizados o definidos en cada feature)
-    tagTypes: ['User', 'Product', 'Permission', 'Order', 'Role', 'Component'],
+    tagTypes: ['User', 'Product', 'Permission', 'Order', 'Role', 'Component', 'Tenant'],
 
     // Endpoints se definen en las APIs de los features, no aquí.
     endpoints: () => ({}),

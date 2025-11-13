@@ -8,20 +8,23 @@ import {
     Divider,
     useAlerts,
     LoadingSpinner,
-    Select,
+    MultiSelect,
 } from "../../../shared/components";
 import { useGetRolesQuery } from "../../Roles/services/RolesApi";
+import { useGetTenantsQuery } from "../../permissions/services/tenantsApi";
 import { useEffect } from "react";
 import z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetUserByIdQuery, useUpdateUserMutation } from "../services/UsersApi";
 
 const userSchema = z.object({
     name: z.string().min(1, "El nombre es requerido"),
     email: z.string().email("Email inválido"),
+    username: z.string().min(1, "El username/identificación es requerido"),
     password: z.string().optional(),
-    roleId: z.string().min(1, "Debe seleccionar un rol"),
+    roleIds: z.array(z.number()).min(1, "Debe seleccionar al menos un rol"),
+    tenantIds: z.array(z.number()).min(1, "Debe seleccionar al menos un tenant"),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -30,6 +33,7 @@ export default function EditUserPage() {
     const { showSuccess, showError } = useAlerts();
     const { user_id } = useParams<{ user_id: string }>();
     const { data: roles } = useGetRolesQuery({});
+    const { data: tenants } = useGetTenantsQuery({});
     const { data: userData, isLoading: isLoadingUser } = useGetUserByIdQuery(Number(user_id));
     const navigator = useNavigate();
     const [updateUser] = useUpdateUserMutation();
@@ -37,6 +41,7 @@ export default function EditUserPage() {
     const {
         register,
         handleSubmit,
+        control,
         reset,
         formState: { errors, isSubmitting },
     } = useForm<UserFormData>({
@@ -44,8 +49,10 @@ export default function EditUserPage() {
         defaultValues: {
             name: "",
             email: "",
+            username: "",
             password: "",
-            roleId: "",
+            roleIds: [],
+            tenantIds: [],
         },
     });
 
@@ -54,8 +61,10 @@ export default function EditUserPage() {
             reset({
                 name: userData.name || "",
                 email: userData.email || "",
+                username: userData.username || "",
                 password: "",
-                roleId: userData.roleId?.toString() || "",
+                roleIds: userData.roles?.map((role: any) => role.id) || [],
+                tenantIds: userData.tenants?.map((tenant: any) => tenant.id) || [],
             });
         }
     }, [userData, reset]);
@@ -66,7 +75,9 @@ export default function EditUserPage() {
                 id: Number(user_id),
                 name: data.name,
                 email: data.email,
-                roleId: Number(data.roleId),
+                username: data.username,
+                roleIds: data.roleIds,
+                tenantIds: data.tenantIds,
             };
 
             if (data.password && data.password.trim() !== "") {
@@ -90,8 +101,13 @@ export default function EditUserPage() {
     };
 
     const roleOptions = roles?.data?.map((role: any) => ({
-        value: role.id.toString(),
+        value: role.id,
         label: role.name,
+    })) || [];
+
+    const tenantOptions = tenants?.data?.map((tenant: any) => ({
+        value: tenant.id,
+        label: tenant.name,
     })) || [];
 
     if (isLoadingUser) {
@@ -122,6 +138,14 @@ export default function EditUserPage() {
                             {...register("email")}
                         />
                         <Input
+                            label="Username/Identificación"
+                            type="text"
+                            placeholder="Ingrese el username o identificación"
+                            fullWidth={false}
+                            error={errors.username?.message}
+                            {...register("username")}
+                        />
+                        <Input
                             label="Nueva contraseña (opcional)"
                             type="password"
                             placeholder="Dejar vacío para mantener la actual"
@@ -129,12 +153,33 @@ export default function EditUserPage() {
                             error={errors.password?.message}
                             {...register("password")}
                         />
-                        <Select
-                            label="Rol"
-                            placeholder="Seleccione un rol"
-                            options={roleOptions}
-                            error={errors.roleId?.message}
-                            {...register("roleId")}
+                        <Controller
+                            name="roleIds"
+                            control={control}
+                            render={({ field }) => (
+                                <MultiSelect
+                                    label="Roles"
+                                    placeholder="Seleccione los roles"
+                                    options={roleOptions}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    error={errors.roleIds?.message}
+                                />
+                            )}
+                        />
+                        <Controller
+                            name="tenantIds"
+                            control={control}
+                            render={({ field }) => (
+                                <MultiSelect
+                                    label="Tenants"
+                                    placeholder="Seleccione los tenants"
+                                    options={tenantOptions}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    error={errors.tenantIds?.message}
+                                />
+                            )}
                         />
                     </FormGroup>
 
