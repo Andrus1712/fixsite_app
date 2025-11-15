@@ -28,11 +28,51 @@ export const authApi = baseApi.injectEndpoints({
                 body: credentials,
             }),
         }),
+
+        checkAuth: builder.query<{ isAuthenticated: boolean; }, void>({
+            query: () => 'auth/check',
+        }),
+
+        logoutUser: builder.mutation<void, void>({
+            query: () => ({
+                url: 'auth/logout',
+                method: 'POST',
+            }),
+        }),
+
+        selectTenant: builder.mutation<void, { tenantId: number; }>({
+            query: (data) => ({
+                url: 'auth/select-tenant',
+                method: 'POST',
+                body: data,
+            }),
+        }),
+
+        switchTenant: builder.mutation<void, { tenantId: number; }>({
+            query: (data) => ({
+                url: 'auth/switch-tenant',
+                method: 'POST',
+                body: data,
+            }),
+        }),
+
+        logoutTenant: builder.mutation<void, void>({
+            query: () => ({
+                url: 'auth/logout-tenant',
+                method: 'POST',
+            }),
+        }),
     }),
 });
 
 // RTK Query genera automáticamente hooks personalizados para cada endpoint
-export const { useGetUsersQuery, useCreateUserMutation, useAuthUserMutation } = authApi;
-
-// Asegúrate de añadir este slice a la propiedad 'reducer' en 'store/index.ts'
-// si no estás inyectando los endpoints en la baseApi.
+export const {
+    useGetUsersQuery,
+    useCreateUserMutation,
+    useAuthUserMutation,
+    useCheckAuthQuery,
+    useLogoutUserMutation,
+    useSelectTenantMutation,
+    useSwitchTenantMutation,
+    useLogoutTenantMutation,
+} = authApi;

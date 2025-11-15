@@ -65,7 +65,7 @@ function MainLayout() {
                 <Header onToggleSidebar={() => []} />
                 <Content>
                     <Suspense fallback={<LoadingSpinner />}>
-                        <Row align="center" justify="flex-start" gap={"xs"}>
+                        <Row $align="center" $justify="flex-start" $gap={"xs"}>
                             <Breadcrumbs />
                         </Row>
                         <Outlet />

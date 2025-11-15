@@ -59,7 +59,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
             </SidebarHeader>
             <TenantSelector />
             <SidebarItems>
-                {data?.modules.map((module) => (
+                {data?.modules && data?.modules.map((module) => (
                     <ModuleContainer key={module.id}>
                         <ModuleLabel>{module.label}</ModuleLabel>
                         {module.components

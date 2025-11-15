@@ -8,8 +8,7 @@ import {
 } from "./HeaderStyles";
 import RolesSelector from "../RolesSelector";
 import PageTitle from "../PageTitle";
-import Breadcrumbs from "../Breadcrumbs";
-import { Column, Row } from "../Layouts";
+import { Row } from "../Layouts";
 
 interface TopHeaderProps {
     onToggleSidebar: () => void;
@@ -19,8 +18,8 @@ function Header({ onToggleSidebar }: TopHeaderProps) {
     const theme = useTheme();
     return (
         <HeaderContent>
-            <Row gap={"xl"}>
-                <Row align="center" justify="center" gap={"xs"}>
+            <Row $gap={"xl"}>
+                <Row $align="center" $justify="center" $gap={"xs"}>
                     <BurgerButton onClick={onToggleSidebar}>
                         <FaBars />
                     </BurgerButton>

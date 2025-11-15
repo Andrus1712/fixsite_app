@@ -3,16 +3,14 @@ import { useAppDispatch, useAppSelector } from "../store";
 import type { ITenants } from "../../features/permissions/models/Permission";
 import {
     changeGlobalMode,
-    saveAuthInfo,
     setCurrentTenant,
-    setCurrentToken,
 } from "../../features/auth/store/authSlice";
 import styled from "styled-components";
 import {
     useLogoutTenantMutation,
     useSelectTenantMutation,
-} from "../../features/permissions/services/tenantsApi";
-import { baseApi } from "../store/baseApi";
+    useSwitchTenantMutation,
+} from "../../features/auth/services/authApi";
 import { useNavigate } from "react-router";
 
 const DropdownContainer = styled.div`
@@ -88,28 +86,43 @@ function TenantSelector() {
     );
 
     const [selectTenant] = useSelectTenantMutation();
+    const [switchTenant] = useSwitchTenantMutation();
     const [logoutTenant] = useLogoutTenantMutation();
 
     const currentTenant = currentTenantState?.name || "Global";
+    console.log(currentTenant);
+
     const tenants = data?.tenants;
 
     const dispatch = useAppDispatch();
     const navigator = useNavigate();
 
-    const handleChangeTenat = async (tenant: ITenants | null) => {
-        if (tenant) {
-            const response = await selectTenant({
-                tenantId: tenant.id.toString(),
-            }).unwrap();
-            dispatch(setCurrentToken(response._token));
-            dispatch(changeGlobalMode(false));
-        } else {
-            const response = await logoutTenant().unwrap();
-            dispatch(setCurrentToken(response.tempToken));
-            dispatch(changeGlobalMode(true));
+    const handleChangeTenat = async (tenant: ITenants) => {
+        try {
+            if (tenant && currentTenant === "Global") {
+                await selectTenant({ tenantId: tenant.id }).unwrap();
+                dispatch(changeGlobalMode(false));
+            } else {
+                await switchTenant({ tenantId: tenant.id }).unwrap(); // 0 para modo global
+                dispatch(changeGlobalMode(true));
+            }
+            dispatch(setCurrentTenant({ tenant }));
+            navigator("/app", { replace: true });
+        } catch (error) {
+            console.error("Error changing tenant:", error);
         }
-        navigator("/app", { replace: true });
-        dispatch(setCurrentTenant({ tenant }));
+        setIsOpen(false);
+    };
+
+    const handleLogoutTenat = async () => {
+        try {
+            await logoutTenant().unwrap(); // 0 para modo global
+            dispatch(changeGlobalMode(true));
+            dispatch(setCurrentTenant({ tenant: null }));
+            navigator("/app", { replace: true });
+        } catch (error) {
+            console.error("Error changing tenant:", error);
+        }
         setIsOpen(false);
     };
 
@@ -123,9 +136,7 @@ function TenantSelector() {
             <DropdownMenu $isOpen={isOpen}>
                 <DropdownItem
                     $isActive={!currentTenantState}
-                    onClick={() =>
-                        currentTenantState && handleChangeTenat(null)
-                    }
+                    onClick={() => currentTenantState && handleLogoutTenat()}
                 >
                     Global
                 </DropdownItem>
