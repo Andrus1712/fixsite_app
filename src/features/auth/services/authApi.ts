@@ -5,21 +5,21 @@ import type { LoginResponse } from "../models/LoginResponse";
 export const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         // Ejemplo de Query (petición GET)
-        getUsers: builder.query<any[], void>({
-            query: () => 'users', // Se concatena con la baseUrl de baseApi
-            providesTags: ['User'], // Proporciona tags para el caching
-        }),
+        // getUsers: builder.query<any[], void>({
+        //     query: () => 'users', // Se concatena con la baseUrl de baseApi
+        //     providesTags: ['User'], // Proporciona tags para el caching
+        // }),
 
         // Ejemplo de Mutation (petición POST)
-        createUser: builder.mutation<any, Partial<any>>({
-            query: (newUser) => ({
-                url: 'users',
-                method: 'POST',
-                body: newUser,
-            }),
-            // Invalida los tags 'User' para forzar el refetch de getUsers
-            invalidatesTags: ['User'],
-        }),
+        // createUser: builder.mutation<any, Partial<any>>({
+        //     query: (newUser) => ({
+        //         url: 'users',
+        //         method: 'POST',
+        //         body: newUser,
+        //     }),
+        //     // Invalida los tags 'User' para forzar el refetch de getUsers
+        //     invalidatesTags: ['User'],
+        // }),
 
         authUser: builder.mutation<LoginResponse, { username: string, password: string; }>({
             query: (credentials) => ({
@@ -67,8 +67,8 @@ export const authApi = baseApi.injectEndpoints({
 
 // RTK Query genera automáticamente hooks personalizados para cada endpoint
 export const {
-    useGetUsersQuery,
-    useCreateUserMutation,
+    // useGetUsersQuery,
+    // useCreateUserMutation,
     useAuthUserMutation,
     useCheckAuthQuery,
     useLogoutUserMutation,

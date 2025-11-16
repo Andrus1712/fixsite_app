@@ -5,7 +5,7 @@ import storage from 'redux-persist/lib/storage';
 import { baseApi } from './baseApi';
 import authReducer from '../../features/auth/store/authSlice';
 import alertReducer from './alertSlice';
-import { ordersApi } from '../../features/orders/services/orderApi';
+// import { ordersApi } from '../../features/orders/services/orderApi';
 
 const persistConfig: PersistConfig<any> = {
   key: "auth",
@@ -22,7 +22,6 @@ export const store = configureStore({
   reducer: {
     // Reducer de RTK Query: el path y el reducer que importamos de baseApi
     [baseApi.reducerPath]: baseApi.reducer,
-    [ordersApi.reducerPath]: ordersApi.reducer,
 
     // Aquí se añadirían otros slices de features...
     // users: usersSlice.reducer, 
@@ -36,7 +35,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat([baseApi.middleware, ordersApi.middleware]),
+    }).concat([baseApi.middleware]),
 });
 
 export const persistor = persistStore(store);

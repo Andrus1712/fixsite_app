@@ -43,9 +43,15 @@ const ModuleTitle = styled.h4`
 
 const PermissionsList = styled.div`
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
     margin-left: 26px;
+`;
+
+const PermissionColumn = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 `;
 
 const PermissionItem = styled.div`
@@ -159,45 +165,89 @@ export default function PermissionsSelector({
                         </ModuleHeader>
 
                         <PermissionsList>
-                            {modulePermissions.map((permission) => (
-                                <PermissionItem key={permission.permission_id}>
-                                    <Checkbox
-                                        checked={selected.has(
-                                            permission.permission_id
-                                        )}
-                                        onChange={(e) =>
-                                            handlePermissionToggle(
-                                                permission.permission_id,
-                                                e.target.checked
-                                            )
+                            {Object.entries(
+                                [...modulePermissions]
+                                    .sort((a, b) => {
+                                        if (
+                                            a.permission_id !== b.permission_id
+                                        ) {
+                                            return (
+                                                a.permission_id -
+                                                b.permission_id
+                                            );
                                         }
-                                        label={
-                                            <div
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "6px",
-                                                }}
-                                            >
-                                                {permission.c_title}{" "}
-                                                {permission.c_showMenu ? (
-                                                    <MenuBadge
-                                                        showMenu={
-                                                            permission.c_showMenu
-                                                        }
+                                        return a.c_label.localeCompare(
+                                            b.c_label
+                                        );
+                                    })
+                                    .reduce((acc, permission) => {
+                                        if (!acc[permission.c_option]) {
+                                            acc[permission.c_option] = [];
+                                        }
+                                        acc[permission.c_option].push(
+                                            permission
+                                        );
+                                        return acc;
+                                    }, {} as Record<string, Permission[]>)
+                            ).map(([option, optionPermissions]) => (
+                                <PermissionColumn key={option}>
+                                    {optionPermissions.map((permission) => (
+                                        <PermissionItem
+                                            key={permission.permission_id}
+                                        >
+                                            <Checkbox
+                                                checked={selected.has(
+                                                    permission.permission_id
+                                                )}
+                                                onChange={(e) =>
+                                                    handlePermissionToggle(
+                                                        permission.permission_id,
+                                                        e.target.checked
+                                                    )
+                                                }
+                                                label={
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            alignItems:
+                                                                "center",
+                                                            gap: "6px",
+                                                        }}
                                                     >
-                                                        M
-                                                    </MenuBadge>
-                                                ) : null}
-                                                <ActionBadge
-                                                    type={permission.c_type}
-                                                >
-                                                    {permission.c_action}
-                                                </ActionBadge>
-                                            </div>
-                                        }
-                                    />
-                                </PermissionItem>
+                                                        {permission.c_title}{" "}
+                                                        {permission.c_showMenu ? (
+                                                            <MenuBadge
+                                                                showMenu={
+                                                                    permission.c_showMenu
+                                                                }
+                                                            >
+                                                                Menu
+                                                            </MenuBadge>
+                                                        ) : null}
+                                                        {permission.c_type == "G" ? (
+                                                            <MenuBadge
+                                                                showMenu={
+                                                                    permission.c_showMenu
+                                                                }
+                                                            >
+                                                                Global
+                                                            </MenuBadge>
+                                                        ) : null}
+                                                        <ActionBadge
+                                                            type={
+                                                                permission.c_type
+                                                            }
+                                                        >
+                                                            {
+                                                                permission.c_action
+                                                            }
+                                                        </ActionBadge>
+                                                    </div>
+                                                }
+                                            />
+                                        </PermissionItem>
+                                    ))}
+                                </PermissionColumn>
                             ))}
                         </PermissionsList>
                     </ModuleContainer>
