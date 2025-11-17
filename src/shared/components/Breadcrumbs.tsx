@@ -1,5 +1,6 @@
-import { Link, useMatches } from "react-router";
+import { NavLink, useMatches } from "react-router";
 import styled from "styled-components";
+import { Text } from "./Typography";
 
 const BreadcrumbContainer = styled.nav`
     padding: 5px 0;
@@ -20,10 +21,11 @@ const BreadcrumbItem = styled.li`
     align-items: center;
 `;
 
-const BreadcrumbLink = styled(Link)`
-    color: #6b7280;
+const BreadcrumbLink = styled(NavLink)`
     text-decoration: none;
-    
+    color: ${(props) =>
+        props.color === props.theme.colors.text ? "#1F2937" : "inherit"};
+
     &:hover {
         color: #374151;
         text-decoration: underline;
@@ -42,8 +44,7 @@ const Separator = styled.span`
 
 export default function Breadcrumbs() {
     const matches = useMatches();
-    
-    
+
     const crumbs = matches
         .filter((match) => match.handle && (match.handle as any)?.label)
         .map((match) => ({
@@ -63,11 +64,16 @@ export default function Breadcrumbs() {
                     <BreadcrumbItem key={crumb.pathname}>
                         <Separator>&gt;</Separator>
                         {index === crumbs.length - 1 ? (
-                            <BreadcrumbText>{crumb.label}</BreadcrumbText>
+                            <Text color="secondary">{crumb.label}</Text>
                         ) : (
-                            <BreadcrumbLink to={crumb.pathname}>
-                                {crumb.label}
-                            </BreadcrumbLink>
+                            <Text color="primary">
+                                <BreadcrumbLink
+                                    color="primary"
+                                    to={crumb.pathname}
+                                >
+                                    {crumb.label}
+                                </BreadcrumbLink>
+                            </Text>
                         )}
                     </BreadcrumbItem>
                 ))}

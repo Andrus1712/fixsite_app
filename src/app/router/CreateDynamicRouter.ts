@@ -68,7 +68,10 @@ export const createDynamicRouter = (menuItems: MenuItem[] = []) => {
                         ...dynamicRoutes,
                         {
                             path: "*",
-                            element: createElement(NotFound)
+                            element: createElement(NotFound),
+                            handle: {
+                                notFound: true
+                            }
                         }
                     ],
                 },

@@ -55,4 +55,5 @@ export const componentMap: Record<string, React.ComponentType> = {
     "permission-index": PermissionsPage,
     "permission-new": NewPermissionPage,
     "permission-edit": EditPermissionPage,
+    //Servicices
 };

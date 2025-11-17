@@ -18,7 +18,7 @@ interface IssueInfo {
 }
 
 interface FormData {
-    order_code: string;
+    // order_code: string;
     description: string;
     device_data: {
         device_name: string;
@@ -63,7 +63,7 @@ const NewOrdenComponent: React.FC = () => {
         [key: string]: boolean;
     }>({});
     const [formData, setFormData] = useState<FormData>({
-        order_code: "",
+        // order_code: "",
         description: "",
         device_data: {
             device_name: "",
@@ -302,19 +302,6 @@ const NewOrdenComponent: React.FC = () => {
                 {/* Tab 0: Información General */}
                 {activeTab === 0 && (
                     <TabContent>
-                        <FormGroup>
-                            <Label>Código de Orden</Label>
-                            <Input
-                                type="text"
-                                value={formData.order_code}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        order_code: e.target.value,
-                                    }))
-                                }
-                            />
-                        </FormGroup>
                         <FormGroup>
                             <Label>Descripción</Label>
                             <TextArea

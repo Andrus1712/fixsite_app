@@ -8,17 +8,15 @@ import {
     ModuleContainer,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import {
-    FaChartBar,
-    FaCog,
-    FaSignOutAlt,
-    FaTools,
-    FaUsers,
-    FaUsersCog,
-} from "react-icons/fa";
+import { FaChartBar, FaCog, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
 import FixsiteLogo from "../../../assets/logo_fixsite2.png";
 import TenantSelector from "../TenantSelector";
+import { Divider, Row } from "../Layouts";
+import { Label, Text } from "../Typography";
+import { useLocation } from "react-router";
+import { GrConfigure } from "react-icons/gr";
+import { IconButton } from "../Buttons";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -31,7 +29,7 @@ const iconMap: Record<string, JSX.Element> = {
     FaChartBar: <FaChartBar />,
     FaCog: <FaCog />,
     FaTools: <FaTools />,
-    FaUsersCog: <FaUsersCog />
+    FaUsersCog: <FaUsersCog />,
 };
 
 function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -40,7 +38,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
     return (
         <SidebarContainer $isOpen={isOpen}>
             <SidebarHeader>
-                <img
+                {/* <img
                     src={FixsiteLogo}
                     alt="Fixsite App Logo"
                     // Estilos en línea para asegurar que sea proporcional al alto del header
@@ -55,27 +53,39 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                         scale: "0.6",
                         // padding: "2px",
                     }}
-                />
+                /> */}
+                <Row fullWidth $align="center" $justify="flex-start" $gap={10} style={{ padding: "0 10px" }}>
+                    <GrConfigure color="#fff" size={30} />
+                    <Text size={"2xl"} variant="body1" weight="bold" color="white">
+                        FixSite v1
+                    </Text>
+                </Row>
             </SidebarHeader>
             <TenantSelector />
+            <Divider width="90%" opacity={0.4} margin={"sm"} />
             <SidebarItems>
-                {data?.modules && data?.modules.map((module) => (
-                    <ModuleContainer key={module.id}>
-                        <ModuleLabel>{module.label}</ModuleLabel>
-                        {module.components
-                            ?.slice()
-                            .sort((a, b) => a.order - b.order || a.id - b.id)
-                            .map((component) => (
-                                <MenuItem
-                                    key={component.id}
-                                    to={"/app" + component.path}
-                                    label={component.label}
-                                    icon={iconMap[component.icon]}
-                                    onClick={onClose}
-                                />
-                            ))}
-                    </ModuleContainer>
-                ))}
+                {data?.modules &&
+                    data?.modules.map((module) => (
+                        <ModuleContainer key={module.id}>
+                            <Row style={{ padding: "5px 10px" }}>
+                                <Text variant="caption" weight="semibold" uppercase color="gray300">
+                                    {module.label}
+                                </Text>
+                            </Row>
+                            {module.components
+                                ?.slice()
+                                .sort((a, b) => a.order - b.order || a.id - b.id)
+                                .map((component) => (
+                                    <MenuItem
+                                        key={component.id}
+                                        to={"/app" + component.path}
+                                        label={component.label}
+                                        icon={iconMap[component.icon]}
+                                        onClick={onClose}
+                                    />
+                                ))}
+                        </ModuleContainer>
+                    ))}
             </SidebarItems>
         </SidebarContainer>
     );
@@ -89,8 +99,23 @@ interface MenuItemProps {
 }
 
 const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
+    const location = useLocation();
+
+    const isActive = () => {
+        // Lógica personalizada para rutas relacionadas
+        if (to === "/app/roles" && location.pathname.startsWith("/app/component")) {
+            return true;
+        }
+        // Comportamiento por defecto
+        return location.pathname === to;
+    };
+
     return (
-        <SidebarItem to={to} onClick={onClick}>
+        <SidebarItem
+            to={to}
+            onClick={onClick}
+            className={({ isActive: defaultActive }) => (defaultActive || isActive() ? "active" : "")}
+        >
             {icon && <span>{icon}</span>}
             <span>{label}</span>
         </SidebarItem>

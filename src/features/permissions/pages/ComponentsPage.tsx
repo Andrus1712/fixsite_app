@@ -146,7 +146,7 @@ export default function ComponentsPage() {
                         >
                             Regresar
                         </Button>
-                        {hasPermission("module-new") ? (
+                        {hasPermission("component-new") ? (
                             <Button
                                 variant="success"
                                 rightIcon={<IoMdAdd />}

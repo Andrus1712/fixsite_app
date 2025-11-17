@@ -1,10 +1,254 @@
-import { Box } from "../../../shared/components";
+import { Box, Flex, FormGroup, FormTabs, Input, Select, TextArea } from "../../../shared/components";
+import { useCreateOrderMutation } from "../services/orderApi";
+import z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import NewOrdenComponent from "../components/NewOrdenComponent";
 
+// --- Sub-schemas ---
+
+const DeviceDataSchema = z.object({
+    device_name: z.string().min(1, "El nombre del dispositivo es obligatorio."),
+    device_type: z.number({ error: "El tipo de dispositivo debe ser un número." }).int().positive(),
+    device_brand: z.number({ error: "La marca del dispositivo es obligatoria." }).int().positive(), // Asumiendo que es un ID numérico positivo
+    serial_number: z.string().optional(),
+    imei: z.string().optional(),
+    model_year: z.string().min(4, "El año debe tener al menos 4 dígitos."), // Lo dejo como string por si se usa un select con años o un input de texto
+    color: z.string().optional(),
+    storage_capacity: z.string().optional(),
+});
+
+const IssueSchema = z.object({
+    issue_name: z.string().min(1, "El nombre del problema es obligatorio."),
+    issue_description: z.string().min(1, "La descripción del problema es obligatoria."),
+    issue_type: z.number({ error: "El tipo de problema es obligatorio." }).int().positive(),
+    issue_severity: z.number({ error: "La severidad del problema es obligatoria." }).int().positive(),
+    issue_additional_info: z.string().optional(),
+    issue_steps_to_reproduce: z.array(z.string()).optional(),
+    issue_environment: z.string().optional(),
+    issue_additional_notes: z.string().optional(),
+    issue_screenshots: z.array(z.string()).optional(), // Asumiendo que son URLs o base64
+});
+
+const CustomerDataSchema = z.object({
+    customer_name: z.string().min(1, "El nombre del cliente es obligatorio."),
+    customer_email: z.email({ error: "Formato de email inválido." }).optional(),
+    customer_phone: z.string().min(1, "El teléfono es obligatorio.").optional(),
+    customer_address: z.string().optional(),
+    customer_city: z.string().min(1, "La ciudad es obligatoria."),
+    customer_country: z.string().min(1, "El país es obligatorio."),
+    customer_type: z.enum(["individual", "business", "other"], {
+        error: "El tipo de cliente es obligatorio.",
+    }),
+    preferred_contact: z.enum(["phone", "email", "whatsapp"], {
+        error: "El contacto preferido es obligatorio.",
+    }),
+});
+
+const CostInfoSchema = z.object({
+    estimated_cost: z.number().min(0, "El costo debe ser cero o positivo."),
+    labor_cost: z.number().min(0, "El costo de mano de obra debe ser cero o positivo."),
+    parts_cost: z.number().min(0, "El costo de partes debe ser cero o positivo."),
+    currency: z.string().min(1, "La moneda es obligatoria."),
+});
+
+const TimelineSchema = z.object({
+    estimated_completion: z.string().optional(), // Podría ser z.date() si usas un selector de fecha
+    estimated_hours: z.number().min(0, "Las horas deben ser cero o positivas.").optional(),
+    sla_deadline: z.string().optional(), // Podría ser z.date()
+});
+
+// --- Esquema principal ---
+
+export const ComponentSchema = z.object({
+    description: z.string().optional(),
+    device_data: DeviceDataSchema,
+    issues: z.array(IssueSchema).min(1, "Debe haber al menos un problema reportado."),
+    customer_data: CustomerDataSchema,
+    cost_info: CostInfoSchema.optional(),
+    timeline: TimelineSchema.optional(),
+    priority: z.number().int().positive(),
+});
+
+// --- Tipo derivado (para useForm) ---
+
+export type ComponentFormData = z.infer<typeof ComponentSchema>;
+
 export default function NewOrderpage() {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        watch,
+        setValue,
+    } = useForm<ComponentFormData>({
+        resolver: zodResolver(ComponentSchema),
+        defaultValues: {
+            // 3. Establece valores por defecto para evitar undefined en campos anidados
+            description: "",
+            device_data: {
+                device_name: "",
+                device_type: 1, // Ejemplo de default para select
+                device_brand: 1,
+                model_year: "",
+                serial_number: "",
+                imei: "",
+                color: "",
+                storage_capacity: "",
+            },
+            issues: [
+                {
+                    // Asegúrate de inicializar arrays con al menos un objeto si son requeridos
+                    issue_name: "",
+                    issue_description: "",
+                    issue_type: 1,
+                    issue_severity: 1,
+                    issue_steps_to_reproduce: [""],
+                    issue_environment: "",
+                    issue_additional_notes: "",
+                    issue_screenshots: [],
+                },
+            ],
+            customer_data: {
+                customer_name: "",
+                customer_email: "",
+                customer_phone: "",
+                customer_address: "",
+                customer_city: "",
+                customer_country: "",
+                customer_type: "individual", // Ejemplo de default para enum
+                preferred_contact: "phone",
+            },
+            cost_info: {
+                estimated_cost: 0,
+                labor_cost: 0,
+                parts_cost: 0,
+                currency: "USD",
+            },
+            timeline: {
+                estimated_completion: "",
+                estimated_hours: 0,
+                sla_deadline: "",
+            },
+            priority: 1,
+        },
+    });
+
+    const formData = watch();
+
+    const updateField = (field: string, value: any) => {
+        setValue(field as any, value);
+    };
+
+    const onSubmit = (data: ComponentFormData) => {
+        console.log(data);
+        // Lógica de envío de datos aquí
+    };
+
+    const [createOrder, { isLoading }] = useCreateOrderMutation();
+
+    const tabs = [
+        {
+            label: "Información General",
+            content: (
+                <FormGroup title="Información General" description="Datos básicos de la orden">
+                    <TextArea
+                        label="Descripción"
+                        value={formData.description}
+                        onChange={(e) => updateField("description", e.target.value)}
+                        rows={3}
+                        fullWidth
+                    />
+                    <Select
+                        label="Prioridad"
+                        value={formData.priority}
+                        onChange={(e) => updateField("priority", Number(e.target.value))}
+                        options={[
+                            { value: 1, label: "Baja" },
+                            { value: 2, label: "Media" },
+                            { value: 3, label: "Alta" },
+                        ]}
+                        fullWidth
+                    />
+                </FormGroup>
+            ),
+        },
+        {
+            label: "Dispositivo",
+            content: (
+                <FormGroup title="Información del Dispositivo" description="Datos del dispositivo a reparar">
+                    <Input
+                        label="Nombre del Dispositivo"
+                        value={formData.device_data?.device_name}
+                        onChange={(e) => updateField("device_data.device_name", e.target.value)}
+                        fullWidth
+                    />
+                    <Select
+                        label="Tipo de Dispositivo"
+                        value={formData.device_data?.device_type}
+                        onChange={(e) => updateField("device_data.device_type", Number(e.target.value))}
+                        options={[
+                            { value: 1, label: "Smartphone" },
+                            { value: 2, label: "Laptop" },
+                            { value: 3, label: "Tablet" },
+                        ]}
+                        fullWidth
+                    />
+                </FormGroup>
+            ),
+        },
+        {
+            label: "Cliente",
+            content: (
+                <FormGroup title="Información del Cliente" description="Datos de contacto del cliente">
+                    <Input
+                        label="Nombre del Cliente"
+                        value={formData.customer_data?.customer_name}
+                        onChange={(e) => updateField("customer_data.customer_name", e.target.value)}
+                        fullWidth
+                    />
+                    <Input
+                        label="Email"
+                        type="email"
+                        value={formData.customer_data?.customer_email}
+                        onChange={(e) => updateField("customer_data.customer_email", e.target.value)}
+                        fullWidth
+                    />
+                </FormGroup>
+            ),
+        },
+        {
+            label: "Costos",
+            content: (
+                <FormGroup title="Información de Costos" description="Estimación de costos de la reparación">
+                    <Input
+                        label="Costo Estimado"
+                        type="number"
+                        step="0.01"
+                        value={formData.cost_info?.estimated_cost}
+                        onChange={(e) => updateField("cost_info.estimated_cost", Number(e.target.value))}
+                        fullWidth
+                    />
+                    <Input
+                        label="Fecha Estimada de Finalización"
+                        type="date"
+                        value={formData.timeline?.estimated_completion}
+                        onChange={(e) => updateField("timeline.estimated_completion", e.target.value)}
+                        fullWidth
+                    />
+                </FormGroup>
+            ),
+        },
+    ];
+
     return (
-        <Box p="lg" bg="white" rounded shadow>
-            <NewOrdenComponent />
-        </Box>
+        <Flex direction="column">
+            <Box p="lg" bg="white" rounded shadow>
+                <FormTabs tabs={tabs} onSubmit={handleSubmit(onSubmit)} submitLabel="Crear Orden" loading={isLoading} />
+            </Box>
+            <Box p={"lg"} bg="white" shadow rounded>
+                <NewOrdenComponent />
+            </Box>
+        </Flex>
     );
 }

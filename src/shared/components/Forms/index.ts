@@ -1,8 +1,10 @@
 export { default as Input } from './Input';
 export { default as Select } from './Select';
+export { default as SearchableSelect } from './SearchableSelect';
 export { default as MultiSelect } from './MultiSelect';
 export { default as TextArea } from './TextArea';
 export { default as Checkbox } from './Checkbox';
 export { default as Radio, RadioGroup } from './Radio';
 export { default as Switch } from './Switch';
 export { default as FormGroup } from './FormGroup';
+export { default as FormTabs } from './FormTabs';

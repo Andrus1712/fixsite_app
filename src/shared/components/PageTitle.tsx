@@ -1,5 +1,6 @@
 import { useMatches } from "react-router";
 import styled from "styled-components";
+import { Heading } from "./Typography";
 
 const TitleContainer = styled.div`
     padding: 5px 0;
@@ -17,11 +18,18 @@ const Title = styled.h1`
 export default function PageTitle() {
     const matches = useMatches();
     const currentMatch = matches[matches.length - 1];
-    const title = (currentMatch?.handle as any)?.title || (currentMatch?.handle as any)?.label || "Página";
+    const title =
+        (currentMatch?.handle as any)?.title ||
+        (currentMatch?.handle as any)?.label ||
+        "Inicio";
 
     return (
         <TitleContainer>
-            <Title>{title}</Title>
+            {!(currentMatch?.handle as any)?.notFound ? (
+                <Heading level="h2" color="gray800" truncate>
+                    {title}
+                </Heading>
+            ) : null}
         </TitleContainer>
     );
 }

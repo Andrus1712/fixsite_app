@@ -68,6 +68,10 @@ const authSlice = createSlice({
 
         changeGlobalMode: (state, action: PayloadAction<boolean>) => {
             state.globalMode = action.payload;
+        },
+
+        checkAuthUser: (state, action: PayloadAction<boolean>) => {
+            state.isAuthenticated = action.payload;
         }
     },
 });
@@ -81,6 +85,7 @@ export const {
     updateRoles,
     updateTenants,
     setCurrentTenant,
-    changeGlobalMode
+    changeGlobalMode,
+    checkAuthUser
 } = authSlice.actions;
 export default authSlice.reducer;

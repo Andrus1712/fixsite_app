@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import styled from "styled-components";
 
 export const SidebarContainer = styled.div<{ $isOpen: boolean; }>`
@@ -10,6 +10,8 @@ export const SidebarContainer = styled.div<{ $isOpen: boolean; }>`
     height: 100vh;
     width: 100%;
     transition: transform 0.3s ease;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
 
     @media (max-width: 768px) {
         position: fixed;
@@ -39,26 +41,46 @@ export const SidebarItems = styled.div`
     overflow-y: auto;
     flex: 1;
     width: 100%;
-    padding: ${(props) => props.theme.spacing.md} ${(props) => props.theme.spacing.sm};
+    margin-top: ${(props) => props.theme.spacing.xs};
+    /* padding: ${(props) => props.theme.spacing.md}; */
 `;
 
 export const ModuleContainer = styled.div`
     width: 100%;
+    margin-bottom: ${(props) => props.theme.spacing.sm};
 `;
 
 
-export const SidebarItem = styled(Link)`
+export const SidebarItem = styled(NavLink)`
     display: flex;
     justify-content: left;
     align-items: center;
     padding: ${(props) => props.theme.spacing.md};
+    margin-bottom: ${(props) => props.theme.spacing.xs};
     text-decoration: none;
     color: ${(props) => props.theme.colors.white};
     width: 100%;
     gap: 10px;
-    border-radius: 10px;
+    border-radius: 5px;
+    position: relative;
+    
     &:hover {
         background-color: ${(props) => props.theme.colors.primaryLight};
+    }
+    
+    &.active {
+        background-color: ${(props) => props.theme.colors.primaryLight};
+        
+        &::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: ${(props) => props.theme.colors.warning};
+            border-radius: 2px 0 0 2px;
+        }
     }
 `;
 
