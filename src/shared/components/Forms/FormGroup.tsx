@@ -7,6 +7,7 @@ interface FormGroupProps {
     description?: string;
     direction?: "horizontal" | "vertical";
     gap?: "xs" | "sm" | "md" | "lg" | "xl";
+    fullWidth?: boolean;
 }
 
 const getGapValue = (gap: "xs" | "sm" | "md" | "lg" | "xl") => {
@@ -15,14 +16,15 @@ const getGapValue = (gap: "xs" | "sm" | "md" | "lg" | "xl") => {
         sm: "8px",
         md: "16px",
         lg: "24px",
-        xl: "32px"
+        xl: "32px",
     };
     return gaps[gap];
 };
 
-const GroupContainer = styled.div`
+const GroupContainer = styled.div<{ fullWidth?: boolean }>`
     display: flex;
     flex-direction: column;
+    width: ${(props) => (props.fullWidth ? "100%" : "auto")};
 `;
 
 const Header = styled.div`
@@ -43,15 +45,17 @@ const Description = styled.p`
     line-height: 1.4;
 `;
 
-const FieldsContainer = styled.div<{ 
+const FieldsContainer = styled.div<{
     direction: "horizontal" | "vertical";
     gap: string;
 }>`
     display: flex;
-    flex-direction: ${props => props.direction === "horizontal" ? "row" : "column"};
-    gap: ${props => props.gap};
+    flex-direction: ${(props) => (props.direction === "horizontal" ? "row" : "column")};
+    gap: ${(props) => props.gap};
     
-    ${props => props.direction === "horizontal" && `
+    ${(props) =>
+        props.direction === "horizontal" &&
+        `
         flex-wrap: wrap;
         
         & > * {
@@ -66,10 +70,11 @@ export default function FormGroup({
     title,
     description,
     direction = "vertical",
-    gap = "md"
+    gap = "md",
+    fullWidth,
 }: FormGroupProps) {
     return (
-        <GroupContainer>
+        <GroupContainer fullWidth={fullWidth}>
             {(title || description) && (
                 <Header>
                     {title && <Title>{title}</Title>}

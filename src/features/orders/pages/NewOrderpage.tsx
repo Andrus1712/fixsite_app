@@ -1,9 +1,14 @@
-import { Box, Flex, FormGroup, FormTabs, Input, Select, TextArea } from "../../../shared/components";
+import { Box, Button, Container, Flex, FormGroup, FormTabs, Input, Select, TextArea } from "../../../shared/components";
 import { useCreateOrderMutation } from "../services/orderApi";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import NewOrdenComponent from "../components/NewOrdenComponent";
+import { FormTabService } from "../components/FromTabService";
+import { FormTabCustomer } from "../components/FormTabCustomer";
+import { FormTabDevice } from "../components/FormTabDevice";
+import { FormTabIssues } from "../components/FormTabIssues";
+import { FormTabResume } from "../components/FormTabResume";
 
 // --- Sub-schemas ---
 
@@ -27,10 +32,16 @@ const IssueSchema = z.object({
     issue_steps_to_reproduce: z.array(z.string()).optional(),
     issue_environment: z.string().optional(),
     issue_additional_notes: z.string().optional(),
-    issue_screenshots: z.array(z.string()).optional(), // Asumiendo que son URLs o base64
+    issue_files: z.array(z.object({
+        filename: z.string(),
+        originalName: z.string(),
+        size: z.number(),
+        url: z.string()
+    })).optional(),
 });
 
 const CustomerDataSchema = z.object({
+    customer_id: z.number({ error: "El id del cliente es obligatorio." }).int().positive(),
     customer_name: z.string().min(1, "El nombre del cliente es obligatorio."),
     customer_email: z.email({ error: "Formato de email inválido." }).optional(),
     customer_phone: z.string().min(1, "El teléfono es obligatorio.").optional(),
@@ -61,6 +72,7 @@ const TimelineSchema = z.object({
 // --- Esquema principal ---
 
 export const ComponentSchema = z.object({
+    serviceType: z.number({ error: "El tipo de servicio es obligatorio." }).int().positive(),
     description: z.string().optional(),
     device_data: DeviceDataSchema,
     issues: z.array(IssueSchema).min(1, "Debe haber al menos un problema reportado."),
@@ -81,10 +93,12 @@ export default function NewOrderpage() {
         formState: { errors },
         watch,
         setValue,
+        trigger
     } = useForm<ComponentFormData>({
         resolver: zodResolver(ComponentSchema),
         defaultValues: {
             // 3. Establece valores por defecto para evitar undefined en campos anidados
+            serviceType: 0,
             description: "",
             device_data: {
                 device_name: "",
@@ -96,20 +110,9 @@ export default function NewOrderpage() {
                 color: "",
                 storage_capacity: "",
             },
-            issues: [
-                {
-                    // Asegúrate de inicializar arrays con al menos un objeto si son requeridos
-                    issue_name: "",
-                    issue_description: "",
-                    issue_type: 1,
-                    issue_severity: 1,
-                    issue_steps_to_reproduce: [""],
-                    issue_environment: "",
-                    issue_additional_notes: "",
-                    issue_screenshots: [],
-                },
-            ],
+            issues: [],
             customer_data: {
+                customer_id: undefined,
                 customer_name: "",
                 customer_email: "",
                 customer_phone: "",
@@ -149,106 +152,33 @@ export default function NewOrderpage() {
 
     const tabs = [
         {
-            label: "Información General",
-            content: (
-                <FormGroup title="Información General" description="Datos básicos de la orden">
-                    <TextArea
-                        label="Descripción"
-                        value={formData.description}
-                        onChange={(e) => updateField("description", e.target.value)}
-                        rows={3}
-                        fullWidth
-                    />
-                    <Select
-                        label="Prioridad"
-                        value={formData.priority}
-                        onChange={(e) => updateField("priority", Number(e.target.value))}
-                        options={[
-                            { value: 1, label: "Baja" },
-                            { value: 2, label: "Media" },
-                            { value: 3, label: "Alta" },
-                        ]}
-                        fullWidth
-                    />
-                </FormGroup>
-            ),
-        },
-        {
-            label: "Dispositivo",
-            content: (
-                <FormGroup title="Información del Dispositivo" description="Datos del dispositivo a reparar">
-                    <Input
-                        label="Nombre del Dispositivo"
-                        value={formData.device_data?.device_name}
-                        onChange={(e) => updateField("device_data.device_name", e.target.value)}
-                        fullWidth
-                    />
-                    <Select
-                        label="Tipo de Dispositivo"
-                        value={formData.device_data?.device_type}
-                        onChange={(e) => updateField("device_data.device_type", Number(e.target.value))}
-                        options={[
-                            { value: 1, label: "Smartphone" },
-                            { value: 2, label: "Laptop" },
-                            { value: 3, label: "Tablet" },
-                        ]}
-                        fullWidth
-                    />
-                </FormGroup>
-            ),
+            label: "Servicio",
+            content: <FormTabService formData={formData} updateField={updateField} errors={errors} trigger={trigger} />,
         },
         {
             label: "Cliente",
-            content: (
-                <FormGroup title="Información del Cliente" description="Datos de contacto del cliente">
-                    <Input
-                        label="Nombre del Cliente"
-                        value={formData.customer_data?.customer_name}
-                        onChange={(e) => updateField("customer_data.customer_name", e.target.value)}
-                        fullWidth
-                    />
-                    <Input
-                        label="Email"
-                        type="email"
-                        value={formData.customer_data?.customer_email}
-                        onChange={(e) => updateField("customer_data.customer_email", e.target.value)}
-                        fullWidth
-                    />
-                </FormGroup>
-            ),
+            content: <FormTabCustomer formData={formData} updateField={updateField} errors={errors} trigger={trigger} />,
         },
         {
-            label: "Costos",
-            content: (
-                <FormGroup title="Información de Costos" description="Estimación de costos de la reparación">
-                    <Input
-                        label="Costo Estimado"
-                        type="number"
-                        step="0.01"
-                        value={formData.cost_info?.estimated_cost}
-                        onChange={(e) => updateField("cost_info.estimated_cost", Number(e.target.value))}
-                        fullWidth
-                    />
-                    <Input
-                        label="Fecha Estimada de Finalización"
-                        type="date"
-                        value={formData.timeline?.estimated_completion}
-                        onChange={(e) => updateField("timeline.estimated_completion", e.target.value)}
-                        fullWidth
-                    />
-                </FormGroup>
-            ),
+            label: "Dispositivo",
+            content: <FormTabDevice formData={formData} updateField={updateField} />,
+        },
+        {
+            label: "Falla",
+            content: <FormTabIssues formData={formData} updateField={updateField} />,
+        },
+        {
+            label: "Resumen",
+            content: <FormTabResume formData={formData} updateField={updateField} />,
         },
     ];
 
     return (
-        <Flex direction="column">
+        <Container className="container" center size="xl">
             <Box p="lg" bg="white" rounded shadow>
                 <FormTabs tabs={tabs} onSubmit={handleSubmit(onSubmit)} submitLabel="Crear Orden" loading={isLoading} />
             </Box>
-            <Box p={"lg"} bg="white" shadow rounded>
-                <NewOrdenComponent />
-            </Box>
-        </Flex>
+            <pre>{JSON.stringify(formData, null, 2)}</pre>
+        </Container>
     );
 }

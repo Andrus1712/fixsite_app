@@ -3,7 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Header from "../components/Header/Header";
-import { AlertContainer, LoadingSpinner, Row } from "../components";
+import { AlertContainer, Divider, LoadingSpinner, Row } from "../components";
 import PageTitle from "../components/PageTitle";
 import Breadcrumbs from "../components/Breadcrumbs";
 
@@ -34,7 +34,7 @@ export const Container = styled.div`
 `;
 
 export const Content = styled.main`
-    padding: ${(props) => props.theme.spacing.lg};
+    padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.lg};
     background-color: ${(props) => props.theme.colors.background};
     overflow-y: auto;
 `;
@@ -87,6 +87,7 @@ function MainLayout() {
                             <PageTitle />
                             <Breadcrumbs />
                         </Row>
+                        <Divider margin={"xs"} />
                         <Outlet />
                     </Suspense>
                 </Content>

@@ -31,6 +31,10 @@ export const authApi = baseApi.injectEndpoints({
 
         checkAuth: builder.query<{ isAuthenticated: boolean; }, void>({
             query: () => 'auth/check',
+            // Deshabilitar reintentos para este endpoint específico
+            extraOptions: {
+                maxRetries: 3,
+            },
         }),
 
         logoutUser: builder.mutation<void, void>({

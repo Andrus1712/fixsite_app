@@ -46,7 +46,7 @@ const TabButton = styled.button<{ $active: boolean }>`
 `;
 
 const TabContent = styled.div`
-    min-height: 400px;
+    min-height: 200px;
 `;
 
 const NavigationContainer = styled.div`

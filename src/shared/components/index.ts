@@ -12,3 +12,6 @@ export { default as PriorityIndicator } from './PriorityIndicator';
 export { default as IssuesList } from './IssuesList';
 export { default as ExpandableList } from './ExpandableList';
 export { default as PermissionsSelector } from './PermissionsSelector';
+export * from './Card';
+export * from './TimePicker';
+export * from './Modal';

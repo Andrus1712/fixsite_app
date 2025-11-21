@@ -4,17 +4,25 @@ import { type ButtonHTMLAttributes, type ReactNode } from "react";
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     icon: ReactNode;
     size?: "sm" | "md" | "lg";
-    variant?: "ghost" | "solid";
+    variant?: "ghost" | "solid" | "border";
+    color?: "primary" | "danger" | "warning" | "success" | "info" | "neutral";
+    shape?: "rounded" | "square";
 }
 
-const StyledIconButton = styled.button<{ size: "sm" | "md" | "lg"; variant: "ghost" | "solid" }>`
+const StyledIconButton = styled.button<{ 
+    size: "sm" | "md" | "lg"; 
+    variant: "ghost" | "solid" | "border";
+    color: "primary" | "danger" | "warning" | "success" | "info" | "neutral";
+    shape: "rounded" | "square";
+}>`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
     transition: all 0.2s;
     cursor: pointer;
-    border: none;
+    border: 1px solid transparent;
+    
+    ${props => props.shape === "rounded" ? "border-radius: 50%;" : "border-radius: 6px;"}
     
     ${props => {
         const sizes = {
@@ -26,23 +34,43 @@ const StyledIconButton = styled.button<{ size: "sm" | "md" | "lg"; variant: "gho
     }}
     
     ${props => {
+        const colors = {
+            primary: { main: "#3b82f6", hover: "#2563eb", light: "#dbeafe", text: "#1e40af" },
+            danger: { main: "#ef4444", hover: "#dc2626", light: "#fee2e2", text: "#b91c1c" },
+            warning: { main: "#f59e0b", hover: "#d97706", light: "#fef3c7", text: "#92400e" },
+            success: { main: "#10b981", hover: "#059669", light: "#d1fae5", text: "#047857" },
+            info: { main: "#06b6d4", hover: "#0891b2", light: "#cffafe", text: "#0e7490" },
+            neutral: { main: "#6b7280", hover: "#4b5563", light: "#f3f4f6", text: "#374151" }
+        };
+        
+        const colorScheme = colors[props.color];
+        
         if (props.variant === "solid") {
             return `
-                background-color: #f3f4f6;
-                color: #374151;
+                background-color: ${colorScheme.main};
+                color: white;
                 
                 &:hover:not(:disabled) {
-                    background-color: #e5e7eb;
+                    background-color: ${colorScheme.hover};
+                }
+            `;
+        } else if (props.variant === "border") {
+            return `
+                background-color: transparent;
+                color: ${colorScheme.text};
+                border-color: ${colorScheme.main};
+                
+                &:hover:not(:disabled) {
+                    background-color: ${colorScheme.light};
                 }
             `;
         } else {
             return `
                 background-color: transparent;
-                color: #6b7280;
+                color: ${colorScheme.text};
                 
                 &:hover:not(:disabled) {
-                    background-color: #f3f4f6;
-                    color: #374151;
+                    background-color: ${colorScheme.light};
                 }
             `;
         }
@@ -62,11 +90,19 @@ const StyledIconButton = styled.button<{ size: "sm" | "md" | "lg"; variant: "gho
 export default function IconButton({ 
     icon, 
     size = "md", 
-    variant = "ghost", 
+    variant = "ghost",
+    color = "neutral",
+    shape = "square",
     ...props 
 }: IconButtonProps) {
     return (
-        <StyledIconButton size={size} variant={variant} {...props}>
+        <StyledIconButton 
+            size={size} 
+            variant={variant} 
+            color={color}
+            shape={shape}
+            {...props}
+        >
             {icon}
         </StyledIconButton>
     );
