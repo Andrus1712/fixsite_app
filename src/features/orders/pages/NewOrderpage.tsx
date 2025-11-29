@@ -9,6 +9,7 @@ import { FormTabCustomer } from "../components/FormTabCustomer";
 import { FormTabDevice } from "../components/FormTabDevice";
 import { FormTabIssues } from "../components/FormTabIssues";
 import { FormTabResume } from "../components/FormTabResume";
+import { FormTabResumeAlt } from "../components/FormTabResumeAlt";
 
 // --- Sub-schemas ---
 
@@ -169,7 +170,7 @@ export default function NewOrderpage() {
         },
         {
             label: "Resumen",
-            content: <FormTabResume formData={formData} updateField={updateField} />,
+            content: <FormTabResumeAlt formData={formData} updateField={updateField} />,
         },
     ];
 

@@ -1,5 +1,5 @@
-import { Card, Column, Row, Text, Label, Divider, CollapsibleCard, Button } from "../../../shared/components";
-import { FiUser, FiSmartphone, FiAlertTriangle, FiDollarSign, FiClock } from "react-icons/fi";
+import { Card, Column, Row, Text, Label, Divider } from "../../../shared/components";
+import { FiUser, FiSmartphone, FiAlertTriangle, FiDollarSign, FiClock, FiFileText } from "react-icons/fi";
 
 // interface FormTabResumeProps {
 //     formData?: {
@@ -146,214 +146,194 @@ export const FormTabResume = ({ formData, updateField }: FormProps) => {
     };
 
     return (
-        <Column gap={"lg"} fullWidth>
-            {/* Información del Servicio */}
-            <Card variant="outlined" size="md">
-                <Row $align="center" $gap={"sm"} style={{ marginBottom: "16px" }}>
-                    <FiAlertTriangle size={20} color="#3b82f6" />
-                    <Text weight="semibold" variant="body2">
-                        Información del Servicio
-                    </Text>
-                </Row>
-                <Column gap={"sm"}>
-                    <Row $justify="space-between">
-                        <Label>Tipo de Servicio:</Label>
-                        <Text>{getServiceTypeLabel(formData?.serviceType)}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Prioridad:</Label>
-                        <Text>{getPriorityLabel(formData?.priority)}</Text>
-                    </Row>
-                    {formData?.description && (
-                        <>
-                            <Label>Descripción:</Label>
-                            <Text variant="body2" color="secondary">
-                                {formData.description}
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '24px', backgroundColor: '#fff' }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '32px', borderBottom: '2px solid #e5e7eb', paddingBottom: '16px' }}>
+                <Text variant="h3" weight="bold" style={{ color: '#1f2937', marginBottom: '8px' }}>
+                    Resumen de Orden de Servicio
+                </Text>
+                <Text variant="body2" color="secondary">
+                    {getServiceTypeLabel(formData?.serviceType)} - {getPriorityLabel(formData?.priority)}
+                </Text>
+            </div>
+
+            {/* Cliente y Dispositivo */}
+            <Row $gap="lg" fullWidth style={{ marginBottom: '24px' }}>
+                <div style={{ flex: 1 }}>
+                    <div style={{ marginBottom: '16px' }}>
+                        <Row $align="center" $gap="sm" style={{ marginBottom: '12px' }}>
+                            <FiUser size={18} color="#3b82f6" />
+                            <Text weight="semibold" variant="body1">Cliente</Text>
+                        </Row>
+                        <div style={{ paddingLeft: '26px' }}>
+                            <Text weight="semibold" style={{ marginBottom: '4px' }}>
+                                {formData?.customer_data?.customer_name || "No especificado"}
                             </Text>
-                        </>
-                    )}
-                </Column>
-            </Card>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <Text variant="body2" color="secondary">
+                                    📧 {formData?.customer_data?.customer_email || "No especificado"}
+                                </Text>
+                                <Text variant="body2" color="secondary">
+                                    📱 {formData?.customer_data?.customer_phone || "No especificado"}
+                                </Text>
+                                <Text variant="body2" color="secondary">
+                                    📍 {formData?.customer_data?.customer_city || "No especificada"}
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style={{ flex: 1 }}>
+                    <div style={{ marginBottom: '16px' }}>
+                        <Row $align="center" $gap="sm" style={{ marginBottom: '12px' }}>
+                            <FiSmartphone size={18} color="#f59e0b" />
+                            <Text weight="semibold" variant="body1">Dispositivo</Text>
+                        </Row>
+                        <div style={{ paddingLeft: '26px' }}>
+                            <Text weight="semibold" style={{ marginBottom: '4px' }}>
+                                {formData?.device_data?.device_name || "No especificado"}
+                            </Text>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <Text variant="body2" color="secondary">
+                                    🏷️ {getDeviceTypeLabel(formData?.device_data?.device_type)} - {getBrandLabel(formData?.device_data?.device_brand)}
+                                </Text>
+                                <Text variant="body2" color="secondary">
+                                    🔢 S/N: {formData?.device_data?.serial_number || "N/A"}
+                                </Text>
+                                <Text variant="body2" color="secondary">
+                                    📟 IMEI: {formData?.device_data?.imei || "N/A"}
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Row>
 
-            {/* Información del Cliente */}
-            <Card variant="outlined" size="md">
-                <Row $align="center" $gap={"sm"} style={{ marginBottom: "16px" }}>
-                    <FiUser size={20} color="#10b981" />
-                    <Text weight="semibold" variant="body2">
-                        Información del Cliente
-                    </Text>
+            <Divider style={{ margin: '24px 0' }} />
+
+            {/* Problemas */}
+            <div style={{ marginBottom: '24px' }}>
+                <Row $align="center" $gap="sm" style={{ marginBottom: '16px' }}>
+                    <FiAlertTriangle size={18} color="#ef4444" />
+                    <Text weight="semibold" variant="body1">Problemas Reportados ({formData?.issues?.length || 0})</Text>
                 </Row>
-                <Column gap={"sm"}>
-                    <Row $justify="space-between">
-                        <Label>Nombre:</Label>
-                        <Text>{formData?.customer_data?.customer_name || "No especificado"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Email:</Label>
-                        <Text>{formData?.customer_data?.customer_email || "No especificado"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Teléfono:</Label>
-                        <Text>{formData?.customer_data?.customer_phone || "No especificado"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Ciudad:</Label>
-                        <Text>{formData?.customer_data?.customer_city || "No especificada"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Tipo de Cliente:</Label>
-                        <Text>{formData?.customer_data?.customer_type || "No especificado"}</Text>
-                    </Row>
-                </Column>
-            </Card>
+                {formData?.issues && formData.issues.length > 0 ? (
+                    <div style={{ paddingLeft: '26px' }}>
+                        {formData.issues.map((issue, index) => (
+                            <div key={index} style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #ef4444' }}>
+                                <Row $justify="space-between" $align="center" style={{ marginBottom: '12px' }}>
+                                    <Text weight="semibold" variant="body1">🔧 Problema {index + 1}</Text>
+                                    <span style={{ 
+                                        padding: '6px 12px', 
+                                        borderRadius: '16px', 
+                                        fontSize: '12px', 
+                                        fontWeight: '600',
+                                        backgroundColor: issue.issue_severity === 1 ? '#fee2e2' : issue.issue_severity === 2 ? '#fef3c7' : '#f3f4f6',
+                                        color: issue.issue_severity === 1 ? '#dc2626' : issue.issue_severity === 2 ? '#d97706' : '#6b7280'
+                                    }}>
+                                        {getSeverityLabel(issue.issue_severity)}
+                                    </span>
+                                </Row>
+                                <div style={{ marginBottom: '8px' }}>
+                                    <Text variant="body2" color="secondary" style={{ fontWeight: '500' }}>
+                                        📋 Tipo: <span style={{ fontWeight: '400' }}>{getIssueTypeLabel(issue.issue_type)}</span>
+                                    </Text>
+                                </div>
+                                {issue.issue_description && (
+                                    <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#ffffff', borderRadius: '4px' }}>
+                                        <Text variant="body2" color="secondary" style={{ lineHeight: '1.5' }}>
+                                            💬 {issue.issue_description}
+                                        </Text>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <Text variant="body2" color="secondary" style={{ paddingLeft: '26px' }}>No se han reportado problemas</Text>
+                )}
+            </div>
 
-            {/* Información del Dispositivo */}
-            <Card variant="outlined" size="md">
-                <Row $align="center" $gap={"sm"} style={{ marginBottom: "16px" }}>
-                    <FiSmartphone size={20} color="#f59e0b" />
-                    <Text weight="semibold" variant="body2">
-                        Información del Dispositivo
-                    </Text>
-                </Row>
-                <Column gap={"sm"}>
-                    <Row $justify="space-between">
-                        <Label>Nombre:</Label>
-                        <Text>{formData?.device_data?.device_name || "No especificado"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Tipo:</Label>
-                        <Text>{getDeviceTypeLabel(formData?.device_data?.device_type)}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Marca:</Label>
-                        <Text>{getBrandLabel(formData?.device_data?.device_brand)}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Número de Serie:</Label>
-                        <Text>{formData?.device_data?.serial_number || "No especificado"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>IMEI:</Label>
-                        <Text>{formData?.device_data?.imei || "No especificado"}</Text>
-                    </Row>
-                    <Row $justify="space-between">
-                        <Label>Año del Modelo:</Label>
-                        <Text>{formData?.device_data?.model_year || "No especificado"}</Text>
-                    </Row>
-                </Column>
-            </Card>
+            <Divider style={{ margin: '24px 0' }} />
 
-            {/* Problemas Reportados */}
-            <Card variant="outlined" size="md">
-                <Row $align="center" $gap={"sm"} style={{ marginBottom: "16px" }}>
-                    <FiAlertTriangle size={20} color="#ef4444" />
-                    <Text weight="semibold" variant="body2">
-                        Problemas Reportados ({formData?.issues?.length || 0})
-                    </Text>
-                </Row>
-                <Column gap={"md"}>
-                    {formData?.issues && formData.issues.length > 0 ? (
-                        formData.issues.map((issue, index) => (
-                            <CollapsibleCard
-                                key={index}
-                                title={`Problema ${index + 1}`}
-                                badge={{
-                                    text: getSeverityLabel(issue.severity),
-                                    variant:
-                                        issue.severity === 1
-                                            ? "critica"
-                                            : issue.severity === 2
-                                            ? "alta"
-                                            : issue.severity === 3
-                                            ? "media"
-                                            : "baja",
-                                }}
-                                defaultExpanded={false}
-                            >
-                                <Column gap={"sm"}>
-                                    <Row $justify="space-between">
-                                        <Label>Tipo:</Label>
-                                        <Text>{getIssueTypeLabel(issue.issueType)}</Text>
-                                    </Row>
-                                    <Row $justify="space-between">
-                                        <Label>Severidad:</Label>
-                                        <Text>{getSeverityLabel(issue.severity)}</Text>
-                                    </Row>
-                                    {issue.description && (
-                                        <>
-                                            <Label>Descripción:</Label>
-                                            <Text variant="body2" color="secondary">
-                                                {issue.description}
-                                            </Text>
-                                        </>
-                                    )}
-                                    {issue.steps && (
-                                        <>
-                                            <Label>Pasos para Reproducir:</Label>
-                                            <Text variant="body2" color="secondary">
-                                                {issue.steps}
-                                            </Text>
-                                        </>
-                                    )}
-                                </Column>
-                            </CollapsibleCard>
-                        ))
-                    ) : (
-                        <Text color="secondary">No se han reportado problemas</Text>
-                    )}
-                </Column>
-            </Card>
-
-            {/* Información de Costos */}
-            <Row $gap={"lg"} fullWidth>
-                <Card variant="outlined" size="md" style={{ flex: 1 }}>
-                    <Row $align="center" $gap={"sm"} style={{ marginBottom: "16px" }}>
-                        <FiDollarSign size={20} color="#10b981" />
-                        <Text weight="semibold" variant="body2">
-                            Costos Estimados
-                        </Text>
+            {/* Costos y Tiempo */}
+            <Row $gap="lg" fullWidth>
+                <div style={{ flex: 1 }}>
+                    <Row $align="center" $gap="sm" style={{ marginBottom: '16px' }}>
+                        <FiDollarSign size={18} color="#10b981" />
+                        <Text weight="semibold" variant="body1">Costos</Text>
                     </Row>
-                    <Column gap={"sm"}>
-                        <Row $justify="space-between">
-                            <Label>Costo Total:</Label>
-                            <Text weight="semibold">
+                    <div style={{ paddingLeft: '26px' }}>
+                        <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '6px', marginBottom: '12px' }}>
+                            <div style={{ marginBottom: '8px' }}>
+                                <Row $justify="space-between">
+                                    <Text variant="body2">👨‍🔧 Mano de Obra:</Text>
+                                    <Text variant="body2" weight="semibold">
+                                        {formData?.cost_info?.currency || "$"} {formData?.cost_info?.labor_cost || "0.00"}
+                                    </Text>
+                                </Row>
+                            </div>
+                            <div style={{ marginBottom: '8px' }}>
+                                <Row $justify="space-between">
+                                    <Text variant="body2">🔧 Partes:</Text>
+                                    <Text variant="body2" weight="semibold">
+                                        {formData?.cost_info?.currency || "$"} {formData?.cost_info?.parts_cost || "0.00"}
+                                    </Text>
+                                </Row>
+                            </div>
+                        </div>
+                        <Row $justify="space-between" style={{ padding: '8px 0', borderTop: '2px solid #e5e7eb' }}>
+                            <Text weight="bold" variant="body1">💰 Total:</Text>
+                            <Text weight="bold" style={{ fontSize: '20px', color: '#10b981' }}>
                                 {formData?.cost_info?.currency || "$"} {formData?.cost_info?.estimated_cost || "0.00"}
                             </Text>
                         </Row>
-                        <Row $justify="space-between">
-                            <Label>Mano de Obra:</Label>
-                            <Text>
-                                {formData?.cost_info?.currency || "$"} {formData?.cost_info?.labor_cost || "0.00"}
-                            </Text>
-                        </Row>
-                        <Row $justify="space-between">
-                            <Label>Partes:</Label>
-                            <Text>
-                                {formData?.cost_info?.currency || "$"} {formData?.cost_info?.parts_cost || "0.00"}
-                            </Text>
-                        </Row>
-                    </Column>
-                </Card>
+                    </div>
+                </div>
 
-                <Card variant="outlined" size="md" style={{ flex: 1 }}>
-                    <Row $align="center" $gap={"sm"} style={{ marginBottom: "16px" }}>
-                        <FiClock size={20} color="#8b5cf6" />
-                        <Text weight="semibold" variant="body2">
-                            Tiempo Estimado
-                        </Text>
+                <div style={{ flex: 1 }}>
+                    <Row $align="center" $gap="sm" style={{ marginBottom: '16px' }}>
+                        <FiClock size={18} color="#8b5cf6" />
+                        <Text weight="semibold" variant="body1">Tiempo</Text>
                     </Row>
-                    <Column gap={"sm"}>
-                        <Row $justify="space-between">
-                            <Label>Fecha de Finalización:</Label>
-                            <Text>{formData?.timeline?.estimated_completion || "No especificada"}</Text>
-                        </Row>
-                        <Row $justify="space-between">
-                            <Label>Horas Estimadas:</Label>
-                            <Text>{formData?.timeline?.estimated_hours || "0"} horas</Text>
-                        </Row>
-                    </Column>
-                </Card>
+                    <div style={{ paddingLeft: '26px' }}>
+                        <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '6px' }}>
+                            <div style={{ marginBottom: '12px' }}>
+                                <Text variant="body2" color="secondary" style={{ marginBottom: '4px' }}>⏱️ Duración estimada:</Text>
+                                <Text weight="semibold" variant="body1" style={{ color: '#8b5cf6' }}>
+                                    {formData?.timeline?.estimated_hours || "0"} horas
+                                </Text>
+                            </div>
+                            <div>
+                                <Text variant="body2" color="secondary" style={{ marginBottom: '4px' }}>📅 Fecha de entrega:</Text>
+                                <Text weight="semibold" variant="body1" style={{ color: '#8b5cf6' }}>
+                                    {formData?.timeline?.estimated_completion || "No especificada"}
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </Row>
-        </Column>
+
+            {formData?.description && (
+                <>
+                    <Divider style={{ margin: '24px 0' }} />
+                    <div>
+                        <Row $align="center" $gap="sm" style={{ marginBottom: '12px' }}>
+                            <FiFileText size={18} color="#6b7280" />
+                            <Text weight="semibold" variant="body1">Notas Adicionales</Text>
+                        </Row>
+                        <div style={{ paddingLeft: '26px' }}>
+                            <div style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                                <Text variant="body2" color="secondary" style={{ lineHeight: '1.6', fontStyle: 'italic' }}>
+                                    📝 {formData.description}
+                                </Text>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
     );
 };
