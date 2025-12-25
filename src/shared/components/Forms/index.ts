@@ -9,3 +9,4 @@ export { default as Radio, RadioGroup } from './Radio';
 export { default as Switch } from './Switch';
 export { default as FormGroup } from './FormGroup';
 export { default as FormTabs } from './FormTabs';
+export { ColorPicker } from './ColorPicker';

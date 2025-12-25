@@ -4,16 +4,18 @@ import { FaScrewdriverWrench } from "react-icons/fa6";
 import { useTheme } from "styled-components";
 import { MdCleaningServices } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
-import type { FieldErrors } from "react-hook-form";
+import { useFormContext, type FieldErrors } from "react-hook-form";
 
 interface FormProps {
     formData: any;
     updateField: (field: string, value: any) => void;
-    errors: any;
-    trigger?: any;
 }
 
-export const FormTabService = ({ formData, updateField, errors, trigger }: FormProps) => {
+export const FormTabService = ({ formData, updateField }: FormProps) => {
+    const {
+        formState: { errors },
+        trigger,
+    } = useFormContext();
     const [optionChecked, setOptionChecked] = useState<number | null>(formData.serviceType);
 
     const handleOptionChange = async (optionSelected: any) => {

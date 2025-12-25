@@ -1,10 +1,12 @@
 import styled from "styled-components";
 import { useState, type ReactNode } from "react";
 import { Button } from "../Buttons";
+import { useFormContext } from "react-hook-form";
 
 interface Tab {
     label: string;
     content: ReactNode;
+    validationFields?: string[];
 }
 
 interface FormTabsProps {
@@ -28,10 +30,10 @@ const TabsNav = styled.nav`
 
 const TabButton = styled.button<{ $active: boolean }>`
     padding: 12px 4px;
-    border-bottom: 2px solid ${props => props.$active ? "#3b82f6" : "transparent"};
+    border-bottom: 2px solid ${(props) => (props.$active ? "#3b82f6" : "transparent")};
     font-weight: 500;
     font-size: 14px;
-    color: ${props => props.$active ? "#2563eb" : "#6b7280"};
+    color: ${(props) => (props.$active ? "#2563eb" : "#6b7280")};
     background: none;
     border-top: none;
     border-left: none;
@@ -41,7 +43,7 @@ const TabButton = styled.button<{ $active: boolean }>`
     white-space: nowrap;
 
     &:hover {
-        color: ${props => props.$active ? "#2563eb" : "#374151"};
+        color: ${(props) => (props.$active ? "#2563eb" : "#374151")};
     }
 `;
 
@@ -62,11 +64,25 @@ export default function FormTabs({
     onSubmit,
     submitLabel = "Enviar",
     loading = false,
-    showNavigation = true
+    showNavigation = true,
 }: FormTabsProps) {
+    const { trigger } = useFormContext();
+
     const [activeTab, setActiveTab] = useState(0);
 
-    const handleNext = () => {
+    const handleNext = async () => {
+        const fieldsToValidate = tabs[activeTab].validationFields;
+
+        // Si la pestaña tiene campos definidos, los validamos
+        if (fieldsToValidate && fieldsToValidate.length > 0) {
+            // trigger devuelve true si la validación pasa
+            const isTabValid = await trigger(fieldsToValidate as any);
+
+            if (!isTabValid) {
+                return; // Si hay errores, no avanzamos
+            }
+        }
+
         setActiveTab(Math.min(tabs.length - 1, activeTab + 1));
     };
 
@@ -82,44 +98,27 @@ export default function FormTabs({
             <TabsContainer>
                 <TabsNav>
                     {tabs.map((tab, index) => (
-                        <TabButton
-                            key={index}
-                            onClick={() => setActiveTab(index)}
-                            $active={activeTab === index}
-                        >
+                        <TabButton key={index} onClick={() => setActiveTab(index)} $active={activeTab === index}>
                             {tab.label}
                         </TabButton>
                     ))}
                 </TabsNav>
             </TabsContainer>
 
-            <TabContent>
-                {tabs[activeTab]?.content}
-            </TabContent>
+            <TabContent>{tabs[activeTab]?.content}</TabContent>
 
             {showNavigation && (
                 <NavigationContainer>
-                    <Button
-                        variant="secondary"
-                        onClick={handlePrev}
-                        disabled={isFirstTab}
-                    >
+                    <Button variant="secondary" onClick={handlePrev} disabled={isFirstTab}>
                         Anterior
                     </Button>
 
                     {isLastTab ? (
-                        <Button
-                            variant="primary"
-                            onClick={onSubmit}
-                            loading={loading}
-                        >
+                        <Button variant="primary" onClick={onSubmit} loading={loading}>
                             {submitLabel}
                         </Button>
                     ) : (
-                        <Button
-                            variant="primary"
-                            onClick={handleNext}
-                        >
+                        <Button variant="primary" onClick={handleNext}>
                             Siguiente
                         </Button>
                     )}

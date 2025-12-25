@@ -1,7 +1,7 @@
 import { Box, Button, Container, Flex, FormGroup, FormTabs, Input, Select, TextArea } from "../../../shared/components";
 import { useCreateOrderMutation } from "../services/orderApi";
 import z from "zod";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import NewOrdenComponent from "../components/NewOrdenComponent";
 import { FormTabService } from "../components/FromTabService";
@@ -33,16 +33,20 @@ const IssueSchema = z.object({
     issue_steps_to_reproduce: z.array(z.string()).optional(),
     issue_environment: z.string().optional(),
     issue_additional_notes: z.string().optional(),
-    issue_files: z.array(z.object({
-        filename: z.string(),
-        originalName: z.string(),
-        size: z.number(),
-        url: z.string()
-    })).optional(),
+    issue_files: z
+        .array(
+            z.object({
+                filename: z.string(),
+                originalName: z.string(),
+                size: z.number(),
+                url: z.string(),
+            })
+        )
+        .optional(),
 });
 
 const CustomerDataSchema = z.object({
-    customer_id: z.number({ error: "El id del cliente es obligatorio." }).int().positive(),
+    customer_id: z.number({ error: "El cliente es obligatorio." }).int().positive(),
     customer_name: z.string().min(1, "El nombre del cliente es obligatorio."),
     customer_email: z.email({ error: "Formato de email inválido." }).optional(),
     customer_phone: z.string().min(1, "El teléfono es obligatorio.").optional(),
@@ -73,7 +77,7 @@ const TimelineSchema = z.object({
 // --- Esquema principal ---
 
 export const ComponentSchema = z.object({
-    serviceType: z.number({ error: "El tipo de servicio es obligatorio." }).int().positive(),
+    serviceType: z.number({ error: "El tipo de servicio es obligatorio." }).int({ error: "El tipo de servicio es obligatorio." }).positive({ error: "El tipo de servicio es obligatorio." }),
     description: z.string().optional(),
     device_data: DeviceDataSchema,
     issues: z.array(IssueSchema).min(1, "Debe haber al menos un problema reportado."),
@@ -88,14 +92,7 @@ export const ComponentSchema = z.object({
 export type ComponentFormData = z.infer<typeof ComponentSchema>;
 
 export default function NewOrderpage() {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        watch,
-        setValue,
-        trigger
-    } = useForm<ComponentFormData>({
+    const methods = useForm<ComponentFormData>({
         resolver: zodResolver(ComponentSchema),
         defaultValues: {
             // 3. Establece valores por defecto para evitar undefined en campos anidados
@@ -137,6 +134,13 @@ export default function NewOrderpage() {
             priority: 1,
         },
     });
+    const {
+        handleSubmit,
+        formState: { errors },
+        watch,
+        setValue,
+        trigger,
+    } = methods;
 
     const formData = watch();
 
@@ -154,15 +158,18 @@ export default function NewOrderpage() {
     const tabs = [
         {
             label: "Servicio",
-            content: <FormTabService formData={formData} updateField={updateField} errors={errors} trigger={trigger} />,
+            content: <FormTabService formData={formData} updateField={updateField} />,
+            validationFields: ["serviceType", "description"]
         },
         {
             label: "Cliente",
-            content: <FormTabCustomer formData={formData} updateField={updateField} errors={errors} trigger={trigger} />,
+            content: <FormTabCustomer formData={formData} updateField={updateField} />,
+            validationFields: ["customer_data.customer_id"]
         },
         {
             label: "Dispositivo",
             content: <FormTabDevice formData={formData} updateField={updateField} />,
+            validationFields: ["device_data.device_name", "device_data.device_type", "device_data.device_brand"]
         },
         {
             label: "Falla",
@@ -177,7 +184,14 @@ export default function NewOrderpage() {
     return (
         <Container className="container" center size="xl">
             <Box p="lg" bg="white" rounded shadow>
-                <FormTabs tabs={tabs} onSubmit={handleSubmit(onSubmit)} submitLabel="Crear Orden" loading={isLoading} />
+                <FormProvider {...methods}>
+                    <FormTabs
+                        tabs={tabs}
+                        onSubmit={handleSubmit(onSubmit)}
+                        submitLabel="Crear Orden"
+                        loading={isLoading}
+                    />
+                </FormProvider>
             </Box>
             <pre>{JSON.stringify(formData, null, 2)}</pre>
         </Container>

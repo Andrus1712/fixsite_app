@@ -4,15 +4,19 @@ import SearchInput from "../../../shared/components/SearchInput";
 import { IoMdPersonAdd } from "react-icons/io";
 import { useTheme } from "styled-components";
 import { FaTrash } from "react-icons/fa";
+import { useFormContext } from "react-hook-form";
 
 interface FormProps {
     formData: any;
     updateField: (field: string, value: any) => void;
-    errors: any;
-    trigger?: any;
 }
 
-export const FormTabCustomer = ({ formData, updateField, errors, trigger }: FormProps) => {
+export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
+    const {
+        formState: { errors },
+        trigger,
+    } = useFormContext();
+
     const [searchValue, setSearchValue] = useState<string>("");
     const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -102,7 +106,13 @@ export const FormTabCustomer = ({ formData, updateField, errors, trigger }: Form
                         onSelect={handleSelectCustomer}
                         placeholder="Buscar cliente por nombre, nit o correo..."
                         loading
-                        error={errors.customer_data?.customer_id?.message}
+                        error={
+                            errors.customer_data
+                                ? Object.values(errors.customer_data)
+                                      .map((err: any) => err.message)
+                                      .join(" - ")
+                                : undefined
+                        }
                     />
                     {hasSelectedCustomer && (
                         <div
