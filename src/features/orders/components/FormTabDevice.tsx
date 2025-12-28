@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-    Column,
     Divider,
     FormGroup,
     Grid,
@@ -36,10 +35,9 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
 
     // API queries
     const { data: deviceTypes } = useGetDeviceTypesQuery();
-    console.log(deviceTypes);
 
     const { data: deviceBrands } = useGetDeviceBrandsQuery();
-    const { data: deviceModels } = useGetDeviceModelsAllQuery(
+    const { data: deviceModels, refetch } = useGetDeviceModelsAllQuery(
         {
             brandId: formData.device_data?.device_brand,
             typeId: formData.device_data?.device_type,
@@ -48,12 +46,16 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
             skip: !formData.device_data?.device_brand || !formData.device_data?.device_type,
         }
     );
+    // Limpiar modelos cuando no hay brand o type seleccionado
+    const availableModels =
+        formData.device_data?.device_brand && formData.device_data?.device_type ? deviceModels?.data || [] : [];
     const { data: passwordTypes } = useGetPasswordTypesQuery();
 
     const handlePatternComplete = (patternSequence: any) => {
         console.log("Patrón Finalizado:", patternSequence);
         setPasswordPattern(patternSequence); // Guarda el patrón en el estado del formulario
     };
+
     return (
         <div>
             <Row $align="center" $justify="flex-start" fullWidth $gap={"lg"} className="row">
@@ -63,8 +65,13 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                             <Label>Tipo de Dispositivo</Label>
                             <SearchableSelect
                                 fullWidth
-                                value={formData.device_data?.device_type}
-                                onChange={(value) => updateField("device_data.device_type", value)}
+                                value={formData.device_data?.device_type > 0 ? formData.device_data?.device_type : null}
+                                onChange={(value) => {
+                                    updateField("device_data.device_type", value);
+                                    updateField("device_data.device_brand", "");
+                                    updateField("device_data.device_model", "");
+                                    updateField("device_data.device_name", "");
+                                }}
                                 options={
                                     deviceTypes?.data?.map((type: any) => ({
                                         value: type.id,
@@ -72,15 +79,21 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                                     })) || []
                                 }
                                 placeholder="Seleccionar tipo de dispositivo"
-                                error={errors.device_data?.device_name?.message}
+                                error={errors.device_data?.device_type?.message}
                             />
                         </div>
                         <div>
                             <Label>Marca</Label>
                             <SearchableSelect
                                 fullWidth
-                                value={formData.device_data?.device_brand}
-                                onChange={(value) => updateField("device_data.device_brand", value)}
+                                value={
+                                    formData.device_data?.device_brand > 0 ? formData.device_data?.device_brand : null
+                                }
+                                onChange={(value) => {
+                                    updateField("device_data.device_brand", value);
+                                    updateField("device_data.device_model", "");
+                                    updateField("device_data.device_name", "");
+                                }}
                                 options={
                                     deviceBrands?.data?.map((brand: any) => ({
                                         value: brand.id,
@@ -88,25 +101,30 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                                     })) || []
                                 }
                                 placeholder="Seleccionar marca"
+                                error={errors.device_data?.device_brand?.message}
                             />
                         </div>
                         <div>
                             <Label>Modelo</Label>
                             <SearchableSelect
                                 fullWidth
-                                value={formData.device_data?.device_model}
+                                value={
+                                    formData.device_data?.device_model > 0 ? formData.device_data?.device_model : null
+                                }
                                 onChange={(value) => {
                                     updateField("device_data.device_model", value);
-                                    let InfoModel = deviceModels?.data?.filter((model: any) => model.id === value)[0];
-                                    console.log(InfoModel);
-
-                                    updateField(
-                                        "device_data.device_name",
-                                        `${InfoModel.deviceBrand.name} ${InfoModel.name}`
-                                    );
+                                    if (value) {
+                                        let InfoModel = availableModels.filter((model: any) => model.id === value)[0];
+                                        updateField(
+                                            "device_data.device_name",
+                                            `${InfoModel.deviceBrand.name} ${InfoModel.name}`
+                                        );
+                                    } else {
+                                        updateField("device_data.device_name", "");
+                                    }
                                 }}
                                 options={
-                                    deviceModels?.data?.map((model: any) => ({
+                                    availableModels.map((model: any) => ({
                                         value: model.id,
                                         label: model.name,
                                     })) || []
@@ -116,11 +134,17 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                                         ? "Selecciona tipo y marca primero"
                                         : "Seleccionar modelo"
                                 }
+                                error={errors.device_data?.device_model?.message}
                             />
                         </div>
                         <div>
                             <Label>Nombre del dispositivo</Label>
-                            <Input type="text" value={formData.device_data?.device_name || ""} disabled />
+                            <Input
+                                type="text"
+                                value={formData.device_data?.device_name || ""}
+                                disabled
+                                error={errors.device_data?.device_name?.message}
+                            />
                         </div>
                     </Grid>
                 </FormGroup>
@@ -242,7 +266,7 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                 <FormGroup fullWidth title="Seguridad y Acceso">
                     <div>
                         <Label>Autorizar contraseña</Label>
-                        <Switch 
+                        <Switch
                             checked={formData.device_data?.password_authorized || false}
                             onChange={(e) => {
                                 const checked = e.target.checked;
@@ -255,7 +279,7 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                             }}
                         />
                     </div>
-                    
+
                     {formData.device_data?.password_authorized && (
                         <>
                             <div>
@@ -272,39 +296,44 @@ export const FormTabDevice = ({ formData, updateField }: FormProps) => {
                                     placeholder="Seleccionar tipo de contraseña"
                                 />
                             </div>
-                            
+
                             {/* Mostrar campo Valor para Pin y Contraseña */}
-                            {(formData.device_data?.password_type === 1 || formData.device_data?.password_type === 3) && (
+                            {(formData.device_data?.password_type === 1 ||
+                                formData.device_data?.password_type === 3) && (
                                 <div>
                                     <Label>Valor</Label>
-                                    <Input 
+                                    <Input
                                         type={formData.device_data?.password_type === 1 ? "number" : "text"}
                                         value={formData.device_data?.password_value || ""}
                                         onChange={(e) => updateField("device_data.password_value", e.target.value)}
-                                        placeholder={formData.device_data?.password_type === 1 ? "Ingrese PIN" : "Ingrese contraseña"}
+                                        placeholder={
+                                            formData.device_data?.password_type === 1
+                                                ? "Ingrese PIN"
+                                                : "Ingrese contraseña"
+                                        }
                                     />
                                 </div>
                             )}
-                            
+
                             {/* Mostrar PatternLock para Patrón */}
                             {formData.device_data?.password_type === 2 && (
                                 <div>
                                     <Label>Patrón</Label>
-                                    <PatternLock 
-                                        initialPattern={passwordPattern} 
+                                    <PatternLock
+                                        initialPattern={passwordPattern}
                                         onPatternComplete={(pattern) => {
                                             handlePatternComplete(pattern);
                                             updateField("device_data.password_value", pattern);
-                                        }} 
+                                        }}
                                     />
                                 </div>
                             )}
-                            
+
                             {/* Campo contraseña de respaldo para Patrón */}
                             {formData.device_data?.password_type === 2 && (
                                 <div>
                                     <Label>Contraseña de Respaldo</Label>
-                                    <Input 
+                                    <Input
                                         type="text"
                                         value={formData.device_data?.backup_password || ""}
                                         onChange={(e) => updateField("device_data.backup_password", e.target.value)}

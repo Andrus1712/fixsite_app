@@ -14,10 +14,11 @@ interface SearchableSelectProps {
     options: Option[];
     placeholder?: string;
     value?: string | number;
-    onChange?: (value: string | number) => void;
+    onChange?: (value: string | number | null) => void;
     onSearch?: (searchTerm: string) => void;
     loading?: boolean;
     name?: string;
+    allowClear?: boolean;
 }
 
 const SelectContainer = styled.div<{ fullWidth?: boolean }>`
@@ -38,7 +39,7 @@ const InputWrapper = styled.div`
     position: relative;
 `;
 
-const SearchInput = styled.input<{ hasError?: boolean }>`
+const SearchInput = styled.input<{ hasError?: boolean; hasValue?: boolean }>`
     width: 100%;
     padding: 12px 16px;
     font-size: 14px;
@@ -51,12 +52,31 @@ const SearchInput = styled.input<{ hasError?: boolean }>`
     background-position: right 12px center;
     background-repeat: no-repeat;
     background-size: 16px;
-    padding-right: 44px;
+    padding-right: ${props => props.hasValue ? "72px" : "44px"};
     
     &:focus {
         outline: none;
         border-color: ${props => props.hasError ? "#ef4444" : "#3b82f6"};
         box-shadow: 0 0 0 3px ${props => props.hasError ? "rgba(239, 68, 68, 0.1)" : "rgba(59, 130, 246, 0.1)"};
+    }
+`;
+
+const ClearButton = styled.button`
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover {
+        color: #374151;
     }
 `;
 
@@ -113,6 +133,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     onSearch,
     loading = false,
     name,
+    allowClear = true,
     ...props
 }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -132,6 +153,8 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
         if (value) {
             const selectedOption = options.find(option => option.value === value);
             setDisplayValue(selectedOption?.label || "");
+        } else {
+            setDisplayValue("");
         }
     }, [value, options]);
 
@@ -165,10 +188,26 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
         onChange?.(option.value);
     };
 
-    const handleInputFocus = () => {
-        setIsOpen(true);
-        setSearchTerm(displayValue);
+    const handleClear = (e: React.MouseEvent) => {
+        e.stopPropagation();
         setDisplayValue("");
+        setSearchTerm("");
+        onChange?.(null);
+    };
+
+    const handleInputFocus = () => {
+        if (isOpen) {
+            setIsOpen(false);
+            setSearchTerm("");
+            if (value) {
+                const selectedOption = options.find(option => option.value === value);
+                setDisplayValue(selectedOption?.label || "");
+            }
+        } else {
+            setIsOpen(true);
+            setSearchTerm(displayValue);
+            setDisplayValue("");
+        }
     };
 
     return (
@@ -180,27 +219,42 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                     name={name}
                     value={isOpen ? searchTerm : displayValue}
                     onChange={handleInputChange}
-                    onFocus={handleInputFocus}
-                    placeholder={placeholder}
+                    onClick={handleInputFocus}
+                    placeholder={displayValue === "" && !isOpen ? (placeholder || "Seleccione una opción") : placeholder}
                     hasError={!!error}
+                    hasValue={!!displayValue && allowClear}
                     autoComplete="off"
                     {...props}
                 />
+                {displayValue && allowClear && (
+                    <ClearButton onClick={handleClear} type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </ClearButton>
+                )}
                 <DropdownList isOpen={isOpen}>
                     {loading ? (
                         <DropdownItem>Buscando...</DropdownItem>
                     ) : options.length === 0 ? (
                         <DropdownItem>No se encontraron opciones</DropdownItem>
                     ) : (
-                        options.map((option) => (
-                            <DropdownItem
-                                key={option.value}
-                                isSelected={option.value === value}
-                                onClick={() => handleOptionSelect(option)}
-                            >
-                                {option.label}
-                            </DropdownItem>
-                        ))
+                        <>
+                            {value && allowClear && (
+                                <DropdownItem onClick={handleClear}>
+                                    <em>Limpiar selección</em>
+                                </DropdownItem>
+                            )}
+                            {options.map((option) => (
+                                <DropdownItem
+                                    key={option.value}
+                                    isSelected={option.value === value}
+                                    onClick={() => handleOptionSelect(option)}
+                                >
+                                    {option.label}
+                                </DropdownItem>
+                            ))}
+                        </>
                     )}
                 </DropdownList>
             </InputWrapper>

@@ -98,9 +98,11 @@ export const FormTabService = ({ formData, updateField }: FormProps) => {
                     );
                 })}
             </Flex>
-            <Text variant="overline" color="error" align="center">
-                {errors.serviceType?.message}
-            </Text>
+            {errors.serviceType ? (
+                <Text variant="caption" color="error" align="center">
+                    *{errors.serviceType.message}
+                </Text>
+            ) : null}
         </FormGroup>
     );
 };

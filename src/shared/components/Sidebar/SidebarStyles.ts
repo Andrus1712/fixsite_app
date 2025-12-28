@@ -55,7 +55,7 @@ export const SidebarItem = styled(NavLink)`
     display: flex;
     justify-content: left;
     align-items: center;
-    padding: ${(props) => props.theme.spacing.md};
+    padding: ${(props) => props.theme.spacing.sm } ${(props) => props.theme.spacing.md};
     margin-bottom: ${(props) => props.theme.spacing.xs};
     text-decoration: none;
     color: ${(props) => props.theme.colors.white};

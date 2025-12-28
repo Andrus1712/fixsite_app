@@ -11,8 +11,11 @@ import {
     Column,
     TextArea,
     Flex,
+    Text,
+    SearchableSelect,
 } from "../../../shared/components";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { useFormContext } from "react-hook-form";
 
 interface Issue {
     id: number;
@@ -33,6 +36,48 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
     const [issues, setIssues] = useState<Issue[]>([]);
     const [uploadMultiple] = useUploadMultipleMutation();
 
+    const issueTypeOptions = [
+        { value: 1, label: "Hardware" },
+        { value: 2, label: "Software" },
+        { value: 3, label: "Red/Conectividad" },
+        { value: 4, label: "Rendimiento" },
+    ];
+
+    const severityOptions = [
+        { value: 1, label: "Crítica" },
+        { value: 2, label: "Alta" },
+        { value: 3, label: "Normal" },
+        { value: 4, label: "Baja" },
+    ];
+
+    const [filteredIssueTypes, setFilteredIssueTypes] = useState(issueTypeOptions);
+    const [filteredSeverities, setFilteredSeverities] = useState(severityOptions);
+    const {
+        formState: { errors },
+    } = useFormContext();
+
+    const handleIssueTypeSearch = (searchTerm: string) => {
+        if (!searchTerm) {
+            setFilteredIssueTypes(issueTypeOptions);
+        } else {
+            const filtered = issueTypeOptions.filter((option) =>
+                option.label.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredIssueTypes(filtered);
+        }
+    };
+
+    const handleSeveritySearch = (searchTerm: string) => {
+        if (!searchTerm) {
+            setFilteredSeverities(severityOptions);
+        } else {
+            const filtered = severityOptions.filter((option) =>
+                option.label.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredSeverities(filtered);
+        }
+    };
+
     // Inicializar issues desde formData o crear uno vacío
     useEffect(() => {
         if (formData.issues && formData.issues.length > 0) {
@@ -47,17 +92,7 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
             }));
             setIssues(mappedIssues);
         } else {
-            setIssues([
-                {
-                    id: 1,
-                    issueType: null,
-                    severity: null,
-                    description: "",
-                    steps: "",
-                    files: null,
-                    uploadedFiles: [],
-                },
-            ]);
+            setIssues([]);
         }
     }, []);
 
@@ -77,11 +112,9 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
     };
 
     const removeIssue = (id: number) => {
-        if (issues.length > 1) {
-            const updatedIssues = issues.filter((issue) => issue.id !== id);
-            setIssues(updatedIssues);
-            syncWithForm(updatedIssues);
-        }
+        const updatedIssues = issues.filter((issue) => issue.id !== id);
+        setIssues(updatedIssues);
+        syncWithForm(updatedIssues);
     };
 
     const updateIssue = (id: number, field: keyof Issue, value: any) => {
@@ -108,7 +141,7 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
 
     const syncWithForm = (currentIssues = issues) => {
         const formattedIssues = currentIssues.map((issue, index) => ({
-            issue_name: `Problema ${index + 1}`,
+            issue_name: `Problema ${issue.id}`,
             issue_description: issue.description,
             issue_type: issue.issueType || 1,
             issue_severity: issue.severity || 1,
@@ -140,7 +173,7 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
                 {issues.map((issue, index) => (
                     <CollapsibleCard
                         key={issue.id}
-                        title={`Falla #${index + 1}`}
+                        title={`Falla #${issue.id}`}
                         badge={{
                             text:
                                 issue.severity === 1
@@ -164,40 +197,32 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
                                     : "media",
                         }}
                         defaultExpanded={index === 0}
-                        onDelete={issues.length > 1 ? () => removeIssue(issue.id) : undefined}
+                        onDelete={() => removeIssue(issue.id)}
                     >
                         <Column gap={"md"}>
                             <Row $align="center" $justify="flex-start" fullWidth $gap={"lg"}>
                                 <FormGroup fullWidth>
                                     <Label>Tipo de Falla</Label>
-                                    <Select
+                                    <SearchableSelect
                                         fullWidth
-                                        value={issue.issueType?.toString()}
-                                        onChange={(e) => {
-                                            updateIssue(issue.id, "issueType", Number(e.target.value));
+                                        value={issue.issueType ? issue.issueType : undefined}
+                                        onChange={(value) => {
+                                            updateIssue(issue.id, "issueType", Number(value));
                                         }}
-                                        options={[
-                                            { value: 1, label: "Hardware" },
-                                            { value: 2, label: "Software" },
-                                            { value: 3, label: "Red/Conectividad" },
-                                            { value: 4, label: "Rendimiento" },
-                                        ]}
+                                        options={filteredIssueTypes}
+                                        onSearch={handleIssueTypeSearch}
                                     />
                                 </FormGroup>
                                 <FormGroup fullWidth>
                                     <Label>Severidad</Label>
-                                    <Select
+                                    <SearchableSelect
                                         fullWidth
-                                        value={issue.severity?.toString()}
-                                        onChange={(e) => {
-                                            updateIssue(issue.id, "severity", Number(e.target.value));
+                                        value={issue.severity ? issue.severity : undefined}
+                                        onChange={(value) => {
+                                            updateIssue(issue.id, "severity", Number(value));
                                         }}
-                                        options={[
-                                            { value: 1, label: "Crítica" },
-                                            { value: 2, label: "Alta" },
-                                            { value: 3, label: "Normal" },
-                                            { value: 4, label: "Baja" },
-                                        ]}
+                                        options={filteredSeverities}
+                                        onSearch={handleSeveritySearch}
                                     />
                                 </FormGroup>
                             </Row>
@@ -212,6 +237,11 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
                                     }}
                                     rows={3}
                                     fullWidth
+                                    error={
+                                        errors.issues && Array.isArray(errors.issues)
+                                            ? errors.issues[index]?.issue_description?.message
+                                            : undefined
+                                    }
                                 />
                             </FormGroup>
 
@@ -244,6 +274,11 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
                     </CollapsibleCard>
                 ))}
             </Flex>
+            {errors.issues && typeof errors.issues === "object" && "message" in errors.issues ? (
+                <Text variant="caption" color="error" align="center">
+                    {errors.issues.message}
+                </Text>
+            ) : null}
         </div>
     );
 };

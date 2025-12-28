@@ -67,8 +67,8 @@ const NewOrdenComponent: React.FC = () => {
         description: "",
         device_data: {
             device_name: "",
-            device_type: 1,
-            device_brand: 1,
+            device_type: 0,
+            device_brand: 0,
             serial_number: "",
             imei: "",
             model_year: "",
@@ -79,8 +79,8 @@ const NewOrdenComponent: React.FC = () => {
             {
                 issue_name: "",
                 issue_description: "",
-                issue_type: 1,
-                issue_severity: 1,
+                issue_type: 0,
+                issue_severity: 0,
                 issue_additional_info: "",
                 issue_steps_to_reproduce: [""],
                 issue_environment: "",

@@ -6,6 +6,7 @@ import { Row } from "../Layouts";
 import { Button, IconButton } from "../Buttons";
 import { LuCalendarCog } from "react-icons/lu";
 import { useNavigate } from "react-router";
+import { useHasPermission } from "../../../features/auth/hooks/useHasPermission";
 
 interface TopHeaderProps {
     onToggleSidebar: () => void;
@@ -14,24 +15,22 @@ interface TopHeaderProps {
 function Header({ onToggleSidebar }: TopHeaderProps) {
     const theme = useTheme();
     const navigator = useNavigate();
+    const { hasPermission } = useHasPermission();
     return (
         <HeaderContent>
             <Row $gap={"xl"}>
                 <Row $align="center" $justify="center" $gap={"md"}>
-                    <IconButton
-                        onClick={onToggleSidebar}
-                        variant="ghost"
-                        size="lg"
-                        icon={<FaBars />}
-                    />
-                    <Button
-                        leftIcon={<LuCalendarCog />}
-                        type="button"
-                        variant="pink"
-                        onClick={() => navigator("/app/order/new")}
-                    >
-                        Nueva Reparación
-                    </Button>
+                    <IconButton onClick={onToggleSidebar} variant="ghost" size="lg" icon={<FaBars />} />
+                    {hasPermission("order-new") ? (
+                        <Button
+                            leftIcon={<LuCalendarCog />}
+                            type="button"
+                            variant="pink"
+                            onClick={() => navigator("/app/order/new")}
+                        >
+                            Nueva Reparación
+                        </Button>
+                    ) : null}
                 </Row>
             </Row>
             <OptionsContainer>

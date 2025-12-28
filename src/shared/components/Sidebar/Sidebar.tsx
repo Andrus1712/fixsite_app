@@ -116,8 +116,8 @@ const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
             onClick={onClick}
             className={({ isActive: defaultActive }) => (defaultActive || isActive() ? "active" : "")}
         >
-            {icon && <span>{icon}</span>}
-            <span>{label}</span>
+            <div>{icon && <span>{icon}</span>}</div>
+            <Text color="white">{label}</Text>
         </SidebarItem>
     );
 };

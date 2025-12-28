@@ -13,13 +13,23 @@ import { FormTabResumeAlt } from "../components/FormTabResumeAlt";
 
 // --- Sub-schemas ---
 
-const DeviceDataSchema = z.object({
+export const DeviceDataSchema = z.object({
     device_name: z.string().min(1, "El nombre del dispositivo es obligatorio."),
-    device_type: z.number({ error: "El tipo de dispositivo debe ser un número." }).int().positive(),
-    device_brand: z.number({ error: "La marca del dispositivo es obligatoria." }).int().positive(), // Asumiendo que es un ID numérico positivo
+    device_type: z.coerce
+        .number({ message: "El tipo de dispositivo es obligatorio." })
+        .int()
+        .positive("El tipo de dispositivo es obligatorio."),
+    device_brand: z.coerce
+        .number({ message: "La marca del dispositivo es obligatoria." })
+        .int()
+        .positive("La marca del dispositivo es obligatoria."),
+    device_model: z.coerce
+        .number({ message: "El modelo del dispositivo es obligatorio." })
+        .int()
+        .positive("El modelo del dispositivo es obligatorio."),
     serial_number: z.string().optional(),
     imei: z.string().optional(),
-    model_year: z.string().min(4, "El año debe tener al menos 4 dígitos."), // Lo dejo como string por si se usa un select con años o un input de texto
+    model_year: z.string().min(4, "El año debe tener al menos 4 dígitos.").optional(),
     color: z.string().optional(),
     storage_capacity: z.string().optional(),
 });
@@ -77,7 +87,10 @@ const TimelineSchema = z.object({
 // --- Esquema principal ---
 
 export const ComponentSchema = z.object({
-    serviceType: z.number({ error: "El tipo de servicio es obligatorio." }).int({ error: "El tipo de servicio es obligatorio." }).positive({ error: "El tipo de servicio es obligatorio." }),
+    serviceType: z
+        .number({ error: "El tipo de servicio es obligatorio." })
+        .int({ error: "El tipo de servicio es obligatorio." })
+        .positive({ error: "El tipo de servicio es obligatorio." }),
     description: z.string().optional(),
     device_data: DeviceDataSchema,
     issues: z.array(IssueSchema).min(1, "Debe haber al menos un problema reportado."),
@@ -100,11 +113,12 @@ export default function NewOrderpage() {
             description: "",
             device_data: {
                 device_name: "",
-                device_type: 1, // Ejemplo de default para select
-                device_brand: 1,
+                device_type: undefined,
+                device_brand: undefined,
+                device_model: undefined,
                 model_year: "",
-                serial_number: "",
-                imei: "",
+                serial_number: "SM-5928B/DS",
+                imei: "355767777661175",
                 color: "",
                 storage_capacity: "",
             },
@@ -159,21 +173,27 @@ export default function NewOrderpage() {
         {
             label: "Servicio",
             content: <FormTabService formData={formData} updateField={updateField} />,
-            validationFields: ["serviceType", "description"]
+            validationFields: ["serviceType", "description"],
         },
         {
             label: "Cliente",
             content: <FormTabCustomer formData={formData} updateField={updateField} />,
-            validationFields: ["customer_data.customer_id"]
+            validationFields: ["customer_data.customer_id"],
         },
         {
             label: "Dispositivo",
             content: <FormTabDevice formData={formData} updateField={updateField} />,
-            validationFields: ["device_data.device_name", "device_data.device_type", "device_data.device_brand"]
+            validationFields: [
+                "device_data.device_name",
+                "device_data.device_type",
+                "device_data.device_brand",
+                "device_data.device_model",
+            ],
         },
         {
             label: "Falla",
             content: <FormTabIssues formData={formData} updateField={updateField} />,
+            validationFields: ["issues"]
         },
         {
             label: "Resumen",
