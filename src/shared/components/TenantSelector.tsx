@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store";
 import type { ITenants } from "../../features/permissions/models/Permission";
 import { changeGlobalMode, setCurrentTenant } from "../../features/auth/store/authSlice";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import {
     useLogoutTenantMutation,
     useSelectTenantMutation,
@@ -15,9 +15,8 @@ import { useGetPermissionsByRoleQuery } from "../../features/permissions/service
 import { FaDatabase } from "react-icons/fa";
 import { VscDebugDisconnect } from "react-icons/vsc";
 import { IconButton } from "./Buttons";
-import { IoIosArrowDown, IoMdArrowDropdown } from "react-icons/io";
+import { IoIosArrowDown } from "react-icons/io";
 import { TiWorld } from "react-icons/ti";
-import { CiDatabase } from "react-icons/ci";
 
 const TenantSelectorContainer = styled.div`
     display: flex;
@@ -32,7 +31,7 @@ const DataBaseInfo = styled.div`
     position: relative;
     align-items: center;
     width: 100%;
-    padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
+    padding: ${(props) => props.theme.spacing.md} ${(props) => props.theme.spacing.md};
     background-color: #f0fcf3;
     border-radius: 8px;
     border: 1px solid #baf7cf;
@@ -173,7 +172,7 @@ function TenantSelector() {
 
     return (
         <TenantSelectorContainer>
-            <Text variant="caption" weight="semibold" uppercase color="gray300">
+            <Text variant="caption" weight="semibold" uppercase color="gray400">
                 Sucursal
             </Text>
             <DataBaseInfo>

@@ -4,7 +4,7 @@ import { type HTMLAttributes, type ReactNode } from "react";
 type TextVariant = "body1" | "body2" | "caption" | "overline";
 type TextSize = "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "6xl";
 type TextWeight = "normal" | "medium" | "semibold" | "bold";
-type TextColor = "primary" | "secondary" | "muted" | "success" | "warning" | "error" | "info" | "inverse" | "disabled" | "accent" | "white" | "black" | "gray25" | "gray50" | "gray100" | "gray200" | "gray300" | "gray400" | "gray500" | "gray600" | "gray700" | "gray800" | "gray900" | "gray950";
+type TextColor = "primary" | "secondary" | "muted" | "success" | "warning" | "error" | "info" | "inverse" | "disabled" | "accent" | "white" | "black" | "gray25" | "gray50" | "gray100" | "gray200" | "gray300" | "gray400" | "gray500" | "gray600" | "gray700" | "gray800" | "gray900" | "gray950" | string;
 type TextAlign = "left" | "center" | "right" | "justify";
 
 interface TextProps extends HTMLAttributes<HTMLSpanElement> {
@@ -110,6 +110,11 @@ const getColorStyles = (color: TextColor) => {
             return css`color: ${props => props.theme.colors.gray900};`;
         case "gray950":
             return css`color: ${props => props.theme.colors.gray950};`;
+        default:
+            if (typeof color === 'string') {
+                return css`color: ${color};`;
+            }
+            break;
     }
 };
 

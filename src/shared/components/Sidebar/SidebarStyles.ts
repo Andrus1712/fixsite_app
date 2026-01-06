@@ -2,7 +2,7 @@ import { NavLink } from "react-router";
 import styled from "styled-components";
 
 export const SidebarContainer = styled.div<{ $isOpen: boolean; }>`
-    background: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.theme.colors.white};
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -10,7 +10,7 @@ export const SidebarContainer = styled.div<{ $isOpen: boolean; }>`
     height: 100vh;
     width: 100%;
     transition: transform 0.3s ease;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
     transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
 
     @media (max-width: 768px) {
@@ -50,34 +50,50 @@ export const ModuleContainer = styled.div`
     margin-bottom: ${(props) => props.theme.spacing.sm};
 `;
 
+export const SidebarLabel = styled.label`
+    color: ${(props) => props.theme.colors.primaryDark};
+    font-size: 14px;
+    cursor: pointer;
+`;
 
 export const SidebarItem = styled(NavLink)`
     display: flex;
     justify-content: left;
     align-items: center;
-    padding: ${(props) => props.theme.spacing.sm } ${(props) => props.theme.spacing.md};
+    padding: ${(props) => props.theme.spacing.md} ${(props) => props.theme.spacing.md};
     margin-bottom: ${(props) => props.theme.spacing.xs};
     text-decoration: none;
-    color: ${(props) => props.theme.colors.white};
+    color: ${(props) => props.theme.colors.primaryDark};
     width: 100%;
     gap: 10px;
-    border-radius: 5px;
+    border-radius: 1px;
     position: relative;
+    cursor: pointer;
     
     &:hover {
-        background-color: ${(props) => props.theme.colors.primaryLight};
+        background-color: ${(props) => props.theme.colors.primary};
+        color: ${(props) => props.theme.colors.white};
+        
+        ${SidebarLabel} {
+            color: ${(props) => props.theme.colors.white};
+        }
     }
     
     &.active {
-        background-color: ${(props) => props.theme.colors.primaryLight};
+        background-color: ${(props) => props.theme.colors.primary};
+        color: ${(props) => props.theme.colors.white};
+        
+        ${SidebarLabel} {
+            color: ${(props) => props.theme.colors.white};
+        }
         
         &::after {
             content: '';
             position: absolute;
-            right: 0;
+            left: 0;
             top: 0;
             bottom: 0;
-            width: 3px;
+            width: 4px;
             background-color: ${(props) => props.theme.colors.warning};
             border-radius: 2px 0 0 2px;
         }

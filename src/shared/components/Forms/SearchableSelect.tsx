@@ -17,6 +17,8 @@ interface SearchableSelectProps {
     onChange?: (value: string | number | null) => void;
     onSearch?: (searchTerm: string) => void;
     loading?: boolean;
+    isLoading?: boolean;
+    serverError?: any;
     name?: string;
     allowClear?: boolean;
 }
@@ -122,7 +124,7 @@ const ErrorText = styled.span`
     margin-top: 4px;
 `;
 
-const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
+const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({ 
     label,
     error,
     fullWidth,
@@ -132,6 +134,8 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     onChange,
     onSearch,
     loading = false,
+    isLoading = false,
+    serverError,
     name,
     allowClear = true,
     ...props
@@ -234,8 +238,10 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                     </ClearButton>
                 )}
                 <DropdownList isOpen={isOpen}>
-                    {loading ? (
+                    {(loading || isLoading) ? (
                         <DropdownItem>Buscando...</DropdownItem>
+                    ) : serverError ? (
+                        <DropdownItem>Error al cargar opciones</DropdownItem>
                     ) : options.length === 0 ? (
                         <DropdownItem>No se encontraron opciones</DropdownItem>
                     ) : (

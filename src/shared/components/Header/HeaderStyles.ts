@@ -6,7 +6,7 @@ export const HeaderContent = styled.header`
     top: 0;
     width: 100%;
     transition: background 300ms ease-out;
-    background-color: ${(props) => props.theme.colors.white};
+    background-color: ${(props) => props.theme.colors.primaryDark};
     backdrop-filter: blur(5px);
     display: flex;
     flex-direction: row;

@@ -6,6 +6,7 @@ import {
     SidebarItems,
     ModuleLabel,
     ModuleContainer,
+    SidebarLabel,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
 import { FaChartBar, FaCog, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
@@ -17,6 +18,7 @@ import { Label, Text } from "../Typography";
 import { useLocation } from "react-router";
 import { GrConfigure } from "react-icons/gr";
 import { IconButton } from "../Buttons";
+import { HiMiniBars3BottomLeft } from "react-icons/hi2";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -54,11 +56,16 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                         // padding: "2px",
                     }}
                 /> */}
-                <Row fullWidth $align="center" $justify="flex-start" $gap={10} style={{ padding: "0 10px" }}>
-                    <GrConfigure color="#fff" size={30} />
-                    <Text size={"2xl"} variant="body1" weight="bold" color="white">
-                        FixSite v1
-                    </Text>
+                <Row fullWidth $align="center" $justify="space-between" $gap={10} style={{ padding: "0 10px" }}>
+                    <div>
+                        <GrConfigure color="#fff" size={30} />
+                        <Text size={"2xl"} variant="body1" weight="bold" color="white">
+                            FixSite v1
+                        </Text>
+                    </div>
+                    <div>
+                        <IconButton size="lg" variant="solid" color="inherit" icon={<HiMiniBars3BottomLeft />} />
+                    </div>
                 </Row>
             </SidebarHeader>
             <TenantSelector />
@@ -68,7 +75,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                     data?.modules.map((module) => (
                         <ModuleContainer key={module.id}>
                             <Row style={{ padding: "5px 10px" }}>
-                                <Text variant="caption" weight="semibold" uppercase color="gray300">
+                                <Text variant="caption" weight="semibold" uppercase color="gray400">
                                     {module.label}
                                 </Text>
                             </Row>
@@ -117,7 +124,7 @@ const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
             className={({ isActive: defaultActive }) => (defaultActive || isActive() ? "active" : "")}
         >
             <div>{icon && <span>{icon}</span>}</div>
-            <Text color="white">{label}</Text>
+            <SidebarLabel>{label}</SidebarLabel>
         </SidebarItem>
     );
 };

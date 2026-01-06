@@ -15,21 +15,24 @@ import { FormTabResumeAlt } from "../components/FormTabResumeAlt";
 
 export const DeviceDataSchema = z.object({
     device_name: z.string().min(1, "El nombre del dispositivo es obligatorio."),
-    device_type: z.coerce
+    device_type: z
         .number({ message: "El tipo de dispositivo es obligatorio." })
         .int()
-        .positive("El tipo de dispositivo es obligatorio."),
-    device_brand: z.coerce
+        .positive("El tipo de dispositivo es obligatorio.")
+        .optional(),
+    device_brand: z
         .number({ message: "La marca del dispositivo es obligatoria." })
         .int()
-        .positive("La marca del dispositivo es obligatoria."),
-    device_model: z.coerce
+        .positive("La marca del dispositivo es obligatoria.")
+        .optional(),
+    device_model: z
         .number({ message: "El modelo del dispositivo es obligatorio." })
         .int()
-        .positive("El modelo del dispositivo es obligatorio."),
+        .positive("El modelo del dispositivo es obligatorio.")
+        .optional(),
     serial_number: z.string().optional(),
     imei: z.string().optional(),
-    model_year: z.string().min(4, "El año debe tener al menos 4 dígitos.").optional(),
+    // model_year: z.string().min(4, "El año debe tener al menos 4 dígitos.").optional(),
     color: z.string().optional(),
     storage_capacity: z.string().optional(),
 });
@@ -37,8 +40,9 @@ export const DeviceDataSchema = z.object({
 const IssueSchema = z.object({
     issue_name: z.string().min(1, "El nombre del problema es obligatorio."),
     issue_description: z.string().min(1, "La descripción del problema es obligatoria."),
-    issue_type: z.number({ error: "El tipo de problema es obligatorio." }).int().positive(),
-    issue_severity: z.number({ error: "La severidad del problema es obligatoria." }).int().positive(),
+    issue_type: z.number({ error: "El tipo de problema es obligatorio." }).int().positive().nullable(),
+    issue_code: z.number({ error: "El codigo de problema es obligatorio." }).int().positive().optional(),
+    issue_severity: z.number({ error: "La severidad del problema es obligatoria." }).int().positive().nullable(),
     issue_additional_info: z.string().optional(),
     issue_steps_to_reproduce: z.array(z.string()).optional(),
     issue_environment: z.string().optional(),
@@ -61,8 +65,8 @@ const CustomerDataSchema = z.object({
     customer_email: z.email({ error: "Formato de email inválido." }).optional(),
     customer_phone: z.string().min(1, "El teléfono es obligatorio.").optional(),
     customer_address: z.string().optional(),
-    customer_city: z.string().min(1, "La ciudad es obligatoria."),
-    customer_country: z.string().min(1, "El país es obligatorio."),
+    // customer_city: z.string().min(1, "La ciudad es obligatoria."),
+    // customer_country: z.string().min(1, "El país es obligatorio."),
     customer_type: z.enum(["individual", "business", "other"], {
         error: "El tipo de cliente es obligatorio.",
     }),
@@ -124,7 +128,7 @@ export default function NewOrderpage() {
             },
             issues: [],
             customer_data: {
-                customer_id: undefined,
+                customer_id: 0,
                 customer_name: "",
                 customer_email: "",
                 customer_phone: "",
@@ -193,12 +197,12 @@ export default function NewOrderpage() {
         {
             label: "Falla",
             content: <FormTabIssues formData={formData} updateField={updateField} />,
-            validationFields: ["issues"]
+            validationFields: ["issues"],
         },
-        {
-            label: "Resumen",
-            content: <FormTabResumeAlt formData={formData} updateField={updateField} />,
-        },
+        // {
+        //     label: "Resumen",
+        //     content: <FormTabResumeAlt formData={formData} updateField={updateField} />,
+        // },
     ];
 
     return (
@@ -213,6 +217,7 @@ export default function NewOrderpage() {
                     />
                 </FormProvider>
             </Box>
+            <pre>{errors && JSON.stringify(errors, null, 2)}</pre>
             <pre>{JSON.stringify(formData, null, 2)}</pre>
         </Container>
     );

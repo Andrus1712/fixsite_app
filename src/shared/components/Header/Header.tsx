@@ -20,7 +20,6 @@ function Header({ onToggleSidebar }: TopHeaderProps) {
         <HeaderContent>
             <Row $gap={"xl"}>
                 <Row $align="center" $justify="center" $gap={"md"}>
-                    <IconButton onClick={onToggleSidebar} variant="ghost" size="lg" icon={<FaBars />} />
                     {hasPermission("order-new") ? (
                         <Button
                             leftIcon={<LuCalendarCog />}
