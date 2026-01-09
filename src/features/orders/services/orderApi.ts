@@ -19,13 +19,12 @@ export const ordersApiExternal = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         createOrder: builder.mutation<Order, any>({
             query: (orderData) => ({
-                url: 'orders',
+                url: 'orders/create',
                 method: 'POST',
                 body: orderData,
             }),
-            invalidatesTags: ['Order'],
         }),
-        uploadImage: builder.mutation<{ url: string }, FormData>({
+        uploadImage: builder.mutation<{ url: string; }, FormData>({
             query: (formData) => ({
                 url: 'upload/image',
                 method: 'POST',
@@ -37,7 +36,6 @@ export const ordersApiExternal = baseApi.injectEndpoints({
                 url: "orders",
                 method: "GET",
             }),
-            providesTags: ['Order'],
             keepUnusedDataFor: 0,
         }),
     }),

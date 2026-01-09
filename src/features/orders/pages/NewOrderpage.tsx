@@ -1,15 +1,14 @@
-import { Box, Button, Container, Flex, FormGroup, FormTabs, Input, Select, TextArea } from "../../../shared/components";
+import { Box, Button, Container, FormTabs, Modal } from "../../../shared/components";
 import { useCreateOrderMutation } from "../services/orderApi";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import NewOrdenComponent from "../components/NewOrdenComponent";
 import { FormTabService } from "../components/FromTabService";
 import { FormTabCustomer } from "../components/FormTabCustomer";
 import { FormTabDevice } from "../components/FormTabDevice";
 import { FormTabIssues } from "../components/FormTabIssues";
-import { FormTabResume } from "../components/FormTabResume";
 import { FormTabResumeAlt } from "../components/FormTabResumeAlt";
+import { useState } from "react";
 
 // --- Sub-schemas ---
 
@@ -109,6 +108,8 @@ export const ComponentSchema = z.object({
 export type ComponentFormData = z.infer<typeof ComponentSchema>;
 
 export default function NewOrderpage() {
+    const [isFormOpen, setIsFormOpen] = useState(false);
+
     const methods = useForm<ComponentFormData>({
         resolver: zodResolver(ComponentSchema),
         defaultValues: {
@@ -120,7 +121,6 @@ export default function NewOrderpage() {
                 device_type: undefined,
                 device_brand: undefined,
                 device_model: undefined,
-                model_year: "",
                 serial_number: "SM-5928B/DS",
                 imei: "355767777661175",
                 color: "",
@@ -133,8 +133,6 @@ export default function NewOrderpage() {
                 customer_email: "",
                 customer_phone: "",
                 customer_address: "",
-                customer_city: "",
-                customer_country: "",
                 customer_type: "individual", // Ejemplo de default para enum
                 preferred_contact: "phone",
             },
@@ -166,12 +164,24 @@ export default function NewOrderpage() {
         setValue(field as any, value);
     };
 
-    const onSubmit = (data: ComponentFormData) => {
+    const onSubmit = async (data: ComponentFormData) => {
         console.log(data);
         // Lógica de envío de datos aquí
+
+        try {
+            await createOrder(formData).unwrap();
+            alert("Orden creada exitosamente");
+        } catch (error) {
+            console.error("Error creating order:", error);
+            alert("Error al crear la orden");
+        }
     };
 
-    const [createOrder, { isLoading }] = useCreateOrderMutation();
+    const onPreviewFormData = () => {
+        setIsFormOpen(true);
+    };
+
+    const [createOrder, { isLoading, error }] = useCreateOrderMutation();
 
     const tabs = [
         {
@@ -209,14 +219,25 @@ export default function NewOrderpage() {
         <Container className="container" center size="xl">
             <Box p="lg" bg="white" rounded shadow>
                 <FormProvider {...methods}>
-                    <FormTabs
-                        tabs={tabs}
-                        onSubmit={handleSubmit(onSubmit)}
-                        submitLabel="Crear Orden"
-                        loading={isLoading}
-                    />
+                    <FormTabs tabs={tabs} onSubmit={onPreviewFormData} submitLabel="Crear Orden" loading={isLoading} />
                 </FormProvider>
             </Box>
+            <Modal
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                // title="Crear Nuevo Cliente"
+                size="lg"
+                footer={
+                    <>
+                        <Button variant="outline" onClick={() => setIsFormOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleSubmit(onSubmit)}>Guardar</Button>
+                    </>
+                }
+            >
+                <FormTabResumeAlt formData={formData} />
+            </Modal>
             <pre>{errors && JSON.stringify(errors, null, 2)}</pre>
             <pre>{JSON.stringify(formData, null, 2)}</pre>
         </Container>

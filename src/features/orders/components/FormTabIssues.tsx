@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Label, Row, Button, Flex } from "../../../shared/components";
+import { Label, Row, Button, Flex, Text } from "../../../shared/components";
 import { FiPlus } from "react-icons/fi";
 import { useFormContext } from "react-hook-form";
 import { IssueCard } from "./IssueCard";
@@ -116,6 +116,11 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
                     />
                 ))}
             </Flex>
+            {errors.issues && (
+                <Text variant="caption" color="error" align="center">
+                    *{errors.issues.message}
+                </Text>
+            )}
         </div>
     );
 };

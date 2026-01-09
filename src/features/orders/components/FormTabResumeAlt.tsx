@@ -3,10 +3,9 @@ import { FiUser, FiSmartphone, FiAlertTriangle, FiDollarSign, FiClock, FiFileTex
 
 interface FormProps {
     formData: any;
-    updateField: (field: string, value: any) => void;
 }
 
-export const FormTabResumeAlt = ({ formData, updateField }: FormProps) => {
+export const FormTabResumeAlt = ({ formData }: FormProps) => {
     const getServiceTypeLabel = (type?: number) => {
         switch (type) {
             case 1: return "Reparación";
@@ -66,7 +65,7 @@ export const FormTabResumeAlt = ({ formData, updateField }: FormProps) => {
     };
 
     return (
-        <Flex align="center" justify="center">
+        <Flex align="center" justify="center" fullWidth>
             <Card variant="default" size="lg">
                 <Column gap="lg" fullWidth>
                     {/* Header estilo factura */}
