@@ -7,9 +7,9 @@ import {
     TextArea,
     FormGroup,
     Divider,
-    useAlerts,
     Checkbox,
     LoadingSpinner,
+    useToast,
 } from "../../../shared/components";
 import { useEffect } from "react";
 import z from "zod";
@@ -27,7 +27,7 @@ const moduleSchema = z.object({
 type ModuleFormData = z.infer<typeof moduleSchema>;
 
 export default function EditModulePage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { id } = useParams<{ id: string }>();
     const { data: moduleData, isLoading: isLoadingModule } = useGetModuleByIdQuery(Number(id));
     const navigator = useNavigate();
@@ -90,10 +90,7 @@ export default function EditModulePage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Editar Módulo"
-                        description="Modifique los datos del módulo"
-                    >
+                    <FormGroup title="Editar Módulo" description="Modifique los datos del módulo">
                         <Input
                             label="Nombre del Módulo"
                             placeholder="Ingrese el nombre del módulo"
@@ -120,11 +117,7 @@ export default function EditModulePage() {
                             name="active"
                             control={control}
                             render={({ field }) => (
-                                <Checkbox
-                                    label="Activo"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <Checkbox label="Activo" checked={field.value} onChange={field.onChange} />
                             )}
                         />
                     </FormGroup>
@@ -138,17 +131,10 @@ export default function EditModulePage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Actualizar Módulo
                         </Button>
                     </div>

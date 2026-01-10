@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import Alert from "./Alert";
-import { useAlerts } from "./useAlerts";
+import { useToast } from "./useToast";
+import ToastComponent from "./Toast";
 
 const Container = styled.div`
     position: fixed;
@@ -17,17 +17,13 @@ const Container = styled.div`
     }
 `;
 
-export default function AlertContainer() {
-    const { alerts, removeAlert } = useAlerts();
+export default function ToastContainer() {
+    const { Toast, removeToast } = useToast();
 
     return (
         <Container>
-            {alerts.map((alert) => (
-                <Alert
-                    key={alert.id}
-                    {...alert}
-                    onClose={removeAlert}
-                />
+            {Toast.map((toast) => (
+                <ToastComponent key={toast.id} {...toast} onClose={removeToast} />
             ))}
         </Container>
     );

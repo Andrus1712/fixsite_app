@@ -1,4 +1,4 @@
-import { Box, Button, Container, FormTabs, Modal } from "../../../shared/components";
+import { Box, Button, Container, FormTabs, Modal, useToast } from "../../../shared/components";
 import { useCreateOrderMutation } from "../services/orderApi";
 import z from "zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -8,7 +8,10 @@ import { FormTabCustomer } from "../components/FormTabCustomer";
 import { FormTabDevice } from "../components/FormTabDevice";
 import { FormTabIssues } from "../components/FormTabIssues";
 import { FormTabResumeAlt } from "../components/FormTabResumeAlt";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import type { FormTabsRef } from "../../../shared/components/Forms/FormTabs";
+import { useNavigate } from "react-router";
+import { useAlert } from "../../../shared/components/AlertModal";
 
 // --- Sub-schemas ---
 
@@ -109,6 +112,7 @@ export type ComponentFormData = z.infer<typeof ComponentSchema>;
 
 export default function NewOrderpage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const formTabsRef = useRef<FormTabsRef>(null);
 
     const methods = useForm<ComponentFormData>({
         resolver: zodResolver(ComponentSchema),
@@ -150,30 +154,51 @@ export default function NewOrderpage() {
             priority: 1,
         },
     });
-    const {
-        handleSubmit,
-        formState: { errors },
-        watch,
-        setValue,
-        trigger,
-    } = methods;
+    const { handleSubmit, watch, setValue } = methods;
 
     const formData = watch();
+
+    const { showError } = useToast();
+    const { showSuccess, closeAlert } = useAlert();
+    const navigator = useNavigate();
 
     const updateField = (field: string, value: any) => {
         setValue(field as any, value);
     };
 
-    const onSubmit = async (data: ComponentFormData) => {
-        console.log(data);
-        // Lógica de envío de datos aquí
-
+    const onSubmit = async () => {
         try {
-            await createOrder(formData).unwrap();
-            alert("Orden creada exitosamente");
+            const payload = await createOrder(formData).unwrap();
+            if (payload.success) {
+                showSuccess("Orden Creada", `Se ha creado la orden N° ${payload.data?.order_code || "nueva"}`, [
+                    {
+                        label: "Ir al registro",
+                        variant: "outline",
+                        onClick: () => {
+                            navigator(`/app/order/${payload.data?.order_code}/detail`, {
+                                state: { orderData: payload.data },
+                            });
+                        },
+                    },
+                    {
+                        label: "Ingresar otro",
+                        variant: "primary",
+                        onClick: () => {
+                            methods.reset();
+                            formTabsRef.current?.resetToFirstTab();
+                            closeAlert();
+                        },
+                    },
+                ]);
+            } else {
+                showError(payload.errors, payload.message);
+            }
+
+            setIsFormOpen(false);
         } catch (error) {
             console.error("Error creating order:", error);
-            alert("Error al crear la orden");
+            showError("Error al crear la orden. Por favor, intenta de nuevo.", "Error");
+            setIsFormOpen(false);
         }
     };
 
@@ -219,7 +244,13 @@ export default function NewOrderpage() {
         <Container className="container" center size="xl">
             <Box p="lg" bg="white" rounded shadow>
                 <FormProvider {...methods}>
-                    <FormTabs tabs={tabs} onSubmit={onPreviewFormData} submitLabel="Crear Orden" loading={isLoading} />
+                    <FormTabs
+                        ref={formTabsRef}
+                        tabs={tabs}
+                        onSubmit={onPreviewFormData}
+                        submitLabel="Crear Orden"
+                        loading={isLoading}
+                    />
                 </FormProvider>
             </Box>
             <Modal
@@ -238,8 +269,6 @@ export default function NewOrderpage() {
             >
                 <FormTabResumeAlt formData={formData} />
             </Modal>
-            <pre>{errors && JSON.stringify(errors, null, 2)}</pre>
-            <pre>{JSON.stringify(formData, null, 2)}</pre>
         </Container>
     );
 }

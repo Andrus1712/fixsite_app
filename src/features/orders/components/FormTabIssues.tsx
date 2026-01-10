@@ -44,7 +44,7 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
         } else {
             setIssues([]);
         }
-    }, []);
+    }, [formData]);
 
     const addIssue = () => {
         const newIssue: Issue = {

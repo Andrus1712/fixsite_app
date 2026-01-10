@@ -1,16 +1,7 @@
 import { use, useMemo, useState } from "react";
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Container,
-    useAlerts,
-} from "../../../shared/components";
+import { Box, Button, ButtonGroup, Container, useToast } from "../../../shared/components";
 import DataTable from "../../../shared/components/Tables/Table";
-import {
-    useGetModulesQuery,
-    useDeleteModuleMutation,
-} from "../services/modulesApi";
+import { useGetModulesQuery, useDeleteModuleMutation } from "../services/modulesApi";
 import { useNavigate } from "react-router";
 import { useHasPermission } from "../../auth/hooks/useHasPermission";
 import { IoMdAdd, IoMdArrowRoundBack } from "react-icons/io";
@@ -19,7 +10,7 @@ export default function ModulesPage() {
     const { data, isLoading } = useGetModulesQuery({});
     const [searchValue, setSearchValue] = useState("");
     const navigator = useNavigate();
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const [deleteModule] = useDeleteModuleMutation();
 
     const columns = useMemo(
@@ -43,8 +34,7 @@ export default function ModulesPage() {
             {
                 accessorKey: "active",
                 header: "STATUS",
-                cell: ({ row }: { row: any }) =>
-                    row.original.active ? "Active" : "Inactive",
+                cell: ({ row }: { row: any }) => (row.original.active ? "Active" : "Inactive"),
             },
             {
                 id: "actions",
@@ -55,24 +45,13 @@ export default function ModulesPage() {
                     };
 
                     const handleDelete = async () => {
-                        if (
-                            confirm(
-                                `¿Está seguro de eliminar el módulo "${row.original.name}"?`
-                            )
-                        ) {
+                        if (confirm(`¿Está seguro de eliminar el módulo "${row.original.name}"?`)) {
                             try {
-                                const result = await deleteModule(
-                                    row.original.id
-                                );
+                                const result = await deleteModule(row.original.id);
                                 if (result.error) {
-                                    showError(
-                                        result.error?.data?.message ||
-                                            "Error al eliminar el módulo"
-                                    );
+                                    showError(result.error?.data?.message || "Error al eliminar el módulo");
                                 } else {
-                                    showSuccess(
-                                        "Módulo eliminado exitosamente"
-                                    );
+                                    showSuccess("Módulo eliminado exitosamente");
                                 }
                             } catch (error) {
                                 showError("Error al eliminar el módulo");
@@ -129,19 +108,11 @@ export default function ModulesPage() {
                 shadow
                 headerActions={
                     <ButtonGroup>
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                            leftIcon={<IoMdArrowRoundBack />}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)} leftIcon={<IoMdArrowRoundBack />}>
                             Regresar
                         </Button>
                         {hasPermission("module-new") ? (
-                            <Button
-                                variant="success"
-                                rightIcon={<IoMdAdd />}
-                                onClick={() => navigator("new")}
-                            ></Button>
+                            <Button variant="success" rightIcon={<IoMdAdd />} onClick={() => navigator("new")}></Button>
                         ) : null}
                     </ButtonGroup>
                 }

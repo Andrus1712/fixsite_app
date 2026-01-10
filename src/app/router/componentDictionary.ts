@@ -6,8 +6,12 @@ const ExamplePage = lazy(() => import("../../shared/pages/ExamplePage"));
 // const UserPage = lazy(() => import("../../modules/users/presentation/pages/UserPage"));
 // const DashboardPage = lazy(() => import("../../modules/dashboard/presentation/pages/DashboardPage"));
 // const SettingsPage = lazy(() => import("../../modules/settings/presentation/pages/SettingsPage"));
+// Ordenes
 const OrderPage = lazy(() => import("../../features/orders/pages/OrdersPage"));
+const InfoOrderPage = lazy(() => import("../../features/orders/pages/InfoOrderPage"));
 const NewOrderPage = lazy(() => import("../../features/orders/pages/NewOrderpage"));
+
+// ROles
 const RolesPage = lazy(() => import("../../features/Roles/pages/index"));
 const NewRolPage = lazy(() => import("../../features/Roles/pages/NewRolPage"));
 const EditRolPage = lazy(() => import("../../features/Roles/pages/EditRolPage"));
@@ -39,6 +43,7 @@ export const componentMap: Record<string, React.ComponentType> = {
     // "settings-show": SettingsPage,
     "order-index": OrderPage,
     "order-new": NewOrderPage,
+    "order-info": InfoOrderPage,
     // Roles
     "roles-index": RolesPage,
     "roles-new": NewRolPage,

@@ -1,14 +1,5 @@
 import { useNavigate } from "react-router";
-import {
-    Box,
-    Button,
-    Container,
-    Input,
-    FormGroup,
-    Divider,
-    useAlerts,
-    MultiSelect,
-} from "../../../shared/components";
+import { Box, Button, Container, Input, FormGroup, Divider, MultiSelect, useToast } from "../../../shared/components";
 import { useGetRolesQuery } from "../../Roles/services/RolesApi";
 import { useGetTenantsQuery } from "../../permissions/services/tenantsApi";
 import z from "zod";
@@ -28,7 +19,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function NewUserPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { data: roles } = useGetRolesQuery({});
     const { data: tenants } = useGetTenantsQuery({});
     const navigator = useNavigate();
@@ -63,9 +54,7 @@ export default function NewUserPage() {
             });
 
             if (result.error) {
-                showError(
-                    result.error?.data?.message || "Error al crear el usuario"
-                );
+                showError(result.error?.data?.message || "Error al crear el usuario");
             } else {
                 showSuccess("Usuario creado exitosamente");
                 navigator(-1);
@@ -92,10 +81,7 @@ export default function NewUserPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Información del Usuario"
-                        description="Complete los datos básicos del usuario"
-                    >
+                    <FormGroup title="Información del Usuario" description="Complete los datos básicos del usuario">
                         <Input
                             label="Nombre completo"
                             placeholder="Ingrese el nombre completo"
@@ -158,17 +144,10 @@ export default function NewUserPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Crear Usuario
                         </Button>
                     </div>

@@ -5,36 +5,23 @@ import {
 } from "../services/orderApi";
 import { useNavigate } from "react-router";
 import Button from "../../../shared/components/Buttons/Button";
-import {
-    Box,
-    Container,
-    Row,
-    Spacer,
-    Table,
-    useAlerts,
-    PriorityIndicator,
-    IssuesList,
-    ExpandableList,
-    Grid,
-} from "../../../shared/components";
+import { Box, Container, Table, PriorityIndicator, ExpandableList, Grid, useToast } from "../../../shared/components";
 import { formatDate } from "../../../shared/utils/DateFormatter";
 
 function OrdersPage() {
     // const {} = useGetAllOrdersQuery();
-    const { isLoading, data, isError, error, isSuccess, refetch } =
-        useGetAllOrdersQueryExternal();
+    const { isLoading, data, isError, error, isSuccess, refetch } = useGetAllOrdersQueryExternal();
 
     useEffect(() => {
         refetch();
     }, []);
 
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     useEffect(() => {
         if (isError) {
             const errorMessage =
                 "data" in error!
-                    ? (error.data as any)?.message ||
-                      "Error al obtener las órdenes"
+                    ? (error.data as any)?.message || "Error al obtener las órdenes"
                     : error?.message || "Error al obtener las órdenes";
             showError(errorMessage, "Error", 10000);
         }
@@ -208,11 +195,7 @@ function OrdersPage() {
                     shadow
                     title="Listado de ordenes"
                     headerActions={
-                        <Button
-                            variant="primary"
-                            size="md"
-                            onClick={() => navigator("new")}
-                        >
+                        <Button variant="primary" size="md" onClick={() => navigator("new")}>
                             Nueva Orden
                         </Button>
                     }
@@ -231,23 +214,16 @@ function OrdersPage() {
                 </Box>
                 <Box p="lg" bg="white" rounded shadow title="Filtro">
                     <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Esse quae, illum voluptates magni fuga animi cupiditate
-                        tempore dicta, veniam, sequi maiores ut nemo accusamus
-                        temporibus iste aliquam rem quod sed. Lorem ipsum dolor
-                        sit amet consectetur adipisicing elit. Esse quae, illum
-                        voluptates magni fuga animi cupiditate tempore dicta,
-                        veniam, sequi maiores ut nemo accusamus temporibus iste
-                        aliquam rem quod sed. Lorem ipsum dolor sit amet
-                        consectetur adipisicing elit. Esse quae, illum
-                        voluptates magni fuga animi cupiditate tempore dicta,
-                        veniam, sequi maiores ut nemo accusamus temporibus iste
-                        aliquam rem quod sed. Lorem ipsum dolor sit amet
-                        consectetur adipisicing elit. Esse quae, illum
-                        voluptates magni fuga animi cupiditate tempore dicta,
-                        veniam, sequi maiores ut nemo accusamus temporibus iste
-                        aliquam rem quod sed. Lorem ipsum dolor sit amet
-                        consectetur adipisicing elit. Esse quae 
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse quae, illum voluptates magni fuga
+                        animi cupiditate tempore dicta, veniam, sequi maiores ut nemo accusamus temporibus iste aliquam
+                        rem quod sed. Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse quae, illum
+                        voluptates magni fuga animi cupiditate tempore dicta, veniam, sequi maiores ut nemo accusamus
+                        temporibus iste aliquam rem quod sed. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Esse quae, illum voluptates magni fuga animi cupiditate tempore dicta, veniam, sequi maiores ut
+                        nemo accusamus temporibus iste aliquam rem quod sed. Lorem ipsum dolor sit amet consectetur
+                        adipisicing elit. Esse quae, illum voluptates magni fuga animi cupiditate tempore dicta, veniam,
+                        sequi maiores ut nemo accusamus temporibus iste aliquam rem quod sed. Lorem ipsum dolor sit amet
+                        consectetur adipisicing elit. Esse quae
                     </p>
                 </Box>
             </Grid>

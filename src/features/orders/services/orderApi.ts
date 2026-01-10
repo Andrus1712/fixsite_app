@@ -1,4 +1,4 @@
-import type { Order } from "../models/OrderModels";
+import type { Order, ResponseOrder } from "../models/OrderModels";
 import { baseApi } from "../../../shared/store/baseApi";
 import type { ApiResponse } from "../models/ApiModel";
 
@@ -17,7 +17,7 @@ import type { ApiResponse } from "../models/ApiModel";
 
 export const ordersApiExternal = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        createOrder: builder.mutation<Order, any>({
+        createOrder: builder.mutation<ResponseOrder, any>({
             query: (orderData) => ({
                 url: 'orders/create',
                 method: 'POST',

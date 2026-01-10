@@ -7,8 +7,8 @@ import {
     TextArea,
     FormGroup,
     Divider,
-    useAlerts,
     Checkbox,
+    useToast,
 } from "../../../shared/components";
 import z from "zod";
 import { Controller, useForm } from "react-hook-form";
@@ -25,7 +25,7 @@ const moduleSchema = z.object({
 type ModuleFormData = z.infer<typeof moduleSchema>;
 
 export default function NewModulePage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const navigator = useNavigate();
     const [saveModule] = useSaveModuleMutation();
 
@@ -69,10 +69,7 @@ export default function NewModulePage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Información del Módulo"
-                        description="Complete los datos básicos del módulo"
-                    >
+                    <FormGroup title="Información del Módulo" description="Complete los datos básicos del módulo">
                         <Input
                             label="Nombre del Módulo"
                             placeholder="Ingrese el nombre del módulo"
@@ -99,11 +96,7 @@ export default function NewModulePage() {
                             name="active"
                             control={control}
                             render={({ field }) => (
-                                <Checkbox
-                                    label="Activo"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <Checkbox label="Activo" checked={field.value} onChange={field.onChange} />
                             )}
                         />
                     </FormGroup>
@@ -117,17 +110,10 @@ export default function NewModulePage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Crear Módulo
                         </Button>
                     </div>

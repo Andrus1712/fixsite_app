@@ -1,16 +1,7 @@
 import { useMemo, useState } from "react";
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Container,
-    useAlerts,
-} from "../../../shared/components";
+import { Box, Button, ButtonGroup, Container, useToast } from "../../../shared/components";
 import DataTable from "../../../shared/components/Tables/Table";
-import {
-    useGetComponentsQuery,
-    useDeleteComponentMutation,
-} from "../services/componentsApi";
+import { useGetComponentsQuery, useDeleteComponentMutation } from "../services/componentsApi";
 import { useNavigate } from "react-router";
 import { IoMdAdd, IoMdArrowRoundBack } from "react-icons/io";
 import { useHasPermission } from "../../auth/hooks/useHasPermission";
@@ -19,7 +10,7 @@ export default function ComponentsPage() {
     const { data, isLoading } = useGetComponentsQuery({});
     const [searchValue, setSearchValue] = useState("");
     const navigator = useNavigate();
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const [deleteComponent] = useDeleteComponentMutation();
 
     const columns = useMemo(
@@ -47,14 +38,12 @@ export default function ComponentsPage() {
             {
                 accessorKey: "showMenu",
                 header: "SHOW MENU",
-                cell: ({ row }: { row: any }) =>
-                    row.original.showMenu ? "Yes" : "No",
+                cell: ({ row }: { row: any }) => (row.original.showMenu ? "Yes" : "No"),
             },
             {
                 accessorKey: "active",
                 header: "STATUS",
-                cell: ({ row }: { row: any }) =>
-                    row.original.active ? "Active" : "Inactive",
+                cell: ({ row }: { row: any }) => (row.original.active ? "Active" : "Inactive"),
             },
             {
                 id: "actions",
@@ -65,24 +54,13 @@ export default function ComponentsPage() {
                     };
 
                     const handleDelete = async () => {
-                        if (
-                            confirm(
-                                `¿Está seguro de eliminar el componente "${row.original.title}"?`
-                            )
-                        ) {
+                        if (confirm(`¿Está seguro de eliminar el componente "${row.original.title}"?`)) {
                             try {
-                                const result = await deleteComponent(
-                                    row.original.id
-                                );
+                                const result = await deleteComponent(row.original.id);
                                 if (result.error) {
-                                    showError(
-                                        result.error?.data?.message ||
-                                            "Error al eliminar el componente"
-                                    );
+                                    showError(result.error?.data?.message || "Error al eliminar el componente");
                                 } else {
-                                    showSuccess(
-                                        "Componente eliminado exitosamente"
-                                    );
+                                    showSuccess("Componente eliminado exitosamente");
                                 }
                             } catch (error) {
                                 showError("Error al eliminar el componente");
@@ -139,19 +117,11 @@ export default function ComponentsPage() {
                 shadow
                 headerActions={
                     <ButtonGroup>
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                            leftIcon={<IoMdArrowRoundBack />}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)} leftIcon={<IoMdArrowRoundBack />}>
                             Regresar
                         </Button>
                         {hasPermission("component-new") ? (
-                            <Button
-                                variant="success"
-                                rightIcon={<IoMdAdd />}
-                                onClick={() => navigator("new")}
-                            ></Button>
+                            <Button variant="success" rightIcon={<IoMdAdd />} onClick={() => navigator("new")}></Button>
                         ) : null}
                     </ButtonGroup>
                 }

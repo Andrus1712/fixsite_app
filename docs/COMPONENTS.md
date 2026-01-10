@@ -328,13 +328,13 @@ import { Switch } from 'shared/components';
 
 ## Alerts
 
-### Alert
-Componente de alerta con diferentes tipos.
+### Toast
+Componente de alerta tipos toast con diferentes tipos.
 
 ```tsx
-import { useAlerts } from 'shared/components';
+import { useToast } from 'shared/components';
 
-const { showSuccess, showError, showWarning, showInfo } = useAlerts();
+const { showSuccess, showError, showWarning, showInfo } = useToast();
 
 // Mostrar alertas
 showSuccess("Operación exitosa");

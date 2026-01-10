@@ -6,19 +6,16 @@ import {
     Input,
     FormGroup,
     Divider,
-    useAlerts,
     LoadingSpinner,
     SearchableSelect,
+    useToast,
 } from "../../../shared/components";
 import { useEffect, useState } from "react";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetComponentsQuery } from "../services/componentsApi";
-import {
-    useGetPermissionByIdQuery,
-    useUpdatePermissionMutation,
-} from "../services/permissionApi";
+import { useGetPermissionByIdQuery, useUpdatePermissionMutation } from "../services/permissionApi";
 import { useAppSelector } from "../../../shared/store";
 
 const permissionSchema = z.object({
@@ -31,15 +28,14 @@ const permissionSchema = z.object({
 type PermissionFormData = z.infer<typeof permissionSchema>;
 
 export default function EditPermissionPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { id } = useParams<{ id: string }>();
-    const { data: permissionData, isLoading: isLoadingPermission } =
-        useGetPermissionByIdQuery(Number(id));
+    const { data: permissionData, isLoading: isLoadingPermission } = useGetPermissionByIdQuery(Number(id));
     const [searchFilter, setSearchFilter] = useState("");
 
     const { data: components, isLoading } = useGetComponentsQuery({
         filter: searchFilter,
-        limit: 50
+        limit: 50,
     });
 
     const navigator = useNavigate();
@@ -87,10 +83,7 @@ export default function EditPermissionPage() {
             });
 
             if (result.error) {
-                showError(
-                    result.error?.data?.message ||
-                        "Error al actualizar el permiso"
-                );
+                showError(result.error?.data?.message || "Error al actualizar el permiso");
             } else {
                 showSuccess("Permiso actualizado exitosamente");
                 navigator(-1);
@@ -109,10 +102,7 @@ export default function EditPermissionPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Editar Permiso"
-                        description="Modifique los datos del permiso"
-                    >
+                    <FormGroup title="Editar Permiso" description="Modifique los datos del permiso">
                         <Input
                             label="Clave"
                             placeholder="Ingrese la clave del permiso"
@@ -136,10 +126,12 @@ export default function EditPermissionPage() {
                             onChange={(value) => setValue("componentId", Number(value))}
                             onSearch={setSearchFilter}
                             loading={isLoading}
-                            options={components?.data?.map((component: any) => ({
-                                value: component.id,
-                                label: `${component.id} | ${component.title} | ${component.action}`
-                            })) || []}
+                            options={
+                                components?.data?.map((component: any) => ({
+                                    value: component.id,
+                                    label: `${component.id} | ${component.title} | ${component.action}`,
+                                })) || []
+                            }
                         />
                     </FormGroup>
 
@@ -152,17 +144,10 @@ export default function EditPermissionPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Actualizar Permiso
                         </Button>
                     </div>

@@ -6,9 +6,9 @@ import {
     Input,
     FormGroup,
     Divider,
-    useAlerts,
     LoadingSpinner,
     MultiSelect,
+    useToast,
 } from "../../../shared/components";
 import { useGetRolesQuery } from "../../Roles/services/RolesApi";
 import { useGetTenantsQuery } from "../../permissions/services/tenantsApi";
@@ -30,7 +30,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export default function EditUserPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { user_id } = useParams<{ user_id: string }>();
     const { data: roles } = useGetRolesQuery({});
     const { data: tenants } = useGetTenantsQuery({});
@@ -87,9 +87,7 @@ export default function EditUserPage() {
             const result = await updateUser(updateData);
 
             if (result.error) {
-                showError(
-                    result.error?.data?.message || "Error al actualizar el usuario"
-                );
+                showError(result.error?.data?.message || "Error al actualizar el usuario");
             } else {
                 showSuccess("Usuario actualizado exitosamente");
                 navigator(-1);
@@ -100,15 +98,17 @@ export default function EditUserPage() {
         }
     };
 
-    const roleOptions = roles?.data?.map((role: any) => ({
-        value: role.id,
-        label: role.name,
-    })) || [];
+    const roleOptions =
+        roles?.data?.map((role: any) => ({
+            value: role.id,
+            label: role.name,
+        })) || [];
 
-    const tenantOptions = tenants?.data?.map((tenant: any) => ({
-        value: tenant.id,
-        label: tenant.name,
-    })) || [];
+    const tenantOptions =
+        tenants?.data?.map((tenant: any) => ({
+            value: tenant.id,
+            label: tenant.name,
+        })) || [];
 
     if (isLoadingUser) {
         return <LoadingSpinner />;
@@ -118,10 +118,7 @@ export default function EditUserPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Editar Usuario"
-                        description="Modifique los datos del usuario"
-                    >
+                    <FormGroup title="Editar Usuario" description="Modifique los datos del usuario">
                         <Input
                             label="Nombre completo"
                             placeholder="Ingrese el nombre completo"
@@ -192,17 +189,10 @@ export default function EditUserPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Actualizar Usuario
                         </Button>
                     </div>

@@ -6,8 +6,8 @@ import {
     Input,
     FormGroup,
     Divider,
-    useAlerts,
     SearchableSelect,
+    useToast,
 } from "../../../shared/components";
 import z from "zod";
 import { useForm } from "react-hook-form";
@@ -27,14 +27,14 @@ const permissionSchema = z.object({
 type PermissionFormData = z.infer<typeof permissionSchema>;
 
 export default function NewPermissionPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const navigator = useNavigate();
     const [savePermission] = useSavePermissionMutation();
     const [searchFilter, setSearchFilter] = useState("");
 
     const { data: components, isLoading } = useGetComponentsQuery({
         filter: searchFilter,
-        limit: 50
+        limit: 50,
     });
 
     const { data: dataAuth } = useAppSelector((state) => state.auth);
@@ -67,9 +67,7 @@ export default function NewPermissionPage() {
             });
 
             if (result.error) {
-                showError(
-                    result.error?.data?.message || "Error al crear el permiso"
-                );
+                showError(result.error?.data?.message || "Error al crear el permiso");
             } else {
                 showSuccess("Permiso creado exitosamente");
                 navigator(-1);
@@ -84,10 +82,7 @@ export default function NewPermissionPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Información del Permiso"
-                        description="Complete los datos básicos del permiso"
-                    >
+                    <FormGroup title="Información del Permiso" description="Complete los datos básicos del permiso">
                         <Input
                             label="Clave"
                             placeholder="Ingrese la clave del permiso"
@@ -111,10 +106,12 @@ export default function NewPermissionPage() {
                             onChange={(value) => setValue("componentId", Number(value))}
                             onSearch={setSearchFilter}
                             loading={isLoading}
-                            options={components?.data?.map((component: any) => ({
-                                value: component.id,
-                                label: `${component.id} | ${component.title} | ${component.action}`
-                            })) || []}
+                            options={
+                                components?.data?.map((component: any) => ({
+                                    value: component.id,
+                                    label: `${component.id} | ${component.title} | ${component.action}`,
+                                })) || []
+                            }
                         />
                     </FormGroup>
 
@@ -127,17 +124,10 @@ export default function NewPermissionPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Crear Permiso
                         </Button>
                     </div>

@@ -4,7 +4,7 @@ import { persistStore, persistReducer, type PersistConfig } from 'redux-persist'
 import storage from 'redux-persist/lib/storage';
 import { baseApi } from './baseApi';
 import authReducer from '../../features/auth/store/authSlice';
-import alertReducer from './alertSlice';
+import toastReducer from './toastSlice';
 // import { ordersApi } from '../../features/orders/services/orderApi';
 
 const persistConfig: PersistConfig<any> = {
@@ -26,7 +26,7 @@ export const store = configureStore({
     // Aquí se añadirían otros slices de features...
     // users: usersSlice.reducer, 
     auth: persistedAuthReducer,
-    alerts: alertReducer,
+    toast: toastReducer,
   },
 
   // 2. Middlewares: Necesario para que RTK Query funcione

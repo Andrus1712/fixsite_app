@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, useImperativeHandle, forwardRef } from "react";
 import { Button } from "../Buttons";
 import { useFormContext } from "react-hook-form";
 
@@ -15,6 +15,10 @@ interface FormTabsProps {
     submitLabel?: string;
     loading?: boolean;
     showNavigation?: boolean;
+}
+
+export interface FormTabsRef {
+    resetToFirstTab: () => void;
 }
 
 const TabsContainer = styled.div`
@@ -59,16 +63,23 @@ const NavigationContainer = styled.div`
     border-top: 1px solid #e5e7eb;
 `;
 
-export default function FormTabs({
-    tabs,
-    onSubmit,
-    submitLabel = "Enviar",
-    loading = false,
-    showNavigation = true,
-}: FormTabsProps) {
+const FormTabs = forwardRef<FormTabsRef, FormTabsProps>((
+    {
+        tabs,
+        onSubmit,
+        submitLabel = "Enviar",
+        loading = false,
+        showNavigation = true,
+    },
+    ref
+) => {
     const { trigger } = useFormContext();
 
     const [activeTab, setActiveTab] = useState(0);
+
+    useImperativeHandle(ref, () => ({
+        resetToFirstTab: () => setActiveTab(0),
+    }));
 
     const handleNext = async () => {
         const fieldsToValidate = tabs[activeTab].validationFields;
@@ -126,4 +137,6 @@ export default function FormTabs({
             )}
         </>
     );
-}
+});
+
+export default FormTabs;

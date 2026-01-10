@@ -8,10 +8,10 @@ import {
     FormGroup,
     Divider,
     PermissionsSelector,
-    useAlerts,
+    useToast,
 } from "../../../shared/components";
 import { useGetAvailablePermissionsQuery } from "../../permissions/services/permissionApi";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,19 +21,16 @@ import { useSaveRolesMutation } from "../services/RolesApi";
 const roleSchema = z.object({
     name: z.string().min(1, "El nombre del rol es requerido"),
     description: z.string().optional(),
-    permissions: z
-        .array(z.number())
-        // .min(1, "Debe seleccionar al menos un permiso"),
+    permissions: z.array(z.number()),
+    // .min(1, "Debe seleccionar al menos un permiso"),
 });
 
 type RoleFormData = z.infer<typeof roleSchema>;
 
 export default function NewRolPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { data: permissions } = useGetAvailablePermissionsQuery();
-    const [selectedPermissions, setSelectedPermissions] = useState<number[]>(
-        []
-    );
+    const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
     const navigator = useNavigate();
 
     const handlePermissionsChange = (permissionIds: number[]) => {
@@ -66,9 +63,7 @@ export default function NewRolPage() {
             });
 
             if (result.error) {
-                showError(
-                    result.error?.data?.message || "Error al crear el rol"
-                );
+                showError(result.error?.data?.message || "Error al crear el rol");
             } else {
                 showSuccess("Rol creado exitosamente");
                 navigator(-1);
@@ -83,10 +78,7 @@ export default function NewRolPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Información del Rol"
-                        description="Complete los datos básicos del rol"
-                    >
+                    <FormGroup title="Información del Rol" description="Complete los datos básicos del rol">
                         <Input
                             label="Nombre del Rol"
                             placeholder="Ingrese el nombre del rol"
@@ -140,17 +132,10 @@ export default function NewRolPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Crear Rol
                         </Button>
                     </div>

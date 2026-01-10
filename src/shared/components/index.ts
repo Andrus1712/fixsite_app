@@ -3,7 +3,7 @@ export * from './ErrorBoundary';
 export * from './LoadingSpinner';
 export * from './Buttons';
 export * from './Layouts';
-export * from './Alert';
+export * from './Toast';
 export * from './Forms';
 export * from './Typography';
 export { default as PageTitle } from './PageTitle';

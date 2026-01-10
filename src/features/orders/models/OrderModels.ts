@@ -148,3 +148,11 @@ export type Priority = 'low' | 'medium' | 'high' | 'critical';
 export type DeviceType = 'smartphone' | 'laptop' | 'tablet' | 'smartwatch';
 export type CustomerType = 'individual' | 'business';
 export type TechnicianLevel = 'junior' | 'intermediate' | 'senior' | 'expert';
+
+export interface ResponseOrder {
+  errors: string;
+  message: string;
+  status: number;
+  success: boolean;
+  data: Order;
+}

@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import styled, { css, keyframes } from "styled-components";
 import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimes, FaTimesCircle } from "react-icons/fa";
 
-type AlertType = "success" | "error" | "warning" | "info";
+type ToastType = "success" | "error" | "warning" | "info";
 
-interface AlertProps {
+interface ToastProps {
     id: string;
-    type: AlertType;
+    type: ToastType;
     title?: string;
     message: string;
     duration?: number;
@@ -24,7 +24,7 @@ const slideIn = keyframes`
     }
 `;
 
-const getAlertStyles = (type: AlertType) => {
+const getToastStyles = (type: ToastType) => {
     switch (type) {
         case "success":
             return css`
@@ -53,7 +53,7 @@ const getAlertStyles = (type: AlertType) => {
     }
 };
 
-const AlertContainer = styled.div<{ type: AlertType }>`
+const ToastContainer = styled.div<{ type: ToastType }>`
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -65,7 +65,7 @@ const AlertContainer = styled.div<{ type: AlertType }>`
     max-width: 480px;
     animation: ${slideIn} 0.3s ease-out;
     
-    ${props => getAlertStyles(props.type)}
+    ${props => getToastStyles(props.type)}
 `;
 
 const IconContainer = styled.div`
@@ -104,7 +104,7 @@ const CloseButton = styled.button`
     }
 `;
 
-const getIcon = (type: AlertType) => {
+const getIcon = (type: ToastType) => {
     switch (type) {
         case "success":
             return <FaCheckCircle />;
@@ -117,14 +117,14 @@ const getIcon = (type: AlertType) => {
     }
 };
 
-export default function Alert({ 
+export default function ToastComponent({ 
     id, 
     type, 
     title, 
     message, 
     duration = 5000, 
     onClose 
-}: AlertProps) {
+}: ToastProps) {
     useEffect(() => {
         if (duration > 0) {
             const timer = setTimeout(() => {
@@ -136,7 +136,7 @@ export default function Alert({
     }, [id, duration, onClose]);
 
     return (
-        <AlertContainer type={type}>
+        <ToastContainer type={type}>
             <IconContainer>
                 {getIcon(type)}
             </IconContainer>
@@ -147,6 +147,6 @@ export default function Alert({
             <CloseButton onClick={() => onClose(id)}>
                 <FaTimes size={14} />
             </CloseButton>
-        </AlertContainer>
+        </ToastContainer>
     );
 }

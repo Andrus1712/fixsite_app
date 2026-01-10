@@ -8,18 +8,15 @@ import {
     FormGroup,
     Divider,
     PermissionsSelector,
-    useAlerts,
     LoadingSpinner,
+    useToast,
 } from "../../../shared/components";
 import { useGetAvailablePermissionsQuery } from "../../permissions/services/permissionApi";
 import { useEffect } from "react";
 import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    useGetRoleByIdQuery,
-    useUpdateRoleMutation,
-} from "../services/RolesApi";
+import { useGetRoleByIdQuery, useUpdateRoleMutation } from "../services/RolesApi";
 
 // Esquema de validación
 const roleSchema = z.object({
@@ -32,12 +29,10 @@ const roleSchema = z.object({
 type RoleFormData = z.infer<typeof roleSchema>;
 
 export default function EditRolPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { role_id } = useParams<{ role_id: string }>();
     const { data: permissions } = useGetAvailablePermissionsQuery();
-    const { data: roleData, isLoading: isLoadingRole } = useGetRoleByIdQuery(
-        Number(role_id)
-    );
+    const { data: roleData, isLoading: isLoadingRole } = useGetRoleByIdQuery(Number(role_id));
     const navigator = useNavigate();
 
     const [updateRole] = useUpdateRoleMutation();
@@ -84,9 +79,7 @@ export default function EditRolPage() {
             });
 
             if (result.error) {
-                showError(
-                    result.error?.data?.message || "Error al actualizar el rol"
-                );
+                showError(result.error?.data?.message || "Error al actualizar el rol");
             } else {
                 showSuccess("Rol actualizado exitosamente");
                 navigator(-1);
@@ -105,10 +98,7 @@ export default function EditRolPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Editar Rol"
-                        description="Modifique los datos del rol"
-                    >
+                    <FormGroup title="Editar Rol" description="Modifique los datos del rol">
                         <Input
                             label="Nombre del Rol"
                             placeholder="Ingrese el nombre del rol"
@@ -162,17 +152,10 @@ export default function EditRolPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Actualizar Rol
                         </Button>
                     </div>
