@@ -1,18 +1,18 @@
 import { FormGroup, Label, Select, TextArea } from "../../../shared/components";
 
-export const DescriptionFromOrder = (formData: any) => {
+interface FormProps {
+    formData: any;
+    updateField: (field: string, value: any) => void;
+}
+
+export const DescriptionFromOrder = ({ formData, updateField }: FormProps) => {
     return (
         <>
             <FormGroup>
                 <Label>Descripción</Label>
                 <TextArea
                     value={formData.description}
-                    onChange={(e) =>
-                        setFormData((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                        }))
-                    }
+                    onChange={(e) => updateField("description", e.target.value)}
                     rows={3}
                 />
             </FormGroup>
@@ -20,17 +20,13 @@ export const DescriptionFromOrder = (formData: any) => {
                 <Label>Prioridad</Label>
                 <Select
                     value={formData.priority}
-                    onChange={(e) =>
-                        setFormData((prev) => ({
-                            ...prev,
-                            priority: Number(e.target.value),
-                        }))
-                    }
-                >
-                    <option value={1}>Baja</option>
-                    <option value={2}>Media</option>
-                    <option value={3}>Alta</option>
-                </Select>
+                    onChange={(e) => updateField("priority", Number(e.target.value))}
+                    options={[
+                        { value: 1, label: "Baja" },
+                        { value: 2, label: "Media" },
+                        { value: 3, label: "Alta" },
+                    ]}
+                />
             </FormGroup>
         </>
     );

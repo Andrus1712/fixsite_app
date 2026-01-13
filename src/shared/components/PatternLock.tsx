@@ -2,10 +2,11 @@ import { useState, useCallback, useEffect, type MouseEvent, type TouchEvent } fr
 import styled, { css, keyframes } from "styled-components";
 import { Card } from "./Card";
 import { Column, Flex, Grid, Row } from "./Layouts";
-import { Button, ButtonGroup, IconButton } from "./Buttons";
 import { FaRegTrashAlt, FaSave } from "react-icons/fa";
 import { MdOutlineReplay } from "react-icons/md";
 import { CiPlay1 } from "react-icons/ci";
+import ButtonGroup from "./Buttons/ButtonGroup";
+import IconButton from "./Buttons/IconButton";
 
 // --- 1. Tipos de TypeScript ---
 

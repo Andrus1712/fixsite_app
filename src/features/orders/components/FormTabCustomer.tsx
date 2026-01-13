@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { Button, Column, FormGroup, IconButton, Modal, Row, Text } from "../../../shared/components";
+import { useState } from "react";
+import { Button, Column, FormGroup, Modal, Row, Text } from "../../../shared/components";
 import SearchInput from "../../../shared/components/SearchInput";
 import { IoMdPersonAdd } from "react-icons/io";
-import { useTheme } from "styled-components";
 import { FaTrash } from "react-icons/fa";
 import { useFormContext } from "react-hook-form";
+import IconButton from "../../../shared/components/Buttons/IconButton";
 
 interface FormProps {
     formData: any;

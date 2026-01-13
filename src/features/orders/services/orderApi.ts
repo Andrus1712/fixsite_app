@@ -1,6 +1,7 @@
 import type { Order, ResponseOrder } from "../models/OrderModels";
 import { baseApi } from "../../../shared/store/baseApi";
 import type { ApiResponse } from "../models/ApiModel";
+import type { WorkOrder } from "../models/OrderModel";
 
 // export const ordersApi = createApi({
 //     reducerPath: "orderApi",
@@ -31,15 +32,20 @@ export const ordersApiExternal = baseApi.injectEndpoints({
                 body: formData,
             }),
         }),
-        getAllOrders: builder.query<ApiResponse, void>({
-            query: () => ({
-                url: "orders",
+        getAllOrders: builder.query<ApiResponse, { page?: number; limit?: number; filter?: string; }>({
+            query: ({ page = 1, limit = 10, filter } = {}) => ({
+                url: `orders/all?page=${page}&limit=${limit}${filter ? `&filter=${filter}` : ''}`,
                 method: "GET",
             }),
-            keepUnusedDataFor: 0,
+        }),
+        getOrdersByCode: builder.query<WorkOrder, { order_code?: string; }>({
+            query: ({ order_code }) => ({
+                url: `orders/${order_code}`,
+                method: "GET",
+            }),
         }),
     }),
 });
 
 // export const { useGetAllOrdersQuery } = ordersApi;
-export const { useCreateOrderMutation, useUploadImageMutation, useGetAllOrdersQuery: useGetAllOrdersQueryExternal } = ordersApiExternal;
+export const { useCreateOrderMutation, useUploadImageMutation, useGetAllOrdersQuery: useGetAllOrdersQueryExternal, useGetOrdersByCodeQuery } = ordersApiExternal;

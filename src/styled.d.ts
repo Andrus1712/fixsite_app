@@ -130,9 +130,11 @@ declare module 'styled-components' {
     };
     layout: {
       sidebarWidth: string;
+      sidebarCollapsedWidth: string;
       headerHeight: string;
       containerMaxWidth: string;
-      contentPadding: string;
+      contentPaddingY: string;
+      contentPaddingX: string;
     };
     breakpoints: {
       sm: string;

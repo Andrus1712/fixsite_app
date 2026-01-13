@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { Box, Button, ButtonGroup, Container, useToast } from "../../../shared/components";
+import { Badge, Box, Button, ButtonGroup, Container, Text, useToast } from "../../../shared/components";
 import DataTable from "../../../shared/components/Tables/Table";
 import { useGetComponentsQuery, useDeleteComponentMutation } from "../services/componentsApi";
 import { useNavigate } from "react-router";
 import { IoMdAdd, IoMdArrowRoundBack } from "react-icons/io";
 import { useHasPermission } from "../../auth/hooks/useHasPermission";
+import { FaCheck, FaTimes } from "react-icons/fa";
 
 export default function ComponentsPage() {
     const { data, isLoading } = useGetComponentsQuery({});
@@ -34,11 +35,19 @@ export default function ComponentsPage() {
             {
                 accessorKey: "path",
                 header: "PATH",
+                cell: ({ row }: { row: any }) => {
+                    return (
+                        <Badge variant="default">
+                            <Text variant="code-sm">{row.original.path}</Text>
+                        </Badge>
+                    );
+                },
             },
             {
                 accessorKey: "showMenu",
                 header: "SHOW MENU",
-                cell: ({ row }: { row: any }) => (row.original.showMenu ? "Yes" : "No"),
+                cell: ({ row }: { row: any }) =>
+                    row.original.showMenu ? <FaCheck color="green" /> : <FaTimes color="red" />,
             },
             {
                 accessorKey: "active",

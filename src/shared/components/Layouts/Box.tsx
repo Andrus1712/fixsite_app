@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { type HTMLAttributes, type ReactNode } from "react";
+import Spacer from "./Spacer";
 
 type Spacing = "xs" | "sm" | "md" | "lg" | "xl" | number;
 
@@ -21,7 +22,8 @@ interface BoxProps extends HTMLAttributes<HTMLDivElement> {
     fullHeight?: boolean;
     title?: string;
     headerActions?: ReactNode;
-    subtitle?: string;
+    subtitle?: String | ReactNode;
+    showDivider?: boolean;
 }
 
 /* helper */
@@ -52,14 +54,10 @@ const StyledBox = styled.div<{
     $fullHeight?: boolean;
 }>`
     margin: ${(p) => getSpacingValue(p.$m) ?? "0"};
-    margin-top: ${(p) =>
-        getSpacingValue(p.$mt) ?? getSpacingValue(p.$m) ?? "0"};
-    margin-bottom: ${(p) =>
-        getSpacingValue(p.$mb) ?? getSpacingValue(p.$m) ?? "0"};
-    margin-left: ${(p) =>
-        getSpacingValue(p.$ml) ?? getSpacingValue(p.$m) ?? "0"};
-    margin-right: ${(p) =>
-        getSpacingValue(p.$mr) ?? getSpacingValue(p.$m) ?? "0"};
+    margin-top: ${(p) => getSpacingValue(p.$mt) ?? getSpacingValue(p.$m) ?? "0"};
+    margin-bottom: ${(p) => getSpacingValue(p.$mb) ?? getSpacingValue(p.$m) ?? "0"};
+    margin-left: ${(p) => getSpacingValue(p.$ml) ?? getSpacingValue(p.$m) ?? "0"};
+    margin-right: ${(p) => getSpacingValue(p.$mr) ?? getSpacingValue(p.$m) ?? "0"};
     background-color: ${(p) => p.$bg ?? "transparent"};
     border-radius: ${(p) => (p.$rounded ? "8px" : "0")};
     box-shadow: ${(p) => (p.$shadow ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "none")};
@@ -77,23 +75,19 @@ const Content = styled.div<{
     $pr?: Spacing;
 }>`
     padding: ${(p) => getSpacingValue(p.$p) ?? "0"};
-    padding-top: ${(p) =>
-        getSpacingValue(p.$pt) ?? getSpacingValue(p.$p) ?? "0"};
-    padding-bottom: ${(p) =>
-        getSpacingValue(p.$pb) ?? getSpacingValue(p.$p) ?? "0"};
-    padding-left: ${(p) =>
-        getSpacingValue(p.$pl) ?? getSpacingValue(p.$p) ?? "0"};
-    padding-right: ${(p) =>
-        getSpacingValue(p.$pr) ?? getSpacingValue(p.$p) ?? "0"};
+    padding-top: ${(p) => getSpacingValue(p.$pt) ?? getSpacingValue(p.$p) ?? "0"};
+    padding-bottom: ${(p) => getSpacingValue(p.$pb) ?? getSpacingValue(p.$p) ?? "0"};
+    padding-left: ${(p) => getSpacingValue(p.$pl) ?? getSpacingValue(p.$p) ?? "0"};
+    padding-right: ${(p) => getSpacingValue(p.$pr) ?? getSpacingValue(p.$p) ?? "0"};
     box-sizing: border-box;
 `;
 
-const Header = styled.div`
+const Header = styled.div<{ showDivider?: boolean }>`
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     padding-bottom: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: ${(p) => (p.showDivider ? "1px solid #e5e7eb" : "none")};
     margin-bottom: 24px;
 `;
 
@@ -138,6 +132,7 @@ export default function Box({
     fullWidth,
     fullHeight,
     subtitle,
+    showDivider = true,
     ...rest
 }: BoxProps) {
     // rest contains only valid HTML props now (id, className, onClick, etc.)
@@ -157,10 +152,17 @@ export default function Box({
         >
             <Content $p={p} $pt={pt} $pb={pb} $pl={pl} $pr={pr}>
                 {(title || headerActions) && (
-                    <Header>
+                    <Header showDivider={showDivider}>
                         <TitleSection>
                             {title && <Title>{title}</Title>}
-                            {subtitle && <Subtitle>{subtitle}</Subtitle>}
+                            {subtitle && typeof subtitle == "string" ? (
+                                <Subtitle>{subtitle}</Subtitle>
+                            ) : (
+                                <>
+                                    <Spacer size={"xs"} />
+                                    {subtitle}
+                                </>
+                            )}
                         </TitleSection>
                         {headerActions && <div>{headerActions}</div>}
                     </Header>

@@ -57,7 +57,7 @@ export default function EditRolPage() {
             navigator("/app/roles");
             showError("No se puede editar el rol Admin");
         }
-    }, [roleData]);
+    }, [roleData, navigator, showError]);
 
     useEffect(() => {
         if (roleData) {

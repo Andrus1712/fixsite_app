@@ -7,22 +7,29 @@ import {
     ModuleLabel,
     ModuleContainer,
     SidebarLabel,
+    IconWrapper,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import { FaChartBar, FaCog, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
+import { FaBoxOpen, FaChartBar, FaCog, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
-import FixsiteLogo from "../../../assets/logo_fixsite2.png";
 import TenantSelector from "../TenantSelector";
-import { Divider, Row } from "../Layouts";
-import { Label, Text } from "../Typography";
+import { Row } from "../Layouts";
+import { Text } from "../Typography";
 import { useLocation } from "react-router";
 import { GrConfigure } from "react-icons/gr";
-import { IconButton } from "../Buttons";
 import { HiMiniBars3BottomLeft } from "react-icons/hi2";
+import IconButton from "../Buttons/IconButton";
+import { IoKey } from "react-icons/io5";
+import { MdOutlineWebAsset } from "react-icons/md";
+import { IoIosArrowDown } from "react-icons/io";
+import { useTheme } from "styled-components";
+import { FaScrewdriverWrench } from "react-icons/fa6";
 
 interface SidebarProps {
     isOpen: boolean;
-    onClose: () => void;
+    isCollapsed: boolean;
+    onToggle: () => void;
+    onToggleCollapse: () => void;
 }
 
 const iconMap: Record<string, JSX.Element> = {
@@ -32,53 +39,65 @@ const iconMap: Record<string, JSX.Element> = {
     FaCog: <FaCog />,
     FaTools: <FaTools />,
     FaUsersCog: <FaUsersCog />,
+    IoKey: <IoKey />,
+    FaBoxOpen: <FaBoxOpen />,
+    MdOutlineWebAsset: <MdOutlineWebAsset />,
+    HiMiniBars3BottomLeft: <HiMiniBars3BottomLeft />,
+    GrConfigure: <GrConfigure />,
+    IoIosArrowDown: <IoIosArrowDown />,
+    FaScrewdriverWrench: <FaScrewdriverWrench />,
 };
 
-function Sidebar({ isOpen, onClose }: SidebarProps) {
+function Sidebar({ isOpen, isCollapsed, onToggle, onToggleCollapse }: SidebarProps) {
     const { data } = useAppSelector((state) => state.auth);
+    const theme = useTheme();
+
+    const isDesktop = window.innerWidth >= parseInt(theme.breakpoints.lg);
 
     return (
-        <SidebarContainer $isOpen={isOpen}>
+        <SidebarContainer $isOpen={isOpen} $isCollapsed={isCollapsed} $isDesktop={isDesktop}>
             <SidebarHeader>
-                {/* <img
-                    src={FixsiteLogo}
-                    alt="Fixsite App Logo"
-                    // Estilos en línea para asegurar que sea proporcional al alto del header
-                    // Normalmente, el estilo se agregaría a SidebarHeader en SidebarStyles,
-                    // pero esto lo hace de forma inmediata. 'height: 100%' hace que llene
-                    // el alto del contenedor 'SidebarHeader' y 'objectFit: "contain"'
-                    // asegura que la imagen sea proporcional y no se corte.
-                    style={{
-                        width: "100%",
-                        // margin: "auto",
-                        objectFit: "fill",
-                        scale: "0.6",
-                        // padding: "2px",
-                    }}
-                /> */}
-                <Row fullWidth $align="center" $justify="space-between" $gap={10} style={{ padding: "0 10px" }}>
-                    <div>
-                        <GrConfigure color="#fff" size={30} />
-                        <Text size={"2xl"} variant="body1" weight="bold" color="white">
-                            FixSite v1
-                        </Text>
-                    </div>
-                    <div>
-                        <IconButton size="lg" variant="solid" color="inherit" icon={<HiMiniBars3BottomLeft />} />
-                    </div>
+                <Row fullWidth $align="center" $justify="space-between" $gap={12}>
+                    {!isCollapsed && (
+                        <Row $align="center" $gap={10} style={{ flex: 1 }}>
+                            <GrConfigure color="#fff" size={24} />
+                            <Text size="lg" variant="body1" weight="bold" color="white">
+                                FixSite
+                            </Text>
+                            <Text size="xs" variant="caption" color="white" style={{ opacity: 0.8 }}>
+                                v1
+                            </Text>
+                        </Row>
+                    )}
+                    {isDesktop ? (
+                        <IconButton
+                            size="md"
+                            variant="solid"
+                            color="inherit"
+                            icon={isCollapsed ? <HiMiniBars3BottomLeft /> : <FaSignOutAlt />}
+                            onClick={onToggleCollapse}
+                        />
+                    ) : (
+                        <IconButton
+                            size="md"
+                            variant="solid"
+                            color="inherit"
+                            icon={<HiMiniBars3BottomLeft />}
+                            onClick={onToggle}
+                        />
+                    )}
                 </Row>
             </SidebarHeader>
-            <TenantSelector />
-            <Divider width="90%" opacity={0.4} margin={"sm"} />
+            <div
+                style={{ padding: isCollapsed ? "8px 8px" : "8px 12px", borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}
+            >
+                <TenantSelector isCollapsed={isCollapsed} />
+            </div>
             <SidebarItems>
                 {data?.modules &&
                     data?.modules.map((module) => (
                         <ModuleContainer key={module.id}>
-                            <Row style={{ padding: "5px 10px" }}>
-                                <Text variant="caption" weight="semibold" uppercase color="gray400">
-                                    {module.label}
-                                </Text>
-                            </Row>
+                            {!isCollapsed && <ModuleLabel>{module.label}</ModuleLabel>}
                             {module.components
                                 ?.slice()
                                 .sort((a, b) => a.order - b.order || a.id - b.id)
@@ -88,7 +107,12 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                                         to={"/app" + component.path}
                                         label={component.label}
                                         icon={iconMap[component.icon]}
-                                        onClick={onClose}
+                                        onClick={() => {
+                                            if (!isDesktop) {
+                                                onToggle();
+                                            }
+                                        }}
+                                        isCollapsed={isCollapsed}
                                     />
                                 ))}
                         </ModuleContainer>
@@ -103,9 +127,10 @@ interface MenuItemProps {
     label: string;
     icon?: ReactNode;
     onClick?: () => void;
+    isCollapsed: boolean;
 }
 
-const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
+const MenuItem = ({ to, label, icon, onClick, isCollapsed }: MenuItemProps) => {
     const location = useLocation();
 
     const isActive = () => {
@@ -121,10 +146,12 @@ const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
         <SidebarItem
             to={to}
             onClick={onClick}
+            $isCollapsed={isCollapsed}
             className={({ isActive: defaultActive }) => (defaultActive || isActive() ? "active" : "")}
         >
-            <div>{icon && <span>{icon}</span>}</div>
-            <SidebarLabel>{label}</SidebarLabel>
+            {icon && <IconWrapper>{icon}</IconWrapper>}
+            {!isCollapsed && <SidebarLabel>{label}</SidebarLabel>}
+            {isCollapsed && !icon && <SidebarLabel>{label.charAt(0)}</SidebarLabel>}
         </SidebarItem>
     );
 };

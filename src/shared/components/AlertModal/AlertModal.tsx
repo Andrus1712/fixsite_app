@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaInfoCircle } from "react-icons/fa";
 import { Column } from "../Layouts";
 import { Heading, Text } from "../Typography";
-import { Button } from "../Buttons";
+import Button from "../Buttons/Button";
 
 export interface AlertButton {
     label: string;

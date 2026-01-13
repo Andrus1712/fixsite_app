@@ -15,6 +15,7 @@ export default function RolesPage() {
     const navigator = useNavigate();
     const { showSuccess, showError } = useToast();
     const [deleteRole] = useDeleteRoleMutation();
+    const { hasPermission } = useHasPermission();
 
     const columns = useMemo(
         () => [
@@ -98,9 +99,8 @@ export default function RolesPage() {
                 },
             },
         ],
-        []
+        [hasPermission, navigator, deleteRole, showError, showSuccess]
     );
-    const { hasPermission } = useHasPermission();
 
     return (
         <Container size="full" center>

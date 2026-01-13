@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useState, type ReactNode, useImperativeHandle, forwardRef } from "react";
-import { Button } from "../Buttons";
 import { useFormContext } from "react-hook-form";
+import Button from "../Buttons/Button";
 
 interface Tab {
     label: string;
@@ -63,80 +63,73 @@ const NavigationContainer = styled.div`
     border-top: 1px solid #e5e7eb;
 `;
 
-const FormTabs = forwardRef<FormTabsRef, FormTabsProps>((
-    {
-        tabs,
-        onSubmit,
-        submitLabel = "Enviar",
-        loading = false,
-        showNavigation = true,
-    },
-    ref
-) => {
-    const { trigger } = useFormContext();
+const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
+    ({ tabs, onSubmit, submitLabel = "Enviar", loading = false, showNavigation = true }, ref) => {
+        const { trigger } = useFormContext();
 
-    const [activeTab, setActiveTab] = useState(0);
+        const [activeTab, setActiveTab] = useState(0);
 
-    useImperativeHandle(ref, () => ({
-        resetToFirstTab: () => setActiveTab(0),
-    }));
+        useImperativeHandle(ref, () => ({
+            resetToFirstTab: () => setActiveTab(0),
+        }));
 
-    const handleNext = async () => {
-        const fieldsToValidate = tabs[activeTab].validationFields;
+        const handleNext = async () => {
+            const fieldsToValidate = tabs[activeTab].validationFields;
 
-        // Si la pestaña tiene campos definidos, los validamos
-        if (fieldsToValidate && fieldsToValidate.length > 0) {
-            // trigger devuelve true si la validación pasa
-            const isTabValid = await trigger(fieldsToValidate as any);
+            // Si la pestaña tiene campos definidos, los validamos
+            if (fieldsToValidate && fieldsToValidate.length > 0) {
+                // trigger devuelve true si la validación pasa
+                const isTabValid = await trigger(fieldsToValidate as any);
 
-            if (!isTabValid) {
-                return; // Si hay errores, no avanzamos
+                if (!isTabValid) {
+                    return; // Si hay errores, no avanzamos
+                }
             }
-        }
 
-        setActiveTab(Math.min(tabs.length - 1, activeTab + 1));
-    };
+            setActiveTab(Math.min(tabs.length - 1, activeTab + 1));
+        };
 
-    const handlePrev = () => {
-        setActiveTab(Math.max(0, activeTab - 1));
-    };
+        const handlePrev = () => {
+            setActiveTab(Math.max(0, activeTab - 1));
+        };
 
-    const isFirstTab = activeTab === 0;
-    const isLastTab = activeTab === tabs.length - 1;
+        const isFirstTab = activeTab === 0;
+        const isLastTab = activeTab === tabs.length - 1;
 
-    return (
-        <>
-            <TabsContainer>
-                <TabsNav>
-                    {tabs.map((tab, index) => (
-                        <TabButton key={index} onClick={() => setActiveTab(index)} $active={activeTab === index}>
-                            {tab.label}
-                        </TabButton>
-                    ))}
-                </TabsNav>
-            </TabsContainer>
+        return (
+            <>
+                <TabsContainer>
+                    <TabsNav>
+                        {tabs.map((tab, index) => (
+                            <TabButton key={index} onClick={() => setActiveTab(index)} $active={activeTab === index}>
+                                {tab.label}
+                            </TabButton>
+                        ))}
+                    </TabsNav>
+                </TabsContainer>
 
-            <TabContent>{tabs[activeTab]?.content}</TabContent>
+                <TabContent>{tabs[activeTab]?.content}</TabContent>
 
-            {showNavigation && (
-                <NavigationContainer>
-                    <Button variant="secondary" onClick={handlePrev} disabled={isFirstTab}>
-                        Anterior
-                    </Button>
-
-                    {isLastTab ? (
-                        <Button variant="primary" onClick={onSubmit} loading={loading}>
-                            {submitLabel}
+                {showNavigation && (
+                    <NavigationContainer>
+                        <Button variant="secondary" onClick={handlePrev} disabled={isFirstTab}>
+                            Anterior
                         </Button>
-                    ) : (
-                        <Button variant="primary" onClick={handleNext}>
-                            Siguiente
-                        </Button>
-                    )}
-                </NavigationContainer>
-            )}
-        </>
-    );
-});
+
+                        {isLastTab ? (
+                            <Button variant="primary" onClick={onSubmit} loading={loading}>
+                                {submitLabel}
+                            </Button>
+                        ) : (
+                            <Button variant="primary" onClick={handleNext}>
+                                Siguiente
+                            </Button>
+                        )}
+                    </NavigationContainer>
+                )}
+            </>
+        );
+    }
+);
 
 export default FormTabs;

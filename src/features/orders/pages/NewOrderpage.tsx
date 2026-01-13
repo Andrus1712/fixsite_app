@@ -241,7 +241,7 @@ export default function NewOrderpage() {
     ];
 
     return (
-        <Container className="container" center size="xl">
+        <Container className="container" center size="xl" padding={"lg"}>
             <Box p="lg" bg="white" rounded shadow>
                 <FormProvider {...methods}>
                     <FormTabs

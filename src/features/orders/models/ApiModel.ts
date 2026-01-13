@@ -1,5 +1,12 @@
-export interface ApiResponse {
+export interface ApiResponseV1 {
     data: OrderDetail[]; // Un array de objetos OrderDetail
+    total: number;
+    page: number;
+    totalPages: number;
+}
+
+export interface ApiResponse {
+    success: OrderDetail[]; // Un array de objetos OrderDetail
     total: number;
     page: number;
     totalPages: number;

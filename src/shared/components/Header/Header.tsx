@@ -1,15 +1,18 @@
-import { FaBars, FaUser } from "react-icons/fa";
+import { FaAngleDoubleLeft, FaAngleDoubleRight, FaBars, FaUser } from "react-icons/fa";
 import { useTheme } from "styled-components";
 import { HeaderContent, ItemUser, OptionsContainer } from "./HeaderStyles";
 import RolesSelector from "../RolesSelector";
 import { Row } from "../Layouts";
-import { Button, IconButton } from "../Buttons";
 import { LuCalendarCog } from "react-icons/lu";
 import { useNavigate } from "react-router";
 import { useHasPermission } from "../../../features/auth/hooks/useHasPermission";
+import Button from "../Buttons/Button";
+import IconButton from "../Buttons/IconButton";
 
 interface TopHeaderProps {
     onToggleSidebar: () => void;
+    onToggleCollapse: () => void;
+    isSidebarCollapsed?: boolean;
 }
 
 function Header({ onToggleSidebar }: TopHeaderProps) {
@@ -19,6 +22,7 @@ function Header({ onToggleSidebar }: TopHeaderProps) {
     return (
         <HeaderContent>
             <Row $gap={"xl"}>
+                <IconButton icon={<FaBars />} onClick={onToggleSidebar} variant="ghost" color="white" size="md" />
                 <Row $align="center" $justify="center" $gap={"md"}>
                     {hasPermission("order-new") ? (
                         <Button

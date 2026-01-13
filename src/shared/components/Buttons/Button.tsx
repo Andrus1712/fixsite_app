@@ -1,8 +1,8 @@
 import styled, { css } from "styled-components";
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "outline" | "warning" | "info" | "dark" | "light" | "purple" | "pink" | "indigo";
-type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "outline" | "warning" | "info" | "dark" | "light" | "purple" | "pink" | "indigo";
+export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;

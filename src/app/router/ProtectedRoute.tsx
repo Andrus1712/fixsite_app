@@ -37,7 +37,7 @@ const ProtectedRoute = () => {
             userId: data?.user?.id || 0,
         },
         {
-            skip: !!authError || !data?.user?.id || !currentRole?.id,
+            skip: !!authError || !data?.user?.id,
         }
     );
 
@@ -46,13 +46,7 @@ const ProtectedRoute = () => {
         if (!authError && currentRole?.id && data?.user?.id) {
             refetch();
         }
-    }, [
-        location.pathname,
-        authError,
-        currentRole?.id,
-        data?.user?.id,
-        refetch,
-    ]);
+    }, [location.pathname, authError, currentRole?.id, data?.user?.id]);
 
     useEffect(() => {
         if (
@@ -72,10 +66,6 @@ const ProtectedRoute = () => {
             dispatch(updateTenants({ tenants: permissions.tenants || [] }));
         }
     }, [permissions, error, authError, dispatch]);
-
-    if (authLoading) {
-        return <div>Verificando autenticación...</div>;
-    }
 
     if (authLoading) {
         return <div>Verificando autenticación...</div>;

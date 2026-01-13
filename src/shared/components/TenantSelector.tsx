@@ -9,111 +9,201 @@ import {
     useSwitchTenantMutation,
 } from "../../features/auth/services/authApi";
 import { useNavigate } from "react-router";
-import { Column, Flex, Row } from "./Layouts";
-import { Text } from "./Typography";
 import { useGetPermissionsByRoleQuery } from "../../features/permissions/services/permissionApi";
 import { FaDatabase } from "react-icons/fa";
-import { VscDebugDisconnect } from "react-icons/vsc";
-import { IconButton } from "./Buttons";
 import { IoIosArrowDown } from "react-icons/io";
 import { TiWorld } from "react-icons/ti";
 
-const TenantSelectorContainer = styled.div`
+const TenantSelectorContainer = styled.div<{ $isCollapsed: boolean }>`
+    position: relative;
+    width: ${(props) => (props.$isCollapsed ? "auto" : "100%")};
+    padding: ${(props) => (props.$isCollapsed ? "0" : props.theme.spacing.sm)};
+`;
+
+const TenantButton = styled.div`
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: ${(props) => props.theme.borderRadius.md};
+    gap: ${(props) => props.theme.spacing.sm};
+    background-color: ${(props) => props.theme.colors.gray100};
+    border: none;
+    
+    &:hover {
+        background-color: ${(props) => props.theme.colors.gray200};
+    }
+`;
+
+const TenantInfo = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${(props) => props.theme.spacing.sm};
+    flex: 1;
+    min-width: 0;
+`;
+
+const TenantIcon = styled.div<{ $isCollapsed: boolean }>`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: ${(props) => props.theme.colors.primary};
+    font-size: 1.2rem;
+
+    ${(props) => props.$isCollapsed && `
+        margin-right: 0;
+        font-size: 1.5rem;
+    `}
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+`;
+
+const TenantText = styled.div`
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    padding: ${(props) => props.theme.spacing.md};
-    gap: 10px;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
 `;
 
-const DataBaseInfo = styled.div`
-    position: relative;
+const TenantName = styled.div`
+    font-size: ${(props) => props.theme.fontSize.sm};
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+    color: ${(props) => props.theme.colors.gray800};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`;
+
+const TenantId = styled.div`
+    font-size: ${(props) => props.theme.fontSize.xs};
+    font-weight: ${(props) => props.theme.fontWeight.normal};
+    color: ${(props) => props.theme.colors.gray500};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`;
+
+const ArrowButton = styled.button<{ $isOpen: boolean }>`
+    display: flex;
     align-items: center;
-    width: 100%;
-    padding: ${(props) => props.theme.spacing.md} ${(props) => props.theme.spacing.md};
-    background-color: #f0fcf3;
-    border-radius: 8px;
-    border: 1px solid #baf7cf;
-    gap: 5px;
+    justify-content: center;
+    background: none;
+    border: none;
     cursor: pointer;
-`;
-
-const PointStatus = styled.div`
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #23c45e;
+    color: ${(props) => props.theme.colors.gray500};
+    padding: 4px;
+    border-radius: ${(props) => props.theme.borderRadius.sm};
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    
+    svg {
+        width: 16px;
+        height: 16px;
+        transform: ${(props) => (props.$isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+        transition: transform 0.2s ease;
+    }
+    
+    &:hover {
+        background-color: ${(props) => props.theme.colors.gray200};
+        color: ${(props) => props.theme.colors.gray700};
+    }
 `;
 
 const DropdownMenu = styled.div<{ $isOpen: boolean }>`
     position: absolute;
-    top: 110%;
+    top: calc(100% + 4px);
     left: 0;
     right: 0;
     background: ${(props) => props.theme.colors.surface};
-    border: 1px solid ${(props) => props.theme.colors.gray200};
-    border-radius: 6px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid ${(props) => props.theme.colors.border};
+    border-radius: ${(props) => props.theme.borderRadius.md};
+    box-shadow: ${(props) => props.theme.shadows.lg};
     z-index: 1000;
-    width: 100%;
-    
-    transition: 
-        opacity 0.3s ease-in-out, 
-        max-height 0.3s ease-in-out, 
-        padding 0.3s ease-in-out;
-
-    opacity: ${(props) => (props.$isOpen ? 1 : 0)}; /* 100% visible o totalmente transparente */
-    max-height: ${(props) => (props.$isOpen ? "300px" : "0")}; /* Define una altura máxima para la transición */
-    
-    overflow: hidden; 
-    
+    overflow: hidden;
+    max-height: ${(props) => (props.$isOpen ? "300px" : "0")};
+    opacity: ${(props) => (props.$isOpen ? 1 : 0)};
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: ${(props) => (props.$isOpen ? "auto" : "none")};
 `;
 
 const DropdownItem = styled.div<{ $isActive: boolean }>`
     padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
     cursor: ${(props) => (props.$isActive ? "default" : "pointer")};
-    font-size: 14px;
     background: ${(props) => (props.$isActive ? props.theme.colors.gray100 : "transparent")};
-    opacity: ${(props) => (props.$isActive ? 0.7 : 1)};
-
+    transition: background-color 0.15s ease;
+    border-left: 3px solid ${(props) => (props.$isActive ? props.theme.colors.primary : "transparent")};
+    
     &:hover {
-        background: ${(props) => (props.$isActive ? props.theme.colors.gray100 : props.theme.colors.gray100)};
-        color: ${(props) => (props.$isActive ? null : props.theme.colors.primaryHover)};
+        background-color: ${(props) => (props.$isActive ? props.theme.colors.gray100 : props.theme.colors.gray200)};
+    }
+    
+    &:first-child {
+        border-top-left-radius: ${(props) => props.theme.borderRadius.md};
+        border-top-right-radius: ${(props) => props.theme.borderRadius.md};
+    }
+    
+    &:last-child {
+        border-bottom-left-radius: ${(props) => props.theme.borderRadius.md};
+        border-bottom-right-radius: ${(props) => props.theme.borderRadius.md};
     }
 `;
 
-const Arrow = styled.span<{ $isOpen: boolean }>`
-    transform: ${(props) => (props.$isOpen ? "rotate(180deg)" : "rotate(0deg)")};
-    transition: transform 0.2s;
-    font-size: 14px;
+const DropdownItemContent = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: ${(props) => props.theme.spacing.sm};
 `;
 
-const DatabaseIcon = styled.div`
-    transition: all 0.2s ease;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
+const DropdownItemText = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+`;
+
+const DropdownItemName = styled.div<{ $isActive: boolean }>`
+    font-size: ${(props) => props.theme.fontSize.sm};
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+    color: ${(props) => (props.$isActive ? props.theme.colors.primary : props.theme.colors.gray800)};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`;
+
+const DropdownItemId = styled.div`
+    font-size: ${(props) => props.theme.fontSize.xs};
+    font-weight: ${(props) => props.theme.fontWeight.normal};
+    color: ${(props) => props.theme.colors.gray500};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`;
+
+const DatabaseIconSmall = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    color: ${(props) => props.theme.colors.primary};
+    flex-shrink: 0;
     
-    &:hover {
-        .database-icon {
-            display: none;
-        }
-        .disconnect-icon {
-            display: block;
-        }
-    }
-    
-    .disconnect-icon {
-        display: none;
+    svg {
+        width: 14px;
+        height: 14px;
     }
 `;
 
-function TenantSelector() {
+function TenantSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
     const [isOpen, setIsOpen] = useState(false);
     const { data, currentTenant: currentTenantState, currentRole } = useAppSelector((state) => state.auth);
 
@@ -171,85 +261,68 @@ function TenantSelector() {
     };
 
     return (
-        <TenantSelectorContainer>
-            <Text variant="caption" weight="semibold" uppercase color="gray400">
-                Sucursal
-            </Text>
-            <DataBaseInfo>
-                <Flex direction="row" align="center" justify="space-between" gap={"xs"} className="tenantselector">
-                    <Row $gap={"md"} $align="center" $justify="space-between">
+        <TenantSelectorContainer $isCollapsed={isCollapsed}>
+            <TenantButton onClick={() => setIsOpen(!isOpen)}>
+                <TenantInfo>
+                    <TenantIcon $isCollapsed={isCollapsed}>
                         <TiWorld />
-                        <Flex direction="column" align="flex-start" justify="flex-start" gap={1}>
-                            <Text truncate variant="body2" weight="semibold" color="primary">
-                                {currentTenant}
-                            </Text>
-                            <Text truncate weight="normal" color="gray400">
-                                ID: {currentBDName}
-                            </Text>
-                        </Flex>
-                    </Row>
-                    <Row $gap={"xs"} $align="center" $justify="space-between">
-                        <DatabaseIcon>
-                            <IconButton
-                                variant="ghost"
-                                icon={
-                                    <>
-                                        <FaDatabase className="database-icon" color="#23c45e" />
-                                        <VscDebugDisconnect
-                                            className="disconnect-icon"
-                                            color="#EF4444"
-                                            title="Desconectar"
-                                        />
-                                    </>
-                                }
-                            />
-                        </DatabaseIcon>
-                        <Arrow $isOpen={isOpen} onClick={() => setIsOpen(!isOpen)}>
-                            <IconButton variant="ghost" icon={<IoIosArrowDown />} />
-                        </Arrow>
-                    </Row>
-                </Flex>
-                <DropdownMenu $isOpen={isOpen}>
-                    <DropdownItem
-                        $isActive={!currentTenantState}
-                        onClick={() => currentTenantState && handleLogoutTenat()}
-                    >
-                        <Flex direction="row" align="center" justify="space-between">
-                            <Column gap={"xs"}>
-                                <Text weight="semibold" color="primary">
-                                    FixSite General
-                                </Text>
-                                <Text weight="normal" color="muted">
-                                    ID: fixsite_global
-                                </Text>
-                            </Column>
+                    </TenantIcon>
+                    {!isCollapsed && (
+                        <TenantText>
+                            <TenantName>{currentTenant}</TenantName>
+                            <TenantId>{currentBDName}</TenantId>
+                        </TenantText>
+                    )}
+                </TenantInfo>
+                {!isCollapsed && (
+                    <ArrowButton $isOpen={isOpen} onClick={(e) => {
+                        e.stopPropagation();
+                        setIsOpen(!isOpen);
+                    }}>
+                        <IoIosArrowDown />
+                    </ArrowButton>
+                )}
+            </TenantButton>
+            <DropdownMenu $isOpen={isOpen}>
+                <DropdownItem
+                    $isActive={!currentTenantState}
+                    onClick={() => currentTenantState && handleLogoutTenat()}
+                >
+                    <DropdownItemContent>
+                        <DropdownItemText>
+                            <DropdownItemName $isActive={!currentTenantState}>
+                                FixSite General
+                            </DropdownItemName>
+                            <DropdownItemId>fixsite_global</DropdownItemId>
+                        </DropdownItemText>
+                        <DatabaseIconSmall>
                             <FaDatabase />
-                        </Flex>
-                    </DropdownItem>
-                    {tenants?.map((t) => {
-                        const isActive = currentTenantState?.id === t.id;
-                        return (
-                            <DropdownItem
-                                key={t.id}
-                                $isActive={isActive}
-                                onClick={() => !isActive && handleChangeTenat(t)}
-                            >
-                                <Flex direction="row" align="center" justify="space-between">
-                                    <Column gap={"xs"}>
-                                        <Text weight="semibold" color="primary">
-                                            {t.name}
-                                        </Text>
-                                        <Text weight="normal" color="muted">
-                                            {t.databaseName}
-                                        </Text>
-                                    </Column>
+                        </DatabaseIconSmall>
+                    </DropdownItemContent>
+                </DropdownItem>
+                {tenants?.map((t) => {
+                    const isActive = currentTenantState?.id === t.id;
+                    return (
+                        <DropdownItem
+                            key={t.id}
+                            $isActive={isActive}
+                            onClick={() => !isActive && handleChangeTenat(t)}
+                        >
+                            <DropdownItemContent>
+                                <DropdownItemText>
+                                    <DropdownItemName $isActive={isActive}>
+                                        {t.name}
+                                    </DropdownItemName>
+                                    <DropdownItemId>{t.databaseName}</DropdownItemId>
+                                </DropdownItemText>
+                                <DatabaseIconSmall>
                                     <FaDatabase />
-                                </Flex>
-                            </DropdownItem>
-                        );
-                    })}
-                </DropdownMenu>
-            </DataBaseInfo>
+                                </DatabaseIconSmall>
+                            </DropdownItemContent>
+                        </DropdownItem>
+                    );
+                })}
+            </DropdownMenu>
         </TenantSelectorContainer>
     );
 }

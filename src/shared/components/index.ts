@@ -15,3 +15,6 @@ export { default as PermissionsSelector } from './PermissionsSelector';
 export * from './Card';
 export * from './TimePicker';
 export * from './Modal';
+export * from './Badge';
+export { default as ButtonGroup } from './Buttons/ButtonGroup';
+export { default as Button } from './Buttons/Button';

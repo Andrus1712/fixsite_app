@@ -206,10 +206,12 @@ const commonTheme = {
         inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
     },
     layout: {
-        sidebarWidth: '16.625rem',
+        sidebarWidth: '18.625rem',
+        sidebarCollapsedWidth: '4rem',
         headerHeight: '3.33333rem',
         containerMaxWidth: '1200px',
-        contentPadding: '1.5rem'
+        contentPaddingY: '0.75rem',
+        contentPaddingX: '1.25rem'
     },
     breakpoints: {
         sm: '640px',

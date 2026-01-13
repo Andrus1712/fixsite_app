@@ -1,22 +1,19 @@
 import { useMatches } from "react-router";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import { Heading } from "./Typography";
 
 const TitleContainer = styled.div`
-    padding: 5px 0;
-    /* border-bottom: 1px solid #e5e7eb; */
-    /* margin-bottom: 24px; */
+    padding: ${(props) => props.theme.spacing.sm} 0;
+
+    @media (max-width: ${(props) => props.theme.breakpoints.md}) {
+        margin-bottom: ${(props) => props.theme.spacing.md};
+    }
 `;
 
-const Title = styled.h1`
-    font-size: 24px;
-    font-weight: 600;
-    color: #111827;
-    margin: 0;
-`;
 
 export default function PageTitle() {
     const matches = useMatches();
+    const theme = useTheme();
     const currentMatch = matches[matches.length - 1];
     const title =
         (currentMatch?.handle as any)?.title ||
@@ -26,7 +23,15 @@ export default function PageTitle() {
     return (
         <TitleContainer>
             {!(currentMatch?.handle as any)?.notFound ? (
-                <Heading level="h2" color="gray800" truncate>
+                <Heading
+                    level="h2"
+                    color="gray800"
+                    truncate
+                    style={{
+                        fontWeight: theme.fontWeight.semibold,
+                        lineHeight: 1.2,
+                    }}
+                >
                     {title}
                 </Heading>
             ) : null}

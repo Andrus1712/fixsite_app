@@ -1,25 +1,51 @@
-import { useLocation, useParams } from "react-router";
-import { Container, useToast } from "../../../shared/components";
+import { useParams } from "react-router";
+import { Badge, Box, Container, DropdownButton, Row, Text, useToast } from "../../../shared/components";
+import { IoPrint, IoCheckmark, IoDocumentText, IoTrash } from "react-icons/io5";
+import Button from "../../../shared/components/Buttons/Button";
+import { HiDotsVertical } from "react-icons/hi";
+import Tabs from "../../../shared/components/Tabs";
+import { InfoOrderOverview } from "../components/InfoOrderOverview";
+import { useGetOrdersByCodeQuery } from "../services/orderApi";
 import { useEffect } from "react";
-import { useAlert } from "../../../shared/components/AlertModal";
 
 const InfoOrderPage = () => {
     const { code } = useParams<{ code: string }>();
-    const location = useLocation();
-    const order = location.state;
+    const { showSuccess } = useToast();
+
+    const { data, isLoading, isError, error } = useGetOrdersByCodeQuery({ order_code: code });
+
     const { showError } = useToast();
-    const { showSuccess, closeAlert } = useAlert();
 
     useEffect(() => {
-        showError("Error al obtener la orden", "OJO valemia!");
+        if (isError) showError(error.data.message, "Error");
+    }, [data, isError]);
 
-        showSuccess("Orden obtenida exitosamente", "OJO valemia!", false);
-    }, []);
+    const tabs = [
+        {
+            label: "Overview",
+            content: data ? <InfoOrderOverview data={data} /> : null,
+        },
+        {
+            label: "Historial",
+            content: <div>Historial</div>,
+        },
+        {
+            label: "Problemas",
+            content: <div>Tabs 2</div>,
+        },
+        {
+            label: "Piezas",
+            content: <div>Tabs 2</div>,
+        },
+    ];
+
+    if (isLoading) {
+        return "Loading...";
+    }
+
     return (
-        <Container className="container" center size="xl">
-            <div>InfoOrderPage</div>
-            <pre>{JSON.stringify(code, null, 2)}</pre>
-            <pre>{JSON.stringify(order, null, 2)}</pre>
+        <Container className="container" size="full" center padding={"xs"}>
+            <Tabs tabs={tabs} defaultTab={0} onChange={(index) => console.log("Pestaña:", index)} />
         </Container>
     );
 };

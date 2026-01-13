@@ -1,10 +1,13 @@
 import styled from "styled-components";
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
+export type IconButtonVariant = "ghost" | "solid" | "border";
+export type IconButtonSize = "sm" | "md" | "lg";
+
 interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     icon: ReactNode;
-    size?: "sm" | "md" | "lg";
-    variant?: "ghost" | "solid" | "border";
+    size?: IconButtonSize;
+    variant?: IconButtonVariant;
     color?:
         | "primary"
         | "danger"

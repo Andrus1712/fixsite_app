@@ -1,12 +1,12 @@
 import styled from "styled-components";
 
 export const HeaderContent = styled.header`
-    height: 3.33333rem;
+    height: ${(props) => props.theme.layout.headerHeight};
     position: sticky;
     top: 0;
     width: 100%;
     transition: background 300ms ease-out;
-    background-color: ${(props) => props.theme.colors.primaryDark};
+    background-color: ${(props) => props.theme.colors.primary};
     backdrop-filter: blur(5px);
     display: flex;
     flex-direction: row;
