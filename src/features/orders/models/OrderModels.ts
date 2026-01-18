@@ -114,8 +114,8 @@ export interface StatusHistoryEntry {
 
 export interface Note {
   id: number;
-  author: string;
-  timestamp: string;
+  author?: string;
+  timestamp?: string;
   content: string;
   type: string;
 }

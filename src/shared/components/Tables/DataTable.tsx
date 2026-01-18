@@ -6,12 +6,12 @@ import {
 } from "@tanstack/react-table";
 import {
     ButtonGroup,
-    Container,
+    TableContainer,
     FooterCell,
     FooterContent,
     InfoText,
     PaginationButton,
-    Table,
+    StyledTable,
     TableCell,
     TableHead,
     TableHeader,
@@ -66,66 +66,66 @@ export default function DataTable<T>({
                     placeholder={searchPlaceholder}
                 />
             )}
-            <Container>
-                <Table>
-                <TableHead>
-                    {table.getHeaderGroups().map((hg) => (
-                        <tr key={hg.id}>
-                            {hg.headers.map((header) => (
-                                <TableHeader key={header.id}>
-                                    {flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext()
-                                    )}
-                                </TableHeader>
-                            ))}
-                        </tr>
-                    ))}
-                </TableHead>
-                <tbody>
-                    {table.getRowModel().rows.map((row) => (
-                        <TableRow key={row.id}>
-                            {row.getVisibleCells().map((cell) => (
-                                <TableCell key={cell.id}>
-                                    {flexRender(
-                                        cell.column.columnDef.cell,
-                                        cell.getContext()
-                                    )}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    ))}
-                </tbody>
-                <tfoot>
-                    {page && total && totalPages && (
-                        <tr>
-                            <FooterCell colSpan={columns.length}>
-                                <FooterContent>
-                                    <InfoText>
-                                        Mostrando página {page} de {totalPages}{" "}
-                                        • Total: {total} registros
-                                    </InfoText>
-                                    <ButtonGroup>
-                                        <PaginationButton
-                                            type="button"
-                                            disabled={page === 1}
-                                        >
-                                            ← Anterior
-                                        </PaginationButton>
-                                        <PaginationButton
-                                            type="button"
-                                            disabled={page === totalPages}
-                                        >
-                                            Siguiente →
-                                        </PaginationButton>
-                                    </ButtonGroup>
-                                </FooterContent>
-                            </FooterCell>
-                        </tr>
-                    )}
-                </tfoot>
-            </Table>
-        </Container>
+            <TableContainer>
+                <StyledTable>
+                    <TableHead>
+                        {table.getHeaderGroups().map((hg) => (
+                            <tr key={hg.id}>
+                                {hg.headers.map((header) => (
+                                    <TableHeader key={header.id}>
+                                        {flexRender(
+                                            header.column.columnDef.header,
+                                            header.getContext()
+                                        )}
+                                    </TableHeader>
+                                ))}
+                            </tr>
+                        ))}
+                    </TableHead>
+                    <tbody>
+                        {table.getRowModel().rows.map((row) => (
+                            <TableRow key={row.id}>
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id}>
+                                        {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext()
+                                        )}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </tbody>
+                    <tfoot>
+                        {page && total && totalPages && (
+                            <tr>
+                                <FooterCell colSpan={columns.length}>
+                                    <FooterContent>
+                                        <InfoText>
+                                            Mostrando página {page} de {totalPages}{" "}
+                                            • Total: {total} registros
+                                        </InfoText>
+                                        <ButtonGroup>
+                                            <PaginationButton
+                                                type="button"
+                                                disabled={page === 1}
+                                            >
+                                                ← Anterior
+                                            </PaginationButton>
+                                            <PaginationButton
+                                                type="button"
+                                                disabled={page === totalPages}
+                                            >
+                                                Siguiente →
+                                            </PaginationButton>
+                                        </ButtonGroup>
+                                    </FooterContent>
+                                </FooterCell>
+                            </tr>
+                        )}
+                    </tfoot>
+                </StyledTable>
+            </TableContainer>
         </TableWrapper>
     );
 }

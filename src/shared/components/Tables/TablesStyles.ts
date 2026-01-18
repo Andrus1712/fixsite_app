@@ -1,10 +1,10 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
+export const TableContainer = styled.div`
     overflow-x: auto;
 `;
 
-export const Table = styled.table`
+export const StyledTable = styled.table`
     width: 100%;
     border-collapse: collapse;
     background-color: white;

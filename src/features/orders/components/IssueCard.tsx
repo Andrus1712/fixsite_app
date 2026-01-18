@@ -126,22 +126,22 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove }: IssueCardProps) 
                     issue.severity === 1
                         ? "Crítica"
                         : issue.severity === 2
-                        ? "Alta"
-                        : issue.severity === 3
-                        ? "Media"
-                        : issue.severity === 4
-                        ? "Baja"
-                        : "Sin definir",
+                            ? "Alta"
+                            : issue.severity === 3
+                                ? "Media"
+                                : issue.severity === 4
+                                    ? "Baja"
+                                    : "Sin definir",
                 variant:
                     issue.severity === 1
                         ? "critica"
                         : issue.severity === 2
-                        ? "alta"
-                        : issue.severity === 3
-                        ? "media"
-                        : issue.severity === 4
-                        ? "baja"
-                        : "media",
+                            ? "alta"
+                            : issue.severity === 3
+                                ? "media"
+                                : issue.severity === 4
+                                    ? "baja"
+                                    : "media",
             }}
             defaultExpanded={index === 0}
             onDelete={() => onRemove(issue.id)}
@@ -204,9 +204,9 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove }: IssueCardProps) 
                                 !issue.issueType || !issue.severity
                                     ? []
                                     : codes?.data?.map((code: any) => ({
-                                          value: code.id,
-                                          label: code.code + " - " + code.name,
-                                      })) || []
+                                        value: code.id,
+                                        label: code.code + " - " + code.name,
+                                    })) || []
                             }
                             placeholder={"Seleccionar código de falla"}
                             onSearch={handleCodesSearch}
@@ -245,6 +245,28 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove }: IssueCardProps) 
                             handleFileUpload(files);
                         }}
                         filesUplaod={issue.uploadedFiles}
+                        error={(() => {
+                            const filesErrors = issueErrors?.issue_files;
+                            if (!filesErrors) return undefined;
+
+                            // Caso 1: Error general del array (ej: minLength)
+                            if (filesErrors.message) return filesErrors.message;
+
+                            // Caso 2: Array de errores (errores específicos por archivo)
+                            if (Array.isArray(filesErrors)) {
+                                const errorIndex = filesErrors.findIndex((err: any) => err);
+                                if (errorIndex !== -1) {
+                                    const errorItem = filesErrors[errorIndex];
+                                    // Buscar la primera propiedad con error (ej: url)
+                                    const errorKey = Object.keys(errorItem || {}).find((k) => errorItem[k]?.message);
+                                    if (errorKey) {
+                                        const fileName = issue.uploadedFiles?.[errorIndex]?.originalName || `Archivo ${errorIndex + 1}`;
+                                        return `${fileName}: ${errorItem[errorKey].message}`;
+                                    }
+                                }
+                            }
+                            return undefined;
+                        })()}
                     />
                     {issue.uploadedFiles && issue.uploadedFiles.length > 0 && (
                         <div style={{ marginTop: "8px" }}>

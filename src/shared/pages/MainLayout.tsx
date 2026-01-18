@@ -7,31 +7,40 @@ import { Divider, LoadingSpinner, Row } from "../components";
 import PageTitle from "../components/PageTitle";
 import Breadcrumbs from "../components/Breadcrumbs";
 
-export const MainLayoutContainer = styled.div<{ $sidebarOpen: boolean; $isCollapsed: boolean }>`
+export const MainLayoutContainer = styled.div`
     height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+`;
+
+export const Workspace = styled.div<{ $sidebarOpen: boolean; $isCollapsed: boolean }>`
+    flex: 1;
     display: grid;
     grid-template-columns: ${(props) => {
-        if (props.$sidebarOpen && !props.$isCollapsed) return `${props.theme.layout.sidebarWidth} 1fr`;
-        if (props.$sidebarOpen && props.$isCollapsed) return `${props.theme.layout.sidebarCollapsedWidth} 1fr`;
-        // Si el sidebar no está abierto en desktop, la columna del sidebar desaparece
-        return "0fr 1fr";
+        if (props.$sidebarOpen && !props.$isCollapsed) {
+            return `${props.theme.layout.sidebarWidth} minmax(0, 1fr)`;
+        }
+        if (props.$sidebarOpen && props.$isCollapsed) {
+            return `${props.theme.layout.sidebarCollapsedWidth} minmax(0, 1fr)`;
+        }
+        return "0 minmax(0, 1fr)";
     }};
     position: relative;
+    overflow: hidden;
 
     @media (max-width: ${(props) => props.theme.breakpoints.lg}) {
-        grid-template-columns: 1fr; // Siempre 1 columna para móviles/tabletas pequeñas
+        grid-template-columns: minmax(0, 1fr);
     }
 `;
 
 export const SidebarWrapper = styled.div<{ $isOpen: boolean }>`
-    /* Por defecto, se comporta como un elemento de la grilla */
     @media (max-width: ${(props) => props.theme.breakpoints.lg}) {
         position: fixed;
-        top: 0;
+        top: ${(props) => props.theme.layout.headerHeight};
         left: 0;
         z-index: 999;
-        height: 100vh;
-        /* Solo se hace visible si $isOpen es true en móvil, de lo contrario se oculta con el transform del SidebarContainer */
+        height: calc(100vh - ${(props) => props.theme.layout.headerHeight});
         transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -39,13 +48,14 @@ export const SidebarWrapper = styled.div<{ $isOpen: boolean }>`
 
 export const Container = styled.div`
     padding: 0;
-    height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    height: 100%;
 `;
 
 export const Content = styled.main`
+    flex: 1;
     padding: ${(props) => props.theme.layout.contentPaddingY} ${(props) => props.theme.layout.contentPaddingX};
     background-color: ${(props) => props.theme.colors.background};
     overflow-y: auto;
@@ -113,39 +123,40 @@ function MainLayout() {
     }, []);
 
     return (
-        <MainLayoutContainer $sidebarOpen={isSidebarOpen} $isCollapsed={isSidebarCollapsed}>
-            <Overlay
-                $isVisible={isSidebarOpen && window.innerWidth < parseInt(theme.breakpoints.lg)}
-                onClick={toggleSidebar}
+        <MainLayoutContainer>
+            <Header
+                onToggleSidebar={toggleSidebar}
+                onToggleCollapse={toggleSidebarCollapse}
+                isSidebarCollapsed={isSidebarCollapsed}
             />
-            <SidebarWrapper $isOpen={isSidebarOpen}>
-                <Sidebar
-                    isOpen={isSidebarOpen}
-                    isCollapsed={isSidebarCollapsed}
-                    onToggle={toggleSidebar}
-                    onToggleCollapse={toggleSidebarCollapse}
+            <Workspace $sidebarOpen={isSidebarOpen} $isCollapsed={isSidebarCollapsed}>
+                <Overlay
+                    $isVisible={isSidebarOpen && window.innerWidth < parseInt(theme.breakpoints.lg)}
+                    onClick={toggleSidebar}
                 />
-            </SidebarWrapper>
-            <Container>
-                <Header
-                    onToggleSidebar={toggleSidebar}
-                    onToggleCollapse={toggleSidebarCollapse}
-                    isSidebarCollapsed={isSidebarCollapsed}
-                />
-                <Content>
-                    <Suspense fallback={<LoadingSpinner />}>
-                        <Row $align="center" $justify="space-between" $gap={"xs"}>
-                            <PageTitle />
-                            <Breadcrumbs />
-                        </Row>
-                        <Divider margin={"xs"} />
-                        <Outlet />
-                    </Suspense>
-                </Content>
-                <Footer>
-                    <p>© 2025 Mi Proyecto</p>
-                </Footer>
-            </Container>
+                <SidebarWrapper $isOpen={isSidebarOpen}>
+                    <Sidebar
+                        isOpen={isSidebarOpen}
+                        isCollapsed={isSidebarCollapsed}
+                        onToggle={toggleSidebar}
+                    />
+                </SidebarWrapper>
+                <Container>
+                    <Content>
+                        <Suspense fallback={<LoadingSpinner />}>
+                            <Row $align="center" $justify="space-between" $gap={"xs"}>
+                                <PageTitle />
+                                <Breadcrumbs />
+                            </Row>
+                            <Divider margin={"xs"} />
+                            <Outlet />
+                        </Suspense>
+                    </Content>
+                    <Footer>
+                        <p>© 2025 Mi Proyecto</p>
+                    </Footer>
+                </Container>
+            </Workspace>
         </MainLayoutContainer>
     );
 }

@@ -1,40 +1,72 @@
 import styled from "styled-components";
 import { type HTMLAttributes } from "react";
 
-type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly";
-type AlignItems = "flex-start" | "flex-end" | "center" | "stretch" | "baseline";
-type Gap = "xs" | "sm" | "md" | "lg" | "xl" | number;
+export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly";
+export type AlignItems = "flex-start" | "flex-end" | "center" | "stretch" | "baseline";
+export type SpacingKey = "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl";
+export type Gap = SpacingKey | number | string;
 
-interface RowProps extends HTMLAttributes<HTMLDivElement> {
+export interface RowProps extends HTMLAttributes<HTMLDivElement> {
+    $justify?: JustifyContent;
+    justify?: JustifyContent;
+    $align?: AlignItems;
+    align?: AlignItems;
+    $gap?: Gap;
+    gap?: Gap;
+    $wrap?: boolean;
+    wrap?: boolean;
+    $fullWidth?: boolean;
+    fullWidth?: boolean;
+    $fullHeight?: boolean;
+    fullHeight?: boolean;
+}
+
+const getSpacing = (gap: Gap | undefined, theme: any) => {
+    if (gap === undefined) return theme.spacing.md;
+    if (typeof gap === "number") return `${gap}px`;
+    if (theme.spacing[gap as SpacingKey]) return theme.spacing[gap as SpacingKey];
+    return gap;
+};
+
+const StyledRow = styled.div<{
     $justify?: JustifyContent;
     $align?: AlignItems;
     $gap?: Gap;
     $wrap?: boolean;
-    fullWidth?: boolean;
-}
-
-const getGapValue = (gap: Gap) => {
-    if (typeof gap === "number") return `${gap}px`;
-    const gaps = {
-        xs: "4px",
-        sm: "8px",
-        md: "16px",
-        lg: "24px", 
-        xl: "32px"
-    };
-    return gaps[gap] || "16px";
-};
-
-const StyledRow = styled.div<RowProps>`
+    $fullWidth?: boolean;
+    $fullHeight?: boolean;
+}>`
     display: flex;
     flex-direction: row;
-    justify-content: ${props => props.$justify || "flex-start"};
-    align-items: ${props => props.$align || "stretch"};
-    flex-wrap: ${props => props.$wrap ? "wrap" : "nowrap"};
-    gap: ${props => getGapValue(props.$gap || "md")};
-    width: ${props => props.fullWidth ? "100%" : "auto"};
+    justify-content: ${(props) => props.$justify || "flex-start"};
+    align-items: ${(props) => props.$align || "center"};
+    flex-wrap: ${(props) => (props.$wrap ? "wrap" : "nowrap")};
+    gap: ${(props) => getSpacing(props.$gap, props.theme)};
+    width: ${(props) => (props.$fullWidth ? "100%" : "auto")};
+    height: ${(props) => (props.$fullHeight ? "100%" : "auto")};
 `;
 
-export default function Row(props: RowProps) {
-    return <StyledRow {...props} />;
+export default function Row({
+    $justify, justify,
+    $align, align,
+    $gap, gap,
+    $wrap, wrap,
+    $fullWidth, fullWidth,
+    $fullHeight, fullHeight,
+    children,
+    ...props
+}: RowProps) {
+    return (
+        <StyledRow
+            $justify={$justify || justify}
+            $align={$align || align}
+            $gap={$gap || gap}
+            $wrap={$wrap !== undefined ? $wrap : wrap}
+            $fullWidth={$fullWidth !== undefined ? $fullWidth : fullWidth}
+            $fullHeight={$fullHeight !== undefined ? $fullHeight : fullHeight}
+            {...props}
+        >
+            {children}
+        </StyledRow>
+    );
 }

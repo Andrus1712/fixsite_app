@@ -6,12 +6,12 @@ import {
 } from "@tanstack/react-table";
 import {
     ButtonGroup,
-    Container,
+    TableContainer,
     FooterCell,
     FooterContent,
     InfoText,
     PaginationButton,
-    Table,
+    StyledTable,
     TableCell,
     TableHead,
     TableHeader,
@@ -69,8 +69,8 @@ export default function DataTable<T>({
                     />
                 </Row>
             )}
-            <Container>
-                <Table>
+            <TableContainer>
+                <StyledTable>
                     <TableHead>
                         {table.getHeaderGroups().map((hg) => (
                             <tr key={hg.id}>
@@ -128,8 +128,8 @@ export default function DataTable<T>({
                             </tr>
                         )}
                     </tfoot>
-                </Table>
-            </Container>
+                </StyledTable>
+            </TableContainer>
         </TableWrapper>
     );
 }

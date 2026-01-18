@@ -135,6 +135,50 @@ export const CardExample: React.FC = () => {
       <Divider margin="lg" />
 
       <ExampleSection>
+        <SectionTitle>Tamaños de Card</SectionTitle>
+        <Flex direction="column" gap="md">
+          <Flex gap="md" wrap>
+            <div style={{ flex: '0 0 200px' }}>
+              <Card size="xs" title="Extra Small">
+                <Text variant="body2">
+                  Tamaño extra pequeño con max-width: 200px
+                </Text>
+              </Card>
+            </div>
+            <div style={{ flex: '0 0 300px' }}>
+              <Card size="sm" title="Small">
+                <Text variant="body2">
+                  Tamaño pequeño con max-width: 300px
+                </Text>
+              </Card>
+            </div>
+            <div style={{ flex: '0 0 400px' }}>
+              <Card size="md" title="Medium">
+                <Text variant="body2">
+                  Tamaño mediano con max-width: 400px (por defecto)
+                </Text>
+              </Card>
+            </div>
+            <div style={{ flex: '0 0 600px' }}>
+              <Card size="lg" title="Large">
+                <Text variant="body2">
+                  Tamaño grande con max-width: 600px
+                </Text>
+              </Card>
+            </div>
+          </Flex>
+          <Card size="full" title="Full Width">
+            <Text variant="paragraph">
+              Esta tarjeta ocupa todo el ancho disponible con max-width: 100%.
+              Es perfecta para secciones que necesitan extenderse completamente en su contenedor.
+            </Text>
+          </Card>
+        </Flex>
+      </ExampleSection>
+
+      <Divider margin="lg" />
+
+      <ExampleSection>
         <SectionTitle>Props Disponibles</SectionTitle>
         <Flex direction="column" gap="md">
           <div>

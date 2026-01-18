@@ -2,13 +2,13 @@ import styled, { css } from 'styled-components';
 
 interface StyledCardProps {
   variant: 'default' | 'outlined' | 'elevated' | 'filled' | 'selected' | 'disabled';
-  size: 'xs' | 'sm' | 'md' | 'lg';
+  size: 'xs' | 'sm' | 'md' | 'lg' | 'full';
   padding: 'none' | 'small' | 'medium' | 'large';
   clickable: boolean;
 }
 
 interface CardSectionProps {
-  size: 'xs' | 'sm' | 'md' | 'lg';
+  size: 'xs' | 'sm' | 'md' | 'lg' | 'full';
   padding?: 'none' | 'small' | 'medium' | 'large';
 }
 
@@ -19,7 +19,7 @@ const paddingMap = {
   large: '24px',
 };
 
-const getSizeStyles = (size: 'xs' | 'sm' | 'md' | 'lg') => {
+const getSizeStyles = (size: 'xs' | 'sm' | 'md' | 'lg' | 'full') => {
   switch (size) {
     case 'xs':
       return css`
@@ -35,6 +35,11 @@ const getSizeStyles = (size: 'xs' | 'sm' | 'md' | 'lg') => {
       return css`
         min-height: 200px;
         max-width: 600px;
+      `;
+    case 'full':
+      return css`
+        min-height: 160px;
+        max-width: 100%;
       `;
     default:
       return css`

@@ -1,167 +1,169 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { type HTMLAttributes, type ReactNode } from "react";
-import Spacer from "./Spacer";
+import { type SpacingKey } from "./Row";
 
-type Spacing = "xs" | "sm" | "md" | "lg" | "xl" | number;
+export type SpacingValue = SpacingKey | number | string;
 
-interface BoxProps extends HTMLAttributes<HTMLDivElement> {
-    p?: Spacing; // padding
-    m?: Spacing; // margin
-    pt?: Spacing;
-    pb?: Spacing;
-    pl?: Spacing;
-    pr?: Spacing;
-    mt?: Spacing;
-    mb?: Spacing;
-    ml?: Spacing;
-    mr?: Spacing;
-    bg?: string;
-    rounded?: boolean;
-    shadow?: boolean;
-    fullWidth?: boolean;
-    fullHeight?: boolean;
+export interface BoxProps extends HTMLAttributes<HTMLDivElement> {
+    $p?: SpacingValue; p?: SpacingValue;
+    $m?: SpacingValue; m?: SpacingValue;
+    $pt?: SpacingValue; pt?: SpacingValue;
+    $pb?: SpacingValue; pb?: SpacingValue;
+    $pl?: SpacingValue; pl?: SpacingValue;
+    $pr?: SpacingValue; pr?: SpacingValue;
+    $mt?: SpacingValue; mt?: SpacingValue;
+    $mb?: SpacingValue; mb?: SpacingValue;
+    $ml?: SpacingValue; ml?: SpacingValue;
+    $mr?: SpacingValue; mr?: SpacingValue;
+    $bg?: string; bg?: string;
+    $rounded?: boolean | string; rounded?: boolean | string;
+    $shadow?: boolean | string; shadow?: boolean | string;
+    $fullWidth?: boolean; fullWidth?: boolean;
+    $fullHeight?: boolean; fullHeight?: boolean;
+    $border?: string; border?: string;
+    $flex?: string | number; flexProp?: string | number;
     title?: string;
     headerActions?: ReactNode;
-    subtitle?: String | ReactNode;
+    subtitle?: string | ReactNode;
     showDivider?: boolean;
 }
 
-/* helper */
-const getSpacingValue = (spacing: Spacing | undefined) => {
+const getSpacingValue = (spacing: SpacingValue | undefined, theme: any) => {
     if (spacing === undefined || spacing === null) return undefined;
     if (typeof spacing === "number") return `${spacing}px`;
-    const spacings: Record<Exclude<Spacing, number>, string> = {
-        xs: "4px",
-        sm: "8px",
-        md: "16px",
-        lg: "24px",
-        xl: "32px",
-    };
-    return spacings[spacing as Exclude<Spacing, number>] ?? "0";
+    if (theme.spacing[spacing as SpacingKey]) return theme.spacing[spacing as SpacingKey];
+    return spacing;
 };
 
-/* Styled components using transient props ($...) so react won't forward them to DOM */
 const StyledBox = styled.div<{
-    $m?: Spacing;
-    $mt?: Spacing;
-    $mb?: Spacing;
-    $ml?: Spacing;
-    $mr?: Spacing;
+    $m?: SpacingValue;
+    $mt?: SpacingValue;
+    $mb?: SpacingValue;
+    $ml?: SpacingValue;
+    $mr?: SpacingValue;
     $bg?: string;
-    $rounded?: boolean;
-    $shadow?: boolean;
+    $rounded?: boolean | string;
+    $shadow?: boolean | string;
     $fullWidth?: boolean;
     $fullHeight?: boolean;
+    $border?: string;
+    $flex?: string | number;
 }>`
-    margin: ${(p) => getSpacingValue(p.$m) ?? "0"};
-    margin-top: ${(p) => getSpacingValue(p.$mt) ?? getSpacingValue(p.$m) ?? "0"};
-    margin-bottom: ${(p) => getSpacingValue(p.$mb) ?? getSpacingValue(p.$m) ?? "0"};
-    margin-left: ${(p) => getSpacingValue(p.$ml) ?? getSpacingValue(p.$m) ?? "0"};
-    margin-right: ${(p) => getSpacingValue(p.$mr) ?? getSpacingValue(p.$m) ?? "0"};
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    
+    margin: ${(p) => getSpacingValue(p.$m, p.theme) ?? "0"};
+    ${(p) => p.$mt && `margin-top: ${getSpacingValue(p.$mt, p.theme)};`}
+    ${(p) => p.$mb && `margin-bottom: ${getSpacingValue(p.$mb, p.theme)};`}
+    ${(p) => p.$ml && `margin-left: ${getSpacingValue(p.$ml, p.theme)};`}
+    ${(p) => p.$mr && `margin-right: ${getSpacingValue(p.$mr, p.theme)};`}
+    
     background-color: ${(p) => p.$bg ?? "transparent"};
-    border-radius: ${(p) => (p.$rounded ? "8px" : "0")};
-    box-shadow: ${(p) => (p.$shadow ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "none")};
+    border-radius: ${(p) =>
+        typeof p.$rounded === "string" ? p.$rounded :
+            p.$rounded ? p.theme.borderRadius.lg : "0"
+    };
+    box-shadow: ${(p) =>
+        typeof p.$shadow === "string" ? p.$shadow :
+            p.$shadow ? p.theme.shadows.md : "none"
+    };
+    border: ${(p) => p.$border ?? "none"};
+    
     width: ${(p) => (p.$fullWidth ? "100%" : "auto")};
     height: ${(p) => (p.$fullHeight ? "100%" : "auto")};
-    box-sizing: border-box;
+    flex: ${(p) => p.$flex ?? "initial"};
 `;
 
-/* Content: compute each padding side — if specific side not provided, fallback to p (general), else 0 */
 const Content = styled.div<{
-    $p?: Spacing;
-    $pt?: Spacing;
-    $pb?: Spacing;
-    $pl?: Spacing;
-    $pr?: Spacing;
+    $p?: SpacingValue;
+    $pt?: SpacingValue;
+    $pb?: SpacingValue;
+    $pl?: SpacingValue;
+    $pr?: SpacingValue;
 }>`
-    padding: ${(p) => getSpacingValue(p.$p) ?? "0"};
-    padding-top: ${(p) => getSpacingValue(p.$pt) ?? getSpacingValue(p.$p) ?? "0"};
-    padding-bottom: ${(p) => getSpacingValue(p.$pb) ?? getSpacingValue(p.$p) ?? "0"};
-    padding-left: ${(p) => getSpacingValue(p.$pl) ?? getSpacingValue(p.$p) ?? "0"};
-    padding-right: ${(p) => getSpacingValue(p.$pr) ?? getSpacingValue(p.$p) ?? "0"};
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
+    flex: 1;
+
+    padding: ${(p) => getSpacingValue(p.$p, p.theme) ?? "0"};
+    ${(p) => p.$pt && `padding-top: ${getSpacingValue(p.$pt, p.theme)};`}
+    ${(p) => p.$pb && `padding-bottom: ${getSpacingValue(p.$pb, p.theme)};`}
+    ${(p) => p.$pl && `padding-left: ${getSpacingValue(p.$pl, p.theme)};`}
+    ${(p) => p.$pr && `padding-right: ${getSpacingValue(p.$pr, p.theme)};`}
 `;
 
-const Header = styled.div<{ showDivider?: boolean }>`
+const Header = styled.div<{ $showDivider?: boolean }>`
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 16px;
-    border-bottom: ${(p) => (p.showDivider ? "1px solid #e5e7eb" : "none")};
-    margin-bottom: 24px;
+    gap: ${(p) => p.theme.spacing.md};
+    padding-bottom: ${(p) => p.theme.spacing.md};
+    margin-bottom: ${(p) => p.theme.spacing.lg};
+    ${(p) => p.$showDivider && css`
+        border-bottom: 1px solid ${p.theme.colors.borderLight};
+    `}
+    
+    @media (max-width: ${(p) => p.theme.breakpoints.sm}) {
+        flex-direction: column;
+        align-items: stretch;
+    }
 `;
 
 const TitleSection = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: ${(p) => p.theme.spacing.xxs};
 `;
 
 const Title = styled.h3`
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: #111827;
+    font-size: ${(p) => p.theme.fontSize.lg};
+    font-weight: ${(p) => p.theme.fontWeight.semibold};
+    color: ${(p) => p.theme.colors.text};
 `;
 
-const Subtitle = styled.p`
+const Subtitle = styled.div`
     margin: 0;
-    font-size: 14px;
-    color: #6b7280;
-    line-height: 1.4;
+    font-size: ${(p) => p.theme.fontSize.sm};
+    color: ${(p) => p.theme.colors.textSecondary};
+    line-height: 1.5;
 `;
 
-/* Component: DON'T forward layout props to DOM; map them to transient props ($...) */
 export default function Box({
-    title,
-    headerActions,
+    title, headerActions, subtitle, showDivider = true,
+    $p, p, $pt, pt, $pb, pb, $pl, pl, $pr, pr,
+    $m, m, $mt, mt, $mb, mb, $ml, ml, $mr, mr,
+    $bg, bg, $rounded, rounded, $shadow, shadow,
+    $fullWidth, fullWidth, $fullHeight, fullHeight,
+    $border, border, $flex, flexProp,
     children,
-    p,
-    pt,
-    pb,
-    pl,
-    pr,
-    m,
-    mt,
-    mb,
-    ml,
-    mr,
-    bg,
-    rounded,
-    shadow,
-    fullWidth,
-    fullHeight,
-    subtitle,
-    showDivider = true,
     ...rest
 }: BoxProps) {
-    // rest contains only valid HTML props now (id, className, onClick, etc.)
     return (
         <StyledBox
-            $m={m}
-            $mt={mt}
-            $mb={mb}
-            $ml={ml}
-            $mr={mr}
-            $bg={bg}
-            $rounded={rounded}
-            $shadow={shadow}
-            $fullWidth={fullWidth}
-            $fullHeight={fullHeight}
-            {...(rest as HTMLAttributes<HTMLDivElement>)}
+            $m={$m || m} $mt={$mt || mt} $mb={$mb || mb} $ml={$ml || ml} $mr={$mr || mr}
+            $bg={$bg || bg}
+            $rounded={$rounded !== undefined ? $rounded : rounded}
+            $shadow={$shadow !== undefined ? $shadow : shadow}
+            $fullWidth={$fullWidth !== undefined ? $fullWidth : fullWidth}
+            $fullHeight={$fullHeight !== undefined ? $fullHeight : fullHeight}
+            $border={$border || border}
+            $flex={$flex || flexProp}
+            {...rest}
         >
-            <Content $p={p} $pt={pt} $pb={pb} $pl={pl} $pr={pr}>
-                {(title || headerActions) && (
-                    <Header showDivider={showDivider}>
+            <Content
+                $p={$p || p} $pt={$pt || pt} $pb={$pb || pb} $pl={$pl || pl} $pr={$pr || pr}
+            >
+                {(title || headerActions || subtitle) && (
+                    <Header $showDivider={showDivider}>
                         <TitleSection>
                             {title && <Title>{title}</Title>}
-                            {subtitle && typeof subtitle == "string" ? (
-                                <Subtitle>{subtitle}</Subtitle>
-                            ) : (
-                                <>
-                                    <Spacer size={"xs"} />
-                                    {subtitle}
-                                </>
+                            {subtitle && (
+                                <Subtitle>
+                                    {typeof subtitle === "string" ? subtitle : subtitle}
+                                </Subtitle>
                             )}
                         </TitleSection>
                         {headerActions && <div>{headerActions}</div>}

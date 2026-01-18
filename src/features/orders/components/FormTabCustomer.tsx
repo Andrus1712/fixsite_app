@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Button, Column, FormGroup, Modal, Row, Text } from "../../../shared/components";
+import { useState, useCallback } from "react";
+import { Button, Column, FormGroup, Modal, Row, Text, useToast } from "../../../shared/components";
 import SearchInput from "../../../shared/components/SearchInput";
 import { IoMdPersonAdd } from "react-icons/io";
 import { FaTrash } from "react-icons/fa";
 import { useFormContext } from "react-hook-form";
 import IconButton from "../../../shared/components/Buttons/IconButton";
+import { useCreateCustomerMutation, useLazyGetCustomersQuery } from "../services/customerApi";
+import { useAlert } from "../../../shared/components/AlertModal";
 
 interface FormProps {
     formData: any;
@@ -17,68 +19,80 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
         trigger,
     } = useFormContext();
 
+    const { showError, showInfo } = useToast();
+    const { showSuccess } = useAlert();
+
     const [searchValue, setSearchValue] = useState<string>("");
     const [isFormOpen, setIsFormOpen] = useState(false);
 
+    // API Hooks
+    const [triggerSearch, { isFetching: isSearching }] = useLazyGetCustomersQuery();
+    const [createCustomer, { isLoading: isCreating }] = useCreateCustomerMutation();
+
+    // New Customer Form State
+    const [newCustomer, setNewCustomer] = useState({
+        customer_name: "",
+        customer_email: "",
+        customer_phone: "",
+        customer_address: "",
+        customer_city: "",
+        customer_country: "",
+        customer_type: "individual",
+        preferred_contact: "phone",
+    });
+
     const hasSelectedCustomer = !!(formData.customer_data.customer_id && formData.customer_data.customer_id > 0);
 
-    const handleSearch = async (query: string) => {
-        // Simula la llamada al servidor
+    const handleSearch = useCallback(async (query: string) => {
+        if (!query) return [];
+        try {
+            const response = await triggerSearch({ filter: query, page: 1, limit: 10 }).unwrap();
+            const customers = response.data || [];
 
-        return [
-            {
-                id: 1,
-                name: "Andres Calderon",
+            return customers.map((customer: any) => ({
+                ...customer,
                 label: (
                     <Row $align="center" $justify="flex-start">
                         <Column gap={"xs"}>
                             <Text weight="semibold" variant="body1">
-                                Andres Calderon Upegui
+                                {customer.customer_name}
                             </Text>
                             <Text weight="normal" variant="caption">
-                                acaldup@gmail.com
+                                {customer.customer_email}
                             </Text>
                             <Text weight="normal" variant="caption">
-                                +57 3177765722
+                                {customer.customer_phone}
+                            </Text>
+                            <Text weight="normal" variant="caption">
+                                {customer.customer_address}
+                            </Text>
+                            <Text weight="normal" variant="caption">
+                                {customer.customer_city}, {customer.customer_country}
                             </Text>
                         </Column>
                     </Row>
                 ),
-            },
-            {
-                id: 2,
-                name: "Pedro Guillermo",
-                label: (
-                    <Row $align="center" $justify="flex-start">
-                        <Column gap={"xs"}>
-                            <Text weight="semibold" variant="body1">
-                                pedro Gillermo
-                            </Text>
-                            <Text weight="normal" variant="caption">
-                                pguille@gmail.com
-                            </Text>
-                            <Text weight="normal" variant="caption">
-                                +57 3102344321
-                            </Text>
-                        </Column>
-                    </Row>
-                ),
-            },
-        ];
-    };
+            }));
+        } catch (error) {
+            showInfo("Error searching customers", "Error");
+            console.error("Error searching customers:", error);
+            return [];
+        }
+    }, [triggerSearch]);
 
     const handleSelectCustomer = (customer: any) => {
         updateField("customer_data.customer_id", customer.id);
-        updateField("customer_data.customer_name", customer.name);
-        updateField("customer_data.customer_email", "acaldup@gmail.com");
-        updateField("customer_data.customer_phone", "+57 3177765722");
-        updateField("customer_data.customer_address", "");
-        updateField("customer_data.customer_city", "");
-        updateField("customer_data.customer_country", "");
-        updateField("customer_data.customer_type", "individual");
-        updateField("customer_data.preferred_contact", "phone");
+        updateField("customer_data.customer_name", customer.customer_name);
+        updateField("customer_data.customer_email", customer.customer_email);
+        updateField("customer_data.customer_phone", customer.customer_phone);
+        updateField("customer_data.customer_address", customer.customer_address || "");
+        updateField("customer_data.customer_city", customer.customer_city || "");
+        updateField("customer_data.customer_country", customer.customer_country || "");
+        updateField("customer_data.customer_type", customer.customer_type || "individual");
+        updateField("customer_data.preferred_contact", customer.preferred_contact || "phone");
         setSearchValue("");
         trigger(["customer_data.customer_id"]);
+        showInfo("Customer selected successfully", "Success");
     };
 
     const handleRemoveCustomer = () => {
@@ -95,6 +109,27 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
         trigger(["customer_data.customer_id"]);
     };
 
+    const handleCreateCustomer = async () => {
+        try {
+            console.log(newCustomer);
+            const response = await createCustomer(newCustomer).unwrap();
+            const createdCustomer = response.data || response;
+
+            handleSelectCustomer({
+                ...createdCustomer,
+                customer_name: newCustomer.customer_name,
+                customer_email: newCustomer.customer_email,
+                customer_phone: newCustomer.customer_phone,
+            });
+            setIsFormOpen(false);
+            setNewCustomer({ customer_name: "", customer_email: "", customer_phone: "", customer_address: "", customer_city: "", customer_country: "", customer_type: "individual", preferred_contact: "phone" });
+            showSuccess("Success", "Customer created successfully", false);
+        } catch (error) {
+            console.error("Error creating customer:", error);
+            showError("Error creating customer " + error?.data?.message, "Error");
+        }
+    };
+
     return (
         <>
             <div style={{ position: "relative" }}>
@@ -105,12 +140,12 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                         onSearch={handleSearch}
                         onSelect={handleSelectCustomer}
                         placeholder="Buscar cliente por nombre, nit o correo..."
-                        loading
+                        loading={isSearching}
                         error={
                             errors.customer_data
                                 ? Object.values(errors.customer_data)
-                                      .map((err: any) => err.message)
-                                      .join(" - ")
+                                    .map((err: any) => err.message)
+                                    .join(" - ")
                                 : undefined
                         }
                     />
@@ -134,6 +169,12 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                                     </Text>
                                     <Text weight="normal" variant="caption">
                                         {formData.customer_data.customer_phone}
+                                    </Text>
+                                    <Text weight="normal" variant="caption">
+                                        {formData.customer_data.customer_address}
+                                    </Text>
+                                    <Text weight="normal" variant="caption">
+                                        {formData.customer_data.customer_city}, {formData.customer_data.customer_country}
                                     </Text>
                                 </Column>
                                 <IconButton
@@ -168,7 +209,9 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                         <Button variant="outline" onClick={() => setIsFormOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={() => setIsFormOpen(false)}>Guardar</Button>
+                        <Button onClick={handleCreateCustomer} disabled={isCreating} loading={isCreating}>
+                            Guardar
+                        </Button>
                     </>
                 }
             >
@@ -179,6 +222,8 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                         </label>
                         <input
                             type="text"
+                            value={newCustomer.customer_name}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customer_name: e.target.value })}
                             style={{
                                 width: "100%",
                                 padding: "8px 12px",
@@ -193,6 +238,8 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                         <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Email</label>
                         <input
                             type="email"
+                            value={newCustomer.customer_email}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customer_email: e.target.value })}
                             style={{
                                 width: "100%",
                                 padding: "8px 12px",
@@ -208,7 +255,9 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                             Teléfono de contacto
                         </label>
                         <input
-                            type="number"
+                            type="tel"
+                            value={newCustomer.customer_phone}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customer_phone: e.target.value })}
                             style={{
                                 width: "100%",
                                 padding: "8px 12px",
@@ -217,6 +266,60 @@ export const FormTabCustomer = ({ formData, updateField }: FormProps) => {
                                 fontSize: "14px",
                             }}
                             placeholder="+57 xxxxxxxxx"
+                        />
+                    </div>
+                    <div>
+                        <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                            Dirección
+                        </label>
+                        <input
+                            type="text"
+                            value={newCustomer.customer_address}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customer_address: e.target.value })}
+                            style={{
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "1px solid #d1d5db",
+                                borderRadius: "6px",
+                                fontSize: "14px",
+                            }}
+                            placeholder="Ingresa la dirección"
+                        />
+                    </div>
+                    <div>
+                        <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                            Ciudad
+                        </label>
+                        <input
+                            type="text"
+                            value={newCustomer.customer_city}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customer_city: e.target.value })}
+                            style={{
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "1px solid #d1d5db",
+                                borderRadius: "6px",
+                                fontSize: "14px",
+                            }}
+                            placeholder="Ingresa la ciudad"
+                        />
+                    </div>
+                    <div>
+                        <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                            País
+                        </label>
+                        <input
+                            type="text"
+                            value={newCustomer.customer_country}
+                            onChange={(e) => setNewCustomer({ ...newCustomer, customer_country: e.target.value })}
+                            style={{
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "1px solid #d1d5db",
+                                borderRadius: "6px",
+                                fontSize: "14px",
+                            }}
+                            placeholder="Ingresa el país"
                         />
                     </div>
                 </form>

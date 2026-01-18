@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Label, Row, Button, Flex, Text } from "../../../shared/components";
 import { FiPlus } from "react-icons/fi";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, type FieldError } from "react-hook-form";
 import { IssueCard } from "./IssueCard";
+import type { FormPropsOrder } from "../models/FormPropsOrder";
 
 interface Issue {
     id: number;
@@ -15,12 +16,7 @@ interface Issue {
     uploadedFiles: Array<{ filename: string; originalName: string; size: number; url: string }>;
 }
 
-interface FormProps {
-    formData: any;
-    updateField: (field: string, value: any) => void;
-}
-
-export const FormTabIssues = ({ formData, updateField }: FormProps) => {
+export const FormTabIssues = ({ formData, updateField }: FormPropsOrder) => {
     const [issues, setIssues] = useState<Issue[]>([]);
 
     const {
@@ -116,11 +112,6 @@ export const FormTabIssues = ({ formData, updateField }: FormProps) => {
                     />
                 ))}
             </Flex>
-            {errors.issues && (
-                <Text variant="caption" color="error" align="center">
-                    *{errors.issues.message}
-                </Text>
-            )}
         </div>
     );
 };

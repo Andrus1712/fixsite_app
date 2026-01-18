@@ -1,53 +1,55 @@
 import styled from "styled-components";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, useEffect } from "react";
 import { TabButton, TabContent, TabsContainer, TabsNav } from "./Tabs.styles";
+
+export type TabsVariant = "default" | "minimal" | "pill" | "outline" | "segmented" | "browser";
 
 interface Tab {
     label: string;
     content: ReactNode;
     disabled?: boolean;
+    icon?: ReactNode;
 }
 
 export interface TabsProps {
     tabs: Tab[];
     defaultTab?: number;
+    activeTab?: number;
     onChange?: (tabIndex: number) => void;
-    variant?: "default" | "minimal" | "pill" | "outline" | "segmented" | "browser";
+    variant?: TabsVariant;
+    fullWidth?: boolean;
 }
 
 /**
  * Componente Tabs - Selector de pestañas con múltiples variantes de estilo
- *
- * @example
- * // Estilo predeterminado
- * <Tabs tabs={tabs} variant="default" />
- *
- * @example
- * // Estilo navegador con bordes
- * <Tabs tabs={tabs} variant="browser" />
- *
- * @example
- * // Estilo minimalista sin bordes
- * <Tabs tabs={tabs} variant="minimal" />
- *
- * @example
- * // Con callback de cambio
- * <Tabs
- *   tabs={tabs}
- *   onChange={(index) => console.log('Tab changed to:', index)}
- * />
+ * Refactorizado para ser responsivo y adaptable.
  */
 const TabsStyled = styled.div`
     width: 100%;
     position: relative;
 `;
 
-export const Tabs = ({ tabs, defaultTab = 0, onChange, variant = "default" }: TabsProps) => {
-    const [activeTab, setActiveTab] = useState(defaultTab);
+export const Tabs = ({
+    tabs,
+    defaultTab = 0,
+    activeTab: externalActiveTab,
+    onChange,
+    variant = "default",
+    fullWidth = false
+}: TabsProps) => {
+    const [activeTab, setActiveTab] = useState(externalActiveTab ?? defaultTab);
+
+    useEffect(() => {
+        if (externalActiveTab !== undefined) {
+            setActiveTab(externalActiveTab);
+        }
+    }, [externalActiveTab]);
 
     const handleTabChange = (index: number) => {
         if (!tabs[index].disabled) {
-            setActiveTab(index);
+            if (externalActiveTab === undefined) {
+                setActiveTab(index);
+            }
             onChange?.(index);
         }
     };
@@ -59,21 +61,25 @@ export const Tabs = ({ tabs, defaultTab = 0, onChange, variant = "default" }: Ta
     return (
         <TabsStyled>
             <TabsContainer>
-                <TabsNav $variant={variant}>
+                <TabsNav $variant={variant} $fullWidth={fullWidth}>
                     {tabs.map((tab, index) => (
                         <TabButton
                             key={index}
                             $active={activeTab === index}
                             $variant={variant}
+                            $fullWidth={fullWidth}
                             onClick={() => handleTabChange(index)}
                             disabled={tab.disabled}
                             type="button"
                         >
-                            {tab.label}
+                            {tab.icon && <span className="tab-icon">{tab.icon}</span>}
+                            <span className="tab-label">{tab.label}</span>
                         </TabButton>
                     ))}
                 </TabsNav>
-                <TabContent>{tabs[activeTab]?.content}</TabContent>
+                <TabContent key={activeTab}>
+                    {tabs[activeTab]?.content}
+                </TabContent>
             </TabsContainer>
         </TabsStyled>
     );

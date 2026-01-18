@@ -11,7 +11,7 @@ export const SidebarContainer = styled.div<{ $isOpen: boolean; $isCollapsed: boo
     box-shadow: ${(props) => props.theme.shadows.lg};
     border-right: 1px solid ${(props) => props.theme.colors.borderLight};
     transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
-    overflow: hidden;
+    overflow: ${(props) => (props.$isCollapsed ? "visible" : "hidden")};
 
     ${(props) => !props.$isOpen && props.$isDesktop && !props.$isCollapsed && `
         display: none;
@@ -27,25 +27,11 @@ export const SidebarContainer = styled.div<{ $isOpen: boolean; $isCollapsed: boo
     }
 `;
 
-export const SidebarHeader = styled.div`
-    color: ${(props) => props.theme.colors.white};
-    height: ${(props) => props.theme.layout.headerHeight};
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: linear-gradient(135deg, ${(props) => props.theme.colors.primaryDark} 0%, ${(props) => props.theme.colors.primary} 100%);
-    padding: 0 ${(props) => props.theme.spacing.md};
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: ${(props) => props.theme.shadows.sm};
-    flex-shrink: 0;
-`;
-
-export const SidebarItems = styled.div`
+export const SidebarItems = styled.div<{ $isCollapsed?: boolean }>`
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow-y: ${(props) => (props.$isCollapsed ? "visible" : "auto")};
+    overflow-x: visible;
     flex: 1;
     width: 100%;
     padding: ${(props) => props.theme.spacing.md} 0;
@@ -104,7 +90,7 @@ export const IconWrapper = styled.div`
     }
 `;
 
-export const SidebarItem = styled(NavLink)<{ $isCollapsed: boolean }>`
+export const SidebarItem = styled(NavLink) <{ $isCollapsed: boolean }>`
     display: flex;
     align-items: center;
     padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
