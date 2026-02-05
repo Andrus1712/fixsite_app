@@ -14,7 +14,6 @@ interface ColumnProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const getGapValue = (gap: Gap) => {
-    console.log("T: " + typeof gap);
     
     if (typeof gap === "number") return `${gap}px`;
     const gaps = {

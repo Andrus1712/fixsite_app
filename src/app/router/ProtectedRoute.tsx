@@ -1,8 +1,10 @@
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { useAppDispatch, useAppSelector } from "../../shared/store";
 import { useGetPermissionsByRoleQuery } from "../../features/permissions/services/permissionApi";
+import { useCheckAuthQuery } from "../../features/auth/services/authApi";
 import {
-    setCurrentToken,
+    logout,
+    saveAuthInfo,
     updateModules,
     updatePermissions,
     updateRoles,
@@ -11,28 +13,57 @@ import {
 import { useEffect } from "react";
 
 const ProtectedRoute = () => {
-    const { isAuthenticated, data, currentRole, currentToken, currentTenant } =
-        useAppSelector((state) => state.auth);
-        
+    const { data, currentRole } = useAppSelector(
+        (state) => state.auth
+    );
+    const location = useLocation();
+    const dispatch = useAppDispatch();
 
-    const { data: permissions, refetch } = useGetPermissionsByRoleQuery(
+    // Solo verificar si hay sesión válida (sin datos)
+    const { error: authError, isLoading: authLoading } = useCheckAuthQuery(undefined, {
+        refetchOnMountOrArgChange: false,
+        refetchOnFocus: false,
+        refetchOnReconnect: false,
+    });
+
+    // Obtener datos completos (user, roles, tenants, permisos)
+    const {
+        data: permissions,
+        error,
+        refetch,
+    } = useGetPermissionsByRoleQuery(
         {
             roleId: currentRole?.id || 0,
             userId: data?.user?.id || 0,
         },
         {
-            skip: !isAuthenticated || !data?.user?.id,
+            skip: !!authError || !data?.user?.id || !currentRole?.id,
         }
     );
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
-    const dispatch = useAppDispatch();
+    // Validar en cada cambio de ruta
     useEffect(() => {
+        if (!authError && currentRole?.id && data?.user?.id) {
+            refetch();
+        }
+    }, [
+        location.pathname,
+        authError,
+        currentRole?.id,
+        data?.user?.id,
+        refetch,
+    ]);
+
+    useEffect(() => {
+        if (
+            (error && "status" in error && (error.status === 401 || error.status === 403)) ||
+            (authError && "status" in authError && (authError.status === 401 || authError.status === 403))
+        ) {
+            dispatch(logout());
+            return;
+        }
+
         if (permissions) {
-            // Se despacha solo si 'permissions' ha cambiado y existe
             dispatch(
                 updatePermissions({ permissions: permissions.permission || [] })
             );
@@ -40,11 +71,24 @@ const ProtectedRoute = () => {
             dispatch(updateRoles({ roles: permissions.roles || [] }));
             dispatch(updateTenants({ tenants: permissions.tenants || [] }));
         }
-    }, [permissions, dispatch]);
+    }, [permissions, error, authError, dispatch]);
 
-    useEffect(() => {
-        refetch();
-    }, [currentRole, currentToken, currentTenant]);
+    if (authLoading) {
+        return <div>Verificando autenticación...</div>;
+    }
+
+    if (authLoading) {
+        return <div>Verificando autenticación...</div>;
+    }
+
+    if (authError) {
+        return <Navigate to="/login" replace />;
+    }
+
+    // Si no hay datos de usuario, mostrar loading
+    if (!data?.user) {
+        return <div>Cargando datos de usuario...</div>;
+    }
 
     return <Outlet />;
 };

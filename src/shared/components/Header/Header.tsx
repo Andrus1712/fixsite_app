@@ -1,15 +1,11 @@
 import { FaBars, FaUser } from "react-icons/fa";
 import { useTheme } from "styled-components";
-import {
-    BurgerButton,
-    HeaderContent,
-    ItemUser,
-    OptionsContainer,
-} from "./HeaderStyles";
+import { HeaderContent, ItemUser, OptionsContainer } from "./HeaderStyles";
 import RolesSelector from "../RolesSelector";
-import PageTitle from "../PageTitle";
-import Breadcrumbs from "../Breadcrumbs";
-import { Column, Row } from "../Layouts";
+import { Row } from "../Layouts";
+import { Button, IconButton } from "../Buttons";
+import { LuCalendarCog } from "react-icons/lu";
+import { useNavigate } from "react-router";
 
 interface TopHeaderProps {
     onToggleSidebar: () => void;
@@ -17,14 +13,25 @@ interface TopHeaderProps {
 
 function Header({ onToggleSidebar }: TopHeaderProps) {
     const theme = useTheme();
+    const navigator = useNavigate();
     return (
         <HeaderContent>
-            <Row gap={"xl"}>
-                <Row align="center" justify="center" gap={"xs"}>
-                    <BurgerButton onClick={onToggleSidebar}>
-                        <FaBars />
-                    </BurgerButton>
-                    <PageTitle />
+            <Row $gap={"xl"}>
+                <Row $align="center" $justify="center" $gap={"md"}>
+                    <IconButton
+                        onClick={onToggleSidebar}
+                        variant="ghost"
+                        size="lg"
+                        icon={<FaBars />}
+                    />
+                    <Button
+                        leftIcon={<LuCalendarCog />}
+                        type="button"
+                        variant="pink"
+                        onClick={() => navigator("/app/order/new")}
+                    >
+                        Nueva Reparación
+                    </Button>
                 </Row>
             </Row>
             <OptionsContainer>

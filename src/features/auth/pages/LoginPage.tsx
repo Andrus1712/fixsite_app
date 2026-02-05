@@ -101,6 +101,7 @@ const LoginPage = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
                 />
                 <Button type="submit" disabled={isLoading}>
                     {isLoading ? "Cargando..." : "Entrar"}

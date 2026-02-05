@@ -78,34 +78,41 @@ export default function RolesPage() {
 
                     return (
                         <div style={{ display: "flex", gap: "8px" }}>
-                            <button
-                                onClick={handleEdit}
-                                style={{
-                                    padding: "4px 8px",
-                                    backgroundColor: "#3b82f6",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    fontSize: "12px",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                style={{
-                                    padding: "4px 8px",
-                                    backgroundColor: "#ef4444",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    fontSize: "12px",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Delete
-                            </button>
+                            {hasPermission("role-edit") &&
+                            row.original.name != "Admin" ? (
+                                <button
+                                    onClick={handleEdit}
+                                    style={{
+                                        padding: "4px 8px",
+                                        backgroundColor: "#3b82f6",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        fontSize: "12px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                            ) : null}
+
+                            {hasPermission("role-delete") &&
+                            row.original.name != "Admin" ? (
+                                <button
+                                    onClick={handleDelete}
+                                    style={{
+                                        padding: "4px 8px",
+                                        backgroundColor: "#ef4444",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "4px",
+                                        fontSize: "12px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            ) : null}
                         </div>
                     );
                 },

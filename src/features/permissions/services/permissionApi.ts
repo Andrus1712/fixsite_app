@@ -17,7 +17,7 @@ export const permissionApi = baseApi.injectEndpoints({
         }),
         getPermissionsByRole: builder.query<PermissionResponse, { roleId: number; userId: number; }>({
             query: ({ roleId, userId }) => `permissions/by-role?roleId=${roleId}&userId=${userId}`,
-            providesTags: ['Permission'],
+            keepUnusedDataFor: 0,
         }),
         getAvailablePermissions: builder.query<any, void>({
             query: () => ({

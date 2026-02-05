@@ -3,6 +3,13 @@ import type { LoginResponse, logoutTenantResponse } from "../../auth/models/Logi
 
 export const tenantApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
+        getTenants: builder.query<any, { page?: number; limit?: number; filter?: string; }>({
+            query: ({ page = 1, limit = 10, filter } = {}) => ({
+                url: `tenants/all?page=${page}&limit=${limit}${filter ? `&filter=${filter}` : ''}`,
+                method: 'GET',
+            }),
+            providesTags: ['Tenant'],
+        }),
         selectTenant: builder.mutation<LoginResponse, { tenantId: string; }>({
             query: (tenantId) => ({
                 url: `auth/select-tenant`,
@@ -21,4 +28,4 @@ export const tenantApi = baseApi.injectEndpoints({
     })
 });
 
-export const { useSelectTenantMutation, useLogoutTenantMutation } = tenantApi;
+export const { useGetTenantsQuery, useSelectTenantMutation, useLogoutTenantMutation } = tenantApi;

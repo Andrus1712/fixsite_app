@@ -7,7 +7,8 @@ export const componentsApi = baseApi.injectEndpoints({
                 url: `permissions/components/all?page=${page}&limit=${limit}${filter ? `&filter=${filter}` : ''}`,
                 method: 'GET',
             }),
-            providesTags: ['Component'],
+            keepUnusedDataFor: 0,
+            // providesTags: ['Component'],
         }),
         getComponentById: builder.query<any, number>({
             query: (id) => ({
@@ -16,19 +17,19 @@ export const componentsApi = baseApi.injectEndpoints({
             }),
             providesTags: ['Component'],
         }),
-        saveComponent: builder.mutation<any, { 
-            label: string, 
-            title: string, 
-            componentKey: string, 
-            option: string, 
-            action: string, 
-            path: string, 
-            icon?: string, 
-            order: number, 
-            showMenu: boolean, 
-            active: boolean, 
+        saveComponent: builder.mutation<any, {
+            label: string,
+            title: string,
+            componentKey: string,
+            option: string,
+            action: string,
+            path: string,
+            icon?: string,
+            order: number,
+            showMenu: boolean,
+            active: boolean,
             type: string,
-            moduleIds: number[]
+            moduleIds: number[];
         }>({
             query: (newComponent) => ({
                 url: 'permissions/components',
@@ -37,20 +38,20 @@ export const componentsApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Component'],
         }),
-        updateComponent: builder.mutation<any, { 
-            id: number, 
-            label: string, 
-            title: string, 
-            componentKey: string, 
-            option: string, 
-            action: string, 
-            path: string, 
-            icon?: string, 
-            order: number, 
-            showMenu: boolean, 
-            active: boolean, 
+        updateComponent: builder.mutation<any, {
+            id: number,
+            label: string,
+            title: string,
+            componentKey: string,
+            option: string,
+            action: string,
+            path: string,
+            icon?: string,
+            order: number,
+            showMenu: boolean,
+            active: boolean,
             type: string,
-            moduleIds: number[]
+            moduleIds: number[];
         }>({
             query: ({ id, ...component }) => ({
                 url: `permissions/components/${id}`,
@@ -69,10 +70,10 @@ export const componentsApi = baseApi.injectEndpoints({
     })
 });
 
-export const { 
-    useGetComponentsQuery, 
-    useGetComponentByIdQuery, 
-    useSaveComponentMutation, 
-    useUpdateComponentMutation, 
-    useDeleteComponentMutation 
+export const {
+    useGetComponentsQuery,
+    useGetComponentByIdQuery,
+    useSaveComponentMutation,
+    useUpdateComponentMutation,
+    useDeleteComponentMutation
 } = componentsApi;

@@ -1,5 +1,5 @@
 import { Outlet, useMatches } from "react-router";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import styled from "styled-components";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Header from "../components/Header/Header";
@@ -10,12 +10,19 @@ import Breadcrumbs from "../components/Breadcrumbs";
 export const MainLayoutContainer = styled.div<{ $sidebarOpen: boolean }>`
     height: 100vh;
     display: grid;
-    grid-template-columns: ${(props) => props.theme.layout.sidebarWidth} 1fr;
+    grid-template-columns: ${(props) => props.$sidebarOpen ? `${props.theme.layout.sidebarWidth} 1fr` : '1fr'};
     position: relative;
 
     @media (max-width: 768px) {
         grid-template-columns: 1fr;
     }
+`;
+
+export const SidebarWrapper = styled.div<{ $isOpen: boolean }>`
+    ${(props) => !props.$isOpen && `
+        position: fixed;
+        z-index: 999;
+    `}
 `;
 
 export const Container = styled.div`
@@ -57,15 +64,27 @@ export const Overlay = styled.div<{ $isVisible: boolean }>`
 `;
 
 function MainLayout() {
+    const [isOpen, setIsOpen] = useState(true);
+    const handleOpenSidebar = () => {
+        setIsOpen(!isOpen);
+    };
+
     return (
-        <MainLayoutContainer $sidebarOpen={true}>
+        <MainLayoutContainer $sidebarOpen={isOpen}>
             <AlertContainer />
-            <Sidebar isOpen={true} onClose={() => []} />
+            <SidebarWrapper $isOpen={isOpen}>
+                <Sidebar isOpen={isOpen} onClose={() => handleOpenSidebar} />
+            </SidebarWrapper>
             <Container>
-                <Header onToggleSidebar={() => []} />
+                <Header onToggleSidebar={handleOpenSidebar} />
                 <Content>
                     <Suspense fallback={<LoadingSpinner />}>
-                        <Row align="center" justify="flex-start" gap={"xs"}>
+                        <Row
+                            $align="center"
+                            $justify="space-between"
+                            $gap={"xs"}
+                        >
+                            <PageTitle />
                             <Breadcrumbs />
                         </Row>
                         <Outlet />
@@ -75,7 +94,7 @@ function MainLayout() {
                     <p>© 2025 Mi Proyecto</p>
                 </Footer>
             </Container>
-            <Overlay $isVisible={true} onClick={() => []} />
+            <Overlay $isVisible={false} onClick={() => []} />
         </MainLayoutContainer>
     );
 }

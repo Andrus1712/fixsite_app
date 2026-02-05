@@ -61,7 +61,7 @@ export default function DataTable<T>({
     return (
         <TableWrapper>
             {onSearchChange && (
-                <Row align="center" justify="flex-end">
+                <Row $align="center" $justify="flex-end">
                     <SearchInput
                         value={searchValue}
                         onChange={onSearchChange}

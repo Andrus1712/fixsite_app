@@ -5,6 +5,7 @@ export * from './Buttons';
 export * from './Layouts';
 export * from './Alert';
 export * from './Forms';
+export * from './Typography';
 export { default as PageTitle } from './PageTitle';
 export { default as Breadcrumbs } from './Breadcrumbs';
 export { default as PriorityIndicator } from './PriorityIndicator';

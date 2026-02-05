@@ -143,7 +143,7 @@ export default function PermissionsPage() {
                         >
                             Regresar
                         </Button>
-                        {hasPermission("module-new") ? (
+                        {hasPermission("permission-new") ? (
                             <Button
                                 variant="success"
                                 rightIcon={<IoMdAdd />}

@@ -1,17 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { RootState } from '.';
 import { logout } from '../../features/auth/store/authSlice';
 
 const baseQuery = fetchBaseQuery({
     baseUrl: 'http://localhost:3000',
-    prepareHeaders: (headers, { getState }) => {
-        const token = (getState() as RootState).auth.currentToken;
-        if (token) {
-            headers.set('Authorization', `Bearer ${token}`);
-        }
-        return headers;
-    },
+    credentials: 'include', // Incluir cookies automáticamente
 });
 
 const baseQueryWithReauth: BaseQueryFn<
@@ -22,7 +15,8 @@ const baseQueryWithReauth: BaseQueryFn<
     const result = await baseQuery(args, api, extraOptions);
 
     if (result.error && result.error.status === 401) {
-        // Token expirado o inválido, hacer logout y redirigir
+        // Token expirado o inválido, limpiar cookies y hacer logout
+        await baseQuery({ url: 'auth/logout', method: 'POST' }, api, extraOptions);
         api.dispatch(logout());
         window.location.href = '/login';
     }
@@ -42,7 +36,7 @@ export const baseApi = createApi({
     baseQuery: baseQueryWithReauth,
 
     // Tags para el caching y la invalidación (centralizados o definidos en cada feature)
-    tagTypes: ['User', 'Product', 'Permission', 'Order', 'Role', 'Component'],
+    tagTypes: ['User', 'Product', 'Permission', 'Order', 'Role', 'Component', 'Tenant'],
 
     // Endpoints se definen en las APIs de los features, no aquí.
     endpoints: () => ({}),

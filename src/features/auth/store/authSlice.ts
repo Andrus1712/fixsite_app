@@ -7,7 +7,6 @@ interface AuthState {
     data: LoginResponse | null;
     currentRole: IRoles | null;
     currentTenant: ITenants | null;
-    currentToken: string;
     globalMode: boolean;
     permission: IPermission[];
 }
@@ -17,7 +16,6 @@ const initialState: AuthState = {
     data: null,
     currentRole: null,
     currentTenant: null,
-    currentToken: '',
     globalMode: true,
     permission: []
 };
@@ -29,7 +27,6 @@ const authSlice = createSlice({
         saveAuthInfo: (state, action: PayloadAction<LoginResponse>) => {
             state.isAuthenticated = true;
             state.data = action.payload;
-            state.currentToken = action.payload._token;
             state.globalMode = true;
         },
         logout: (state) => {
@@ -37,7 +34,6 @@ const authSlice = createSlice({
             state.data = null;
             state.currentRole = null;
             state.currentTenant = null;
-            state.currentToken = '';
             state.globalMode = true;
         },
         updatePermissions: (state, action: PayloadAction<{ permissions: IPermission[]; }>) => {
@@ -69,11 +65,13 @@ const authSlice = createSlice({
                 state.currentTenant = action.payload.tenant;
             }
         },
-        setCurrentToken: (state, action: PayloadAction<string>) => {
-            state.currentToken = action.payload;
-        },
+
         changeGlobalMode: (state, action: PayloadAction<boolean>) => {
             state.globalMode = action.payload;
+        },
+
+        checkAuthUser: (state, action: PayloadAction<boolean>) => {
+            state.isAuthenticated = action.payload;
         }
     },
 });
@@ -82,11 +80,12 @@ export const {
     saveAuthInfo,
     logout,
     updatePermissions,
-    updateModules, setCurrentRole,
+    updateModules,
+    setCurrentRole,
     updateRoles,
     updateTenants,
     setCurrentTenant,
-    setCurrentToken,
-    changeGlobalMode
+    changeGlobalMode,
+    checkAuthUser
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -8,8 +8,9 @@ import {
     Divider,
     useAlerts,
     LoadingSpinner,
+    SearchableSelect,
 } from "../../../shared/components";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +19,7 @@ import {
     useGetPermissionByIdQuery,
     useUpdatePermissionMutation,
 } from "../services/permissionApi";
+import { useAppSelector } from "../../../shared/store";
 
 const permissionSchema = z.object({
     key: z.string().min(1, "El campo 'Clave' es requerido"),
@@ -33,7 +35,13 @@ export default function EditPermissionPage() {
     const { id } = useParams<{ id: string }>();
     const { data: permissionData, isLoading: isLoadingPermission } =
         useGetPermissionByIdQuery(Number(id));
-    const { data: components } = useGetComponentsQuery({});
+    const [searchFilter, setSearchFilter] = useState("");
+
+    const { data: components, isLoading } = useGetComponentsQuery({
+        filter: searchFilter,
+        limit: 50
+    });
+
     const navigator = useNavigate();
     const [updatePermission] = useUpdatePermissionMutation();
     const { data: dataAuth } = useAppSelector((state) => state.auth);
@@ -42,6 +50,8 @@ export default function EditPermissionPage() {
         register,
         handleSubmit,
         reset,
+        setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<PermissionFormData>({
         resolver: zodResolver(permissionSchema),
@@ -52,6 +62,8 @@ export default function EditPermissionPage() {
             componentId: 0,
         },
     });
+
+    const componentId = watch("componentId");
 
     useEffect(() => {
         if (permissionData) {
@@ -116,53 +128,19 @@ export default function EditPermissionPage() {
                             error={errors.userId?.message}
                             {...register("userId", { valueAsNumber: true })}
                         />
-                        <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    marginBottom: "4px",
-                                    fontSize: "14px",
-                                    fontWeight: "500",
-                                }}
-                            >
-                                Componente
-                            </label>
-                            <select
-                                {...register("componentId", {
-                                    valueAsNumber: true,
-                                })}
-                                style={{
-                                    width: "100%",
-                                    padding: "8px 12px",
-                                    border: "1px solid #d1d5db",
-                                    borderRadius: "6px",
-                                    fontSize: "14px",
-                                }}
-                            >
-                                <option value={0}>
-                                    Seleccione un componente
-                                </option>
-                                {components?.data?.map((component: any) => (
-                                    <option
-                                        key={component.id}
-                                        value={component.id}
-                                    >
-                                        {component.title} - {component.action}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.componentId && (
-                                <p
-                                    style={{
-                                        color: "#ef4444",
-                                        fontSize: "12px",
-                                        marginTop: "4px",
-                                    }}
-                                >
-                                    {errors.componentId.message}
-                                </p>
-                            )}
-                        </div>
+                        <SearchableSelect
+                            label="Componente"
+                            placeholder="Buscar componente..."
+                            error={errors.componentId?.message}
+                            value={componentId}
+                            onChange={(value) => setValue("componentId", Number(value))}
+                            onSearch={setSearchFilter}
+                            loading={isLoading}
+                            options={components?.data?.map((component: any) => ({
+                                value: component.id,
+                                label: `${component.id} | ${component.title} | ${component.action}`
+                            })) || []}
+                        />
                     </FormGroup>
 
                     <Divider />

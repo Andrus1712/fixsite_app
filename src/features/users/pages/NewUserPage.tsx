@@ -7,20 +7,22 @@ import {
     FormGroup,
     Divider,
     useAlerts,
-    Select,
+    MultiSelect,
 } from "../../../shared/components";
 import { useGetRolesQuery } from "../../Roles/services/RolesApi";
+import { useGetTenantsQuery } from "../../permissions/services/tenantsApi";
 import z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSaveUserMutation } from "../services/UsersApi";
 
 const userSchema = z.object({
     name: z.string().min(1, "El nombre es requerido"),
     email: z.email("Email inválido"),
-    username: z.string().min(1, "El nombre de usuario es requerido"),
+    username: z.string().min(1, "El username/identificación es requerido"),
     password: z.string(),
-    roleId: z.string().min(1, "Debe seleccionar un rol"),
+    roleIds: z.array(z.number()).min(1, "Debe seleccionar al menos un rol"),
+    tenantIds: z.array(z.number()).min(1, "Debe seleccionar al menos un tenant"),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -28,12 +30,14 @@ type UserFormData = z.infer<typeof userSchema>;
 export default function NewUserPage() {
     const { showSuccess, showError } = useAlerts();
     const { data: roles } = useGetRolesQuery({});
+    const { data: tenants } = useGetTenantsQuery({});
     const navigator = useNavigate();
     const [saveUser] = useSaveUserMutation();
 
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<UserFormData>({
         resolver: zodResolver(userSchema),
@@ -42,7 +46,8 @@ export default function NewUserPage() {
             username: "",
             email: "",
             password: "",
-            roleId: "",
+            roleIds: [],
+            tenantIds: [],
         },
     });
 
@@ -53,7 +58,8 @@ export default function NewUserPage() {
                 username: data.username,
                 email: data.email,
                 password: "admin",
-                roleId: Number(data.roleId),
+                roleIds: data.roleIds,
+                tenantIds: data.tenantIds,
             });
 
             if (result.error) {
@@ -72,8 +78,14 @@ export default function NewUserPage() {
 
     const roleOptions =
         roles?.data?.map((role: any) => ({
-            value: role.id.toString(),
+            value: role.id,
             label: role.name,
+        })) || [];
+
+    const tenantOptions =
+        tenants?.data?.map((tenant: any) => ({
+            value: tenant.id,
+            label: tenant.name,
         })) || [];
 
     return (
@@ -100,19 +112,40 @@ export default function NewUserPage() {
                             {...register("email")}
                         />
                         <Input
-                            label="Identificacion"
+                            label="Username/Identificación"
                             type="text"
-                            placeholder="Ingrese la identificacion"
+                            placeholder="Ingrese el username o identificación"
                             fullWidth={false}
                             error={errors.username?.message}
                             {...register("username")}
                         />
-                        <Select
-                            label="Rol"
-                            placeholder="Seleccione un rol"
-                            options={roleOptions}
-                            error={errors.roleId?.message}
-                            {...register("roleId")}
+                        <Controller
+                            name="roleIds"
+                            control={control}
+                            render={({ field }) => (
+                                <MultiSelect
+                                    label="Roles"
+                                    placeholder="Seleccione los roles"
+                                    options={roleOptions}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    error={errors.roleIds?.message}
+                                />
+                            )}
+                        />
+                        <Controller
+                            name="tenantIds"
+                            control={control}
+                            render={({ field }) => (
+                                <MultiSelect
+                                    label="Tenants"
+                                    placeholder="Seleccione los tenants"
+                                    options={tenantOptions}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    error={errors.tenantIds?.message}
+                                />
+                            )}
                         />
                     </FormGroup>
 

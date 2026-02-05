@@ -1,13 +1,12 @@
 import { Provider } from "react-redux";
 import { ThemeProvider } from "styled-components";
 import { ErrorBoundary } from "../../shared/components/ErrorBoundary";
-import { LoadingSpinner } from "../../shared/components/LoadingSpinner";
+import { PersistGate } from "redux-persist/integration/react";
 import { theme } from "../../shared/types/theme";
 import { persistor, store } from "../../shared/store";
-import { PersistGate } from "redux-persist/integration/react";
 import { GlobalStyle } from "../../shared/styles/GlobalStyle";
 import DynamicRoutes from "../router/DynamicRoutes";
-import { AlertContainer } from "../../shared/components";
+import { AlertContainer, LoadingSpinner } from "../../shared/components";
 
 export const AppProviders = () => (
     <ErrorBoundary>

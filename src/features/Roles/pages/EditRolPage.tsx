@@ -16,15 +16,17 @@ import { useEffect } from "react";
 import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useGetRoleByIdQuery, useUpdateRoleMutation } from "../services/RolesApi";
+import {
+    useGetRoleByIdQuery,
+    useUpdateRoleMutation,
+} from "../services/RolesApi";
 
 // Esquema de validación
 const roleSchema = z.object({
     name: z.string().min(1, "El nombre del rol es requerido"),
     description: z.string().optional(),
-    permissions: z
-        .array(z.number())
-        // .min(1, "Debe seleccionar al menos un permiso"),
+    permissions: z.array(z.number()),
+    // .min(1, "Debe seleccionar al menos un permiso"),
 });
 
 type RoleFormData = z.infer<typeof roleSchema>;
@@ -33,7 +35,9 @@ export default function EditRolPage() {
     const { showSuccess, showError } = useAlerts();
     const { role_id } = useParams<{ role_id: string }>();
     const { data: permissions } = useGetAvailablePermissionsQuery();
-    const { data: roleData, isLoading: isLoadingRole } = useGetRoleByIdQuery(Number(role_id));
+    const { data: roleData, isLoading: isLoadingRole } = useGetRoleByIdQuery(
+        Number(role_id)
+    );
     const navigator = useNavigate();
 
     const [updateRole] = useUpdateRoleMutation();
@@ -54,6 +58,13 @@ export default function EditRolPage() {
     });
 
     useEffect(() => {
+        if (roleData && roleData.name == "Admin") {
+            navigator("/app/roles");
+            showError("No se puede editar el rol Admin");
+        }
+    }, [roleData]);
+
+    useEffect(() => {
         if (roleData) {
             reset({
                 name: roleData.name || "",
@@ -65,7 +76,6 @@ export default function EditRolPage() {
 
     const onSubmit = async (data: RoleFormData) => {
         try {
-            
             const result = await updateRole({
                 id: Number(role_id),
                 name: data.name,

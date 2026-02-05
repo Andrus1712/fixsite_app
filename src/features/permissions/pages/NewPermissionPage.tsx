@@ -7,6 +7,7 @@ import {
     FormGroup,
     Divider,
     useAlerts,
+    SearchableSelect,
 } from "../../../shared/components";
 import z from "zod";
 import { useForm } from "react-hook-form";
@@ -14,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSavePermissionMutation } from "../services/permissionApi";
 import { useGetComponentsQuery } from "../services/componentsApi";
 import { useAppSelector } from "../../../shared/store";
+import { useState } from "react";
 
 const permissionSchema = z.object({
     key: z.string().min(1, "El campo 'Clave' es requerido"),
@@ -28,12 +30,20 @@ export default function NewPermissionPage() {
     const { showSuccess, showError } = useAlerts();
     const navigator = useNavigate();
     const [savePermission] = useSavePermissionMutation();
-    const { data: components } = useGetComponentsQuery({});
+    const [searchFilter, setSearchFilter] = useState("");
+
+    const { data: components, isLoading } = useGetComponentsQuery({
+        filter: searchFilter,
+        limit: 50
+    });
+
     const { data: dataAuth } = useAppSelector((state) => state.auth);
 
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<PermissionFormData>({
         resolver: zodResolver(permissionSchema),
@@ -44,6 +54,8 @@ export default function NewPermissionPage() {
             componentId: 0,
         },
     });
+
+    const componentId = watch("componentId");
 
     const onSubmit = async (data: PermissionFormData) => {
         try {
@@ -91,53 +103,19 @@ export default function NewPermissionPage() {
                             error={errors.userId?.message}
                             {...register("userId", { valueAsNumber: true })}
                         />
-                        <div>
-                            <label
-                                style={{
-                                    display: "block",
-                                    marginBottom: "4px",
-                                    fontSize: "14px",
-                                    fontWeight: "500",
-                                }}
-                            >
-                                Componente
-                            </label>
-                            <select
-                                {...register("componentId", {
-                                    valueAsNumber: true,
-                                })}
-                                style={{
-                                    width: "100%",
-                                    padding: "8px 12px",
-                                    border: "1px solid #d1d5db",
-                                    borderRadius: "6px",
-                                    fontSize: "14px",
-                                }}
-                            >
-                                <option value={0}>
-                                    Seleccione un componente
-                                </option>
-                                {components?.data?.map((component: any) => (
-                                    <option
-                                        key={component.id}
-                                        value={component.id}
-                                    >
-                                        {component.title} - {component.action}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.componentId && (
-                                <p
-                                    style={{
-                                        color: "#ef4444",
-                                        fontSize: "12px",
-                                        marginTop: "4px",
-                                    }}
-                                >
-                                    {errors.componentId.message}
-                                </p>
-                            )}
-                        </div>
+                        <SearchableSelect
+                            label="Componente"
+                            placeholder="Buscar componente..."
+                            error={errors.componentId?.message}
+                            value={componentId}
+                            onChange={(value) => setValue("componentId", Number(value))}
+                            onSearch={setSearchFilter}
+                            loading={isLoading}
+                            options={components?.data?.map((component: any) => ({
+                                value: component.id,
+                                label: `${component.id} | ${component.title} | ${component.action}`
+                            })) || []}
+                        />
                     </FormGroup>
 
                     <Divider />
