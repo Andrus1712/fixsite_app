@@ -1,13 +1,14 @@
 import styled, { css } from "styled-components";
 import { type ButtonHTMLAttributes, type ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "outline" | "warning" | "info" | "dark" | "light" | "purple" | "pink" | "indigo";
-type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "outline" | "warning" | "info" | "dark" | "light" | "purple" | "pink" | "indigo";
+export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;
     size?: ButtonSize;
     fullWidth?: boolean;
+    width?: string | number;
     loading?: boolean;
     leftIcon?: ReactNode;
     rightIcon?: ReactNode;
@@ -185,7 +186,11 @@ const StyledButton = styled.button<ButtonProps>`
     font-weight: 500;
     transition: all 0.2s;
     cursor: pointer;
-    width: ${props => props.fullWidth ? "100%" : "auto"};
+    width: ${props => {
+        if (props.fullWidth) return "100%";
+        if (props.width) return typeof props.width === 'number' ? `${props.width}px` : props.width;
+        return "auto";
+    }};
     
     ${props => getVariantStyles(props.variant || "primary")}
     ${props => getSizeStyles(props.size || "md")}

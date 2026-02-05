@@ -1,6 +1,20 @@
 import 'styled-components';
 
 declare module 'styled-components' {
+  export interface ColorScale {
+    50: string;
+    100: string;
+    200: string;
+    300: string;
+    400: string;
+    500: string;
+    600: string;
+    700: string;
+    800: string;
+    900: string;
+    950: string;
+  }
+
   export interface DefaultTheme {
     colors: {
       // Primary palette
@@ -8,17 +22,29 @@ declare module 'styled-components' {
       primaryLight: string;
       primaryDark: string;
       primaryHover: string;
-      
+
       // Secondary palette
       secondary: string;
       secondaryLight: string;
       secondaryDark: string;
-      
+
       // Accent colors
       accent: string;
       accentLight: string;
       accentDark: string;
-      
+
+      // Standard colors
+      red: string;
+      blue: string;
+      green: string;
+      yellow: string;
+      orange: string;
+      purple: string;
+      pink: string;
+      cyan: string;
+      teal: string;
+      lime: string;
+
       // Neutrals
       white: string;
       black: string;
@@ -34,7 +60,7 @@ declare module 'styled-components' {
       gray800: string;
       gray900: string;
       gray950: string;
-      
+
       // Semantic colors
       success: string;
       successLight: string;
@@ -48,13 +74,13 @@ declare module 'styled-components' {
       info: string;
       infoLight: string;
       infoDark: string;
-      
+
       // Special colors
       successBg: string;
       successBorder: string;
       successText: string;
       successIndicator: string;
-      
+
       // Background variants
       background: string;
       backgroundSecondary: string;
@@ -62,19 +88,29 @@ declare module 'styled-components' {
       surface: string;
       surfaceHover: string;
       overlay: string;
-      
+
       // Text variants
       text: string;
       textSecondary: string;
       textMuted: string;
       textInverse: string;
       textDisabled: string;
-      
+
       // Border colors
       border: string;
       borderLight: string;
       borderDark: string;
       borderFocus: string;
+    };
+    palette: {
+      red: ColorScale;
+      blue: ColorScale;
+      green: ColorScale;
+      yellow: ColorScale;
+      orange: ColorScale;
+      purple: ColorScale;
+      indigo: ColorScale;
+      slate: ColorScale;
     };
     spacing: {
       xxs: string;
@@ -130,9 +166,11 @@ declare module 'styled-components' {
     };
     layout: {
       sidebarWidth: string;
+      sidebarCollapsedWidth: string;
       headerHeight: string;
       containerMaxWidth: string;
-      contentPadding: string;
+      contentPaddingY: string;
+      contentPaddingX: string;
     };
     breakpoints: {
       sm: string;

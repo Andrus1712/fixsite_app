@@ -6,10 +6,10 @@ import {
     Input,
     FormGroup,
     Divider,
-    useAlerts,
     Checkbox,
     LoadingSpinner,
     MultiSelect,
+    useToast,
 } from "../../../shared/components";
 import { useEffect } from "react";
 import z from "zod";
@@ -36,7 +36,7 @@ const componentSchema = z.object({
 type ComponentFormData = z.infer<typeof componentSchema>;
 
 export default function EditComponentPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const { id } = useParams<{ id: string }>();
     const { data: componentData, isLoading: isLoadingComponent } = useGetComponentByIdQuery(Number(id));
     const { data: modules } = useGetModulesQuery({});
@@ -114,10 +114,7 @@ export default function EditComponentPage() {
         <Container size="full" center>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Box bg="white" p="lg" shadow rounded>
-                    <FormGroup
-                        title="Editar Componente"
-                        description="Modifique los datos del componente"
-                    >
+                    <FormGroup title="Editar Componente" description="Modifique los datos del componente">
                         <Input
                             label="Label"
                             placeholder="Ingrese el label"
@@ -186,22 +183,14 @@ export default function EditComponentPage() {
                             name="showMenu"
                             control={control}
                             render={({ field }) => (
-                                <Checkbox
-                                    label="Mostrar en Menú"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <Checkbox label="Mostrar en Menú" checked={field.value} onChange={field.onChange} />
                             )}
                         />
                         <Controller
                             name="active"
                             control={control}
                             render={({ field }) => (
-                                <Checkbox
-                                    label="Activo"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <Checkbox label="Activo" checked={field.value} onChange={field.onChange} />
                             )}
                         />
                         <Controller
@@ -211,10 +200,12 @@ export default function EditComponentPage() {
                                 <MultiSelect
                                     label="Módulos"
                                     placeholder="Seleccione los módulos"
-                                    options={modules?.data?.map((module: any) => ({
-                                        value: module.id,
-                                        label: module.name,
-                                    })) || []}
+                                    options={
+                                        modules?.data?.map((module: any) => ({
+                                            value: module.id,
+                                            label: module.name,
+                                        })) || []
+                                    }
                                     value={field.value}
                                     onChange={field.onChange}
                                     error={errors.moduleIds?.message}
@@ -232,17 +223,10 @@ export default function EditComponentPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Actualizar Componente
                         </Button>
                     </div>

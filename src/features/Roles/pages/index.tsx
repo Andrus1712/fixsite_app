@@ -1,16 +1,8 @@
 import { useMemo, useState } from "react";
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Container,
-    Row,
-    useAlerts,
-} from "../../../shared/components";
+import { Box, Button, ButtonGroup, Container, useToast } from "../../../shared/components";
 import DataTable from "../../../shared/components/Tables/Table";
 import { useGetRolesQuery, useDeleteRoleMutation } from "../services/RolesApi";
 import { useNavigate } from "react-router";
-import { TbArrowAutofitContent } from "react-icons/tb";
 import { FaCogs } from "react-icons/fa";
 import { MdViewModule } from "react-icons/md";
 import { RiListSettingsFill } from "react-icons/ri";
@@ -21,8 +13,9 @@ export default function RolesPage() {
     const { data, isLoading } = useGetRolesQuery({});
     const [searchValue, setSearchValue] = useState("");
     const navigator = useNavigate();
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const [deleteRole] = useDeleteRoleMutation();
+    const { hasPermission } = useHasPermission();
 
     const columns = useMemo(
         () => [
@@ -41,8 +34,7 @@ export default function RolesPage() {
             {
                 accessorKey: "active",
                 header: "STATUS",
-                cell: ({ row }: { row: any }) =>
-                    row.original.active ? "Active" : "Inactive",
+                cell: ({ row }: { row: any }) => (row.original.active ? "Active" : "Inactive"),
             },
             {
                 id: "actions",
@@ -53,20 +45,11 @@ export default function RolesPage() {
                     };
 
                     const handleDelete = async () => {
-                        if (
-                            confirm(
-                                `¿Está seguro de eliminar el rol "${row.original.name}"?`
-                            )
-                        ) {
+                        if (confirm(`¿Está seguro de eliminar el rol "${row.original.name}"?`)) {
                             try {
-                                const result = await deleteRole(
-                                    row.original.id
-                                );
+                                const result = await deleteRole(row.original.id);
                                 if (result.error) {
-                                    showError(
-                                        result.error?.data?.message ||
-                                            "Error al eliminar el rol"
-                                    );
+                                    showError(result.error?.data?.message || "Error al eliminar el rol");
                                 } else {
                                     showSuccess("Rol eliminado exitosamente");
                                 }
@@ -78,8 +61,7 @@ export default function RolesPage() {
 
                     return (
                         <div style={{ display: "flex", gap: "8px" }}>
-                            {hasPermission("role-edit") &&
-                            row.original.name != "Admin" ? (
+                            {hasPermission("role-edit") && row.original.name != "Admin" ? (
                                 <button
                                     onClick={handleEdit}
                                     style={{
@@ -96,8 +78,7 @@ export default function RolesPage() {
                                 </button>
                             ) : null}
 
-                            {hasPermission("role-delete") &&
-                            row.original.name != "Admin" ? (
+                            {hasPermission("role-delete") && row.original.name != "Admin" ? (
                                 <button
                                     onClick={handleDelete}
                                     style={{
@@ -118,9 +99,8 @@ export default function RolesPage() {
                 },
             },
         ],
-        []
+        [hasPermission, navigator, deleteRole, showError, showSuccess]
     );
-    const { hasPermission } = useHasPermission();
 
     return (
         <Container size="full" center>
@@ -161,11 +141,7 @@ export default function RolesPage() {
                             </Button>
                         ) : null}
                         {hasPermission("roles-new") ? (
-                            <Button
-                                variant="primary"
-                                rightIcon={<IoMdAdd />}
-                                onClick={() => navigator("new")}
-                            ></Button>
+                            <Button variant="primary" rightIcon={<IoMdAdd />} onClick={() => navigator("new")}></Button>
                         ) : null}
                     </ButtonGroup>
                 }

@@ -1,26 +1,34 @@
 import { useMemo, useState } from "react";
 import {
+    Badge,
     Box,
     Button,
     ButtonGroup,
     Container,
-    useAlerts,
+    DataTable,
+    LoadingSpinner,
+    Text,
+    useToast,
 } from "../../../shared/components";
-import DataTable from "../../../shared/components/Tables/Table";
-import {
-    useGetComponentsQuery,
-    useDeleteComponentMutation,
-} from "../services/componentsApi";
+import { useGetComponentsQuery, useDeleteComponentMutation } from "../services/componentsApi";
 import { useNavigate } from "react-router";
 import { IoMdAdd, IoMdArrowRoundBack } from "react-icons/io";
 import { useHasPermission } from "../../auth/hooks/useHasPermission";
+import { FaCheck, FaTimes } from "react-icons/fa";
 
 export default function ComponentsPage() {
-    const { data, isLoading } = useGetComponentsQuery({});
+    const [page, setPage] = useState(1);
     const [searchValue, setSearchValue] = useState("");
+    const [limit, setLimit] = useState(10);
     const navigator = useNavigate();
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const [deleteComponent] = useDeleteComponentMutation();
+    const { data, isLoading } = useGetComponentsQuery({
+        page,
+        limit,
+        filter: searchValue,
+    });
+    console.log(data);
 
     const columns = useMemo(
         () => [
@@ -30,11 +38,19 @@ export default function ComponentsPage() {
             },
             {
                 accessorKey: "title",
-                header: "TITLE",
+                header: "TITLE PAGE",
+            },
+            {
+                accessorKey: "label",
+                header: "LABEL MENU",
             },
             {
                 accessorKey: "componentKey",
                 header: "KEY",
+            },
+            {
+                accessorKey: "option",
+                header: "OPTION",
             },
             {
                 accessorKey: "action",
@@ -43,18 +59,35 @@ export default function ComponentsPage() {
             {
                 accessorKey: "path",
                 header: "PATH",
+                cell: ({ row }: { row: any }) => {
+                    return (
+                        <Badge variant="default">
+                            <Text variant="code-sm">{row.original.path}</Text>
+                        </Badge>
+                    );
+                },
             },
             {
                 accessorKey: "showMenu",
                 header: "SHOW MENU",
                 cell: ({ row }: { row: any }) =>
-                    row.original.showMenu ? "Yes" : "No",
+                    row.original.showMenu ? <FaCheck color="green" /> : <FaTimes color="red" />,
+            },
+            {
+                accessorKey: "type",
+                header: "TYPE",
+                cell: ({ row }: { row: any }) => {
+                    if (row.original.type == "G") {
+                        return <Text variant="label-sm" truncate>Global</Text>;
+                    } else {
+                        return <Text variant="label-sm" truncate>Tenant</Text>;
+                    }
+                },
             },
             {
                 accessorKey: "active",
                 header: "STATUS",
-                cell: ({ row }: { row: any }) =>
-                    row.original.active ? "Active" : "Inactive",
+                cell: ({ row }: { row: any }) => (row.original.active ? "Active" : "Inactive"),
             },
             {
                 id: "actions",
@@ -65,24 +98,13 @@ export default function ComponentsPage() {
                     };
 
                     const handleDelete = async () => {
-                        if (
-                            confirm(
-                                `¿Está seguro de eliminar el componente "${row.original.title}"?`
-                            )
-                        ) {
+                        if (confirm(`¿Está seguro de eliminar el componente "${row.original.title}"?`)) {
                             try {
-                                const result = await deleteComponent(
-                                    row.original.id
-                                );
+                                const result = await deleteComponent(row.original.id);
                                 if (result.error) {
-                                    showError(
-                                        result.error?.data?.message ||
-                                            "Error al eliminar el componente"
-                                    );
+                                    showError(result.error?.data?.message || "Error al eliminar el componente");
                                 } else {
-                                    showSuccess(
-                                        "Componente eliminado exitosamente"
-                                    );
+                                    showSuccess("Componente eliminado exitosamente");
                                 }
                             } catch (error) {
                                 showError("Error al eliminar el componente");
@@ -139,35 +161,35 @@ export default function ComponentsPage() {
                 shadow
                 headerActions={
                     <ButtonGroup>
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                            leftIcon={<IoMdArrowRoundBack />}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)} leftIcon={<IoMdArrowRoundBack />}>
                             Regresar
                         </Button>
                         {hasPermission("component-new") ? (
-                            <Button
-                                variant="success"
-                                rightIcon={<IoMdAdd />}
-                                onClick={() => navigator("new")}
-                            ></Button>
+                            <Button variant="success" rightIcon={<IoMdAdd />} onClick={() => navigator("new")}></Button>
                         ) : null}
                     </ButtonGroup>
                 }
                 title="Componentes"
             >
-                <DataTable
-                    columns={columns}
-                    data={data?.data || []}
-                    isLoading={isLoading}
-                    page={data?.page}
-                    total={data?.total}
-                    totalPages={data?.totalPages}
-                    searchValue={searchValue}
-                    onSearchChange={setSearchValue}
-                    searchPlaceholder="Buscar componentes..."
-                />
+                {isLoading ? (
+                    <LoadingSpinner />
+                ) : (
+                    <DataTable
+                        data={data?.data || []}
+                        columns={columns}
+                        initialPageSize={limit ?? 25}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        serverSide={true}
+                        page={data?.page}
+                        total={data?.total}
+                        totalPages={data?.totalPages}
+                        searchValue={searchValue}
+                        onSearchChange={setSearchValue}
+                        onPageChange={setPage}
+                        onPageSizeChange={setLimit}
+                        maxHeight={500}
+                    />
+                )}
             </Box>
         </Container>
     );

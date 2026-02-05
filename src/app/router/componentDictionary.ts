@@ -6,8 +6,12 @@ const ExamplePage = lazy(() => import("../../shared/pages/ExamplePage"));
 // const UserPage = lazy(() => import("../../modules/users/presentation/pages/UserPage"));
 // const DashboardPage = lazy(() => import("../../modules/dashboard/presentation/pages/DashboardPage"));
 // const SettingsPage = lazy(() => import("../../modules/settings/presentation/pages/SettingsPage"));
+// Ordenes
 const OrderPage = lazy(() => import("../../features/orders/pages/OrdersPage"));
+const InfoOrderPage = lazy(() => import("../../features/orders/pages/InfoOrderPage"));
 const NewOrderPage = lazy(() => import("../../features/orders/pages/NewOrderpage"));
+
+// ROles
 const RolesPage = lazy(() => import("../../features/Roles/pages/index"));
 const NewRolPage = lazy(() => import("../../features/Roles/pages/NewRolPage"));
 const EditRolPage = lazy(() => import("../../features/Roles/pages/EditRolPage"));
@@ -27,6 +31,10 @@ const EditComponentPage = lazy(() => import("../../features/permissions/pages/Ed
 const PermissionsPage = lazy(() => import("../../features/permissions/pages/PermissionsPage"));
 const NewPermissionPage = lazy(() => import("../../features/permissions/pages/NewPermissionPage"));
 const EditPermissionPage = lazy(() => import("../../features/permissions/pages/EditPermissionPage"));
+// Tecnicos
+const TechnicianPage = lazy(() => import("../../features/technician/pages/TechnicianPage"));
+const NewTechnicianPage = lazy(() => import("../../features/technician/pages/NewTechnicianPage"));
+// const EditTechnicianPage = lazy(() => import("../../features/technician/pages/EditTechnicianPage"));
 
 
 
@@ -39,6 +47,7 @@ export const componentMap: Record<string, React.ComponentType> = {
     // "settings-show": SettingsPage,
     "order-index": OrderPage,
     "order-new": NewOrderPage,
+    "order-info": InfoOrderPage,
     // Roles
     "roles-index": RolesPage,
     "roles-new": NewRolPage,
@@ -56,4 +65,8 @@ export const componentMap: Record<string, React.ComponentType> = {
     "permission-new": NewPermissionPage,
     "permission-edit": EditPermissionPage,
     //Servicices
+    // Tecnicos
+    "technician-index": TechnicianPage,
+    "technician-new": NewTechnicianPage,
+    "technician-edit": TechnicianPage,
 };

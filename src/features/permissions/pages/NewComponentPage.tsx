@@ -6,9 +6,9 @@ import {
     Input,
     FormGroup,
     Divider,
-    useAlerts,
     Checkbox,
     MultiSelect,
+    useToast,
 } from "../../../shared/components";
 import z from "zod";
 import { Controller, useForm } from "react-hook-form";
@@ -34,7 +34,7 @@ const componentSchema = z.object({
 type ComponentFormData = z.infer<typeof componentSchema>;
 
 export default function NewComponentPage() {
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const navigator = useNavigate();
     const [saveComponent] = useSaveComponentMutation();
     const { data: modules } = useGetModulesQuery({});
@@ -157,22 +157,14 @@ export default function NewComponentPage() {
                             name="showMenu"
                             control={control}
                             render={({ field }) => (
-                                <Checkbox
-                                    label="Mostrar en Menú"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <Checkbox label="Mostrar en Menú" checked={field.value} onChange={field.onChange} />
                             )}
                         />
                         <Controller
                             name="active"
                             control={control}
                             render={({ field }) => (
-                                <Checkbox
-                                    label="Activo"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                />
+                                <Checkbox label="Activo" checked={field.value} onChange={field.onChange} />
                             )}
                         />
                         <Controller
@@ -182,10 +174,12 @@ export default function NewComponentPage() {
                                 <MultiSelect
                                     label="Módulos"
                                     placeholder="Seleccione los módulos"
-                                    options={modules?.data?.map((module: any) => ({
-                                        value: module.id,
-                                        label: module.name,
-                                    })) || []}
+                                    options={
+                                        modules?.data?.map((module: any) => ({
+                                            value: module.id,
+                                            label: module.name,
+                                        })) || []
+                                    }
                                     value={field.value}
                                     onChange={field.onChange}
                                     error={errors.moduleIds?.message}
@@ -203,17 +197,10 @@ export default function NewComponentPage() {
                             justifyContent: "flex-end",
                         }}
                     >
-                        <Button
-                            variant="secondary"
-                            onClick={() => navigator(-1)}
-                        >
+                        <Button variant="secondary" onClick={() => navigator(-1)}>
                             Cancelar
                         </Button>
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            loading={isSubmitting}
-                        >
+                        <Button variant="primary" type="submit" loading={isSubmitting}>
                             Crear Componente
                         </Button>
                     </div>

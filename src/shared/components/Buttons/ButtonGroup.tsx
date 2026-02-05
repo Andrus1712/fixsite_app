@@ -16,39 +16,48 @@ const StyledButtonGroup = styled.div<{ orientation: "horizontal" | "vertical"; s
     }};
     
     ${props => props.orientation === "horizontal" ? `
-        & > button:first-child {
+        /* First and last button: handles both direct buttons and buttons wrapped by a wrapper (eg Tooltip) */
+        & > button:first-child,
+        & > *:first-child button {
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
         }
         
-        & > button:last-child {
+        & > button:last-child,
+        & > *:last-child button {
             border-top-left-radius: 0;
             border-bottom-left-radius: 0;
         }
         
-        & > button:not(:first-child):not(:last-child) {
+        & > button:not(:first-child):not(:last-child),
+        & > *:not(:first-child):not(:last-child) button {
             border-radius: 0;
         }
         
-        & > button:not(:first-child) {
+        & > button:not(:first-child),
+        & > *:not(:first-child) button {
             margin-left: -1px;
         }
     ` : `
-        & > button:first-child {
+        & > button:first-child,
+        & > *:first-child button {
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
         }
         
-        & > button:last-child {
+        & > button:last-child,
+        & > *:last-child button {
             border-top-left-radius: 0;
             border-top-right-radius: 0;
         }
         
-        & > button:not(:first-child):not(:last-child) {
+        & > button:not(:first-child):not(:last-child),
+        & > *:not(:first-child):not(:last-child) button {
             border-radius: 0;
         }
         
-        & > button:not(:first-child) {
+        & > button:not(:first-child),
+        & > *:not(:first-child) button {
             margin-top: -1px;
         }
     `}

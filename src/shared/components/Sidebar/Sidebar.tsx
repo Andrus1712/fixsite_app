@@ -1,26 +1,31 @@
 import type { JSX, ReactNode } from "react";
 import {
     SidebarContainer,
-    SidebarHeader,
     SidebarItem,
     SidebarItems,
     ModuleLabel,
     ModuleContainer,
+    SidebarLabel,
+    IconWrapper,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import { FaChartBar, FaCog, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
+import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
-import FixsiteLogo from "../../../assets/logo_fixsite2.png";
 import TenantSelector from "../TenantSelector";
-import { Divider, Row } from "../Layouts";
-import { Label, Text } from "../Typography";
+import { Tooltip } from "../Tooltip";
 import { useLocation } from "react-router";
 import { GrConfigure } from "react-icons/gr";
-import { IconButton } from "../Buttons";
+import { HiMiniBars3BottomLeft } from "react-icons/hi2";
+import { IoKey } from "react-icons/io5";
+import { MdOutlineWebAsset } from "react-icons/md";
+import { IoIosArrowDown } from "react-icons/io";
+import { useTheme } from "styled-components";
+import { FaScrewdriverWrench } from "react-icons/fa6";
 
 interface SidebarProps {
     isOpen: boolean;
-    onClose: () => void;
+    isCollapsed: boolean;
+    onToggle: () => void;
 }
 
 const iconMap: Record<string, JSX.Element> = {
@@ -30,48 +35,35 @@ const iconMap: Record<string, JSX.Element> = {
     FaCog: <FaCog />,
     FaTools: <FaTools />,
     FaUsersCog: <FaUsersCog />,
+    IoKey: <IoKey />,
+    FaBoxOpen: <FaBoxOpen />,
+    MdOutlineWebAsset: <MdOutlineWebAsset />,
+    HiMiniBars3BottomLeft: <HiMiniBars3BottomLeft />,
+    GrConfigure: <GrConfigure />,
+    IoIosArrowDown: <IoIosArrowDown />,
+    FaScrewdriverWrench: <FaScrewdriverWrench />,
+    FaPeopleCarry: <FaPeopleCarry />,
+    FaMicrochip: <FaMicrochip />,
 };
 
-function Sidebar({ isOpen, onClose }: SidebarProps) {
+function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {
     const { data } = useAppSelector((state) => state.auth);
+    const theme = useTheme();
+
+    const isDesktop = window.innerWidth >= parseInt(theme.breakpoints.lg);
 
     return (
-        <SidebarContainer $isOpen={isOpen}>
-            <SidebarHeader>
-                {/* <img
-                    src={FixsiteLogo}
-                    alt="Fixsite App Logo"
-                    // Estilos en línea para asegurar que sea proporcional al alto del header
-                    // Normalmente, el estilo se agregaría a SidebarHeader en SidebarStyles,
-                    // pero esto lo hace de forma inmediata. 'height: 100%' hace que llene
-                    // el alto del contenedor 'SidebarHeader' y 'objectFit: "contain"'
-                    // asegura que la imagen sea proporcional y no se corte.
-                    style={{
-                        width: "100%",
-                        // margin: "auto",
-                        objectFit: "fill",
-                        scale: "0.6",
-                        // padding: "2px",
-                    }}
-                /> */}
-                <Row fullWidth $align="center" $justify="flex-start" $gap={10} style={{ padding: "0 10px" }}>
-                    <GrConfigure color="#fff" size={30} />
-                    <Text size={"2xl"} variant="body1" weight="bold" color="white">
-                        FixSite v1
-                    </Text>
-                </Row>
-            </SidebarHeader>
-            <TenantSelector />
-            <Divider width="90%" opacity={0.4} margin={"sm"} />
-            <SidebarItems>
+        <SidebarContainer $isOpen={isOpen} $isCollapsed={isCollapsed} $isDesktop={isDesktop}>
+            <div
+                style={{ padding: isCollapsed ? "8px 8px" : "8px 12px", borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}
+            >
+                <TenantSelector isCollapsed={isCollapsed} />
+            </div>
+            <SidebarItems $isCollapsed={isCollapsed}>
                 {data?.modules &&
                     data?.modules.map((module) => (
                         <ModuleContainer key={module.id}>
-                            <Row style={{ padding: "5px 10px" }}>
-                                <Text variant="caption" weight="semibold" uppercase color="gray300">
-                                    {module.label}
-                                </Text>
-                            </Row>
+                            {!isCollapsed && <ModuleLabel>{module.label}</ModuleLabel>}
                             {module.components
                                 ?.slice()
                                 .sort((a, b) => a.order - b.order || a.id - b.id)
@@ -81,7 +73,12 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                                         to={"/app" + component.path}
                                         label={component.label}
                                         icon={iconMap[component.icon]}
-                                        onClick={onClose}
+                                        onClick={() => {
+                                            if (!isDesktop) {
+                                                onToggle();
+                                            }
+                                        }}
+                                        isCollapsed={isCollapsed}
                                     />
                                 ))}
                         </ModuleContainer>
@@ -96,9 +93,10 @@ interface MenuItemProps {
     label: string;
     icon?: ReactNode;
     onClick?: () => void;
+    isCollapsed: boolean;
 }
 
-const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
+const MenuItem = ({ to, label, icon, onClick, isCollapsed }: MenuItemProps) => {
     const location = useLocation();
 
     const isActive = () => {
@@ -111,14 +109,18 @@ const MenuItem = ({ to, label, icon, onClick }: MenuItemProps) => {
     };
 
     return (
-        <SidebarItem
-            to={to}
-            onClick={onClick}
-            className={({ isActive: defaultActive }) => (defaultActive || isActive() ? "active" : "")}
-        >
-            {icon && <span>{icon}</span>}
-            <span>{label}</span>
-        </SidebarItem>
+        <Tooltip content={label} position="right" disabled={!isCollapsed} fullWidth>
+            <SidebarItem
+                to={to}
+                onClick={onClick}
+                $isCollapsed={isCollapsed}
+                className={({ isActive: defaultActive }) => (defaultActive || isActive() ? "active" : "")}
+            >
+                {icon && <IconWrapper>{icon}</IconWrapper>}
+                {!isCollapsed && <SidebarLabel>{label}</SidebarLabel>}
+                {isCollapsed && !icon && <SidebarLabel>{label.charAt(0)}</SidebarLabel>}
+            </SidebarItem>
+        </Tooltip>
     );
 };
 

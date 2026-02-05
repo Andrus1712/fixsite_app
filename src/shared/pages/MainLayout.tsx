@@ -1,42 +1,63 @@
-import { Outlet, useMatches } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { Suspense, useEffect, useState } from "react";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Header from "../components/Header/Header";
-import { AlertContainer, LoadingSpinner, Row } from "../components";
+import { LoadingSpinner } from "../components";
 import PageTitle from "../components/PageTitle";
-import Breadcrumbs from "../components/Breadcrumbs";
 
-export const MainLayoutContainer = styled.div<{ $sidebarOpen: boolean }>`
+export const MainLayoutContainer = styled.div`
     height: 100vh;
-    display: grid;
-    grid-template-columns: ${(props) => props.$sidebarOpen ? `${props.theme.layout.sidebarWidth} 1fr` : '1fr'};
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+`;
 
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+export const Workspace = styled.div<{ $sidebarOpen: boolean; $isCollapsed: boolean }>`
+    display: grid;
+    grid-template-columns: ${(props) => {
+        if (props.$sidebarOpen && !props.$isCollapsed) {
+            return `${props.theme.layout.sidebarWidth} minmax(0, 1fr)`;
+        }
+        if (props.$sidebarOpen && props.$isCollapsed) {
+            return `${props.theme.layout.sidebarCollapsedWidth} minmax(0, 1fr)`;
+        }
+        return "0 minmax(0, 1fr)";
+    }};
+    position: relative;
+    overflow: hidden;
+
+    @media (max-width: ${(props) => props.theme.breakpoints.lg}) {
+        grid-template-columns: minmax(0, 1fr);
     }
 `;
 
 export const SidebarWrapper = styled.div<{ $isOpen: boolean }>`
-    ${(props) => !props.$isOpen && `
+    z-index: ${(props) => props.theme.zIndex.popover};
+    @media (max-width: ${(props) => props.theme.breakpoints.lg}) {
         position: fixed;
-        z-index: 999;
-    `}
+        top: ${(props) => props.theme.layout.headerHeight};
+        left: 0;
+        height: calc(100vh - ${(props) => props.theme.layout.headerHeight});
+        transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 `;
 
 export const Container = styled.div`
     padding: 0;
-    height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
+    height: 100%;
+    padding-bottom: 2rem;
 `;
 
 export const Content = styled.main`
-    padding: ${(props) => props.theme.spacing.lg};
+    padding: ${(props) => props.theme.layout.contentPaddingY} ${(props) => props.theme.layout.contentPaddingX};
     background-color: ${(props) => props.theme.colors.background};
     overflow-y: auto;
+    flex: 1;
 `;
 
 export const Footer = styled.footer`
@@ -58,43 +79,79 @@ export const Overlay = styled.div<{ $isVisible: boolean }>`
     z-index: 998;
     display: ${(props) => (props.$isVisible ? "block" : "none")};
 
-    @media (min-width: 769px) {
+    @media (min-width: ${(props) => props.theme.breakpoints.lg}) {
         display: none;
     }
 `;
 
 function MainLayout() {
-    const [isOpen, setIsOpen] = useState(true);
-    const handleOpenSidebar = () => {
-        setIsOpen(!isOpen);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Estado para abrir/cerrar completamente
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Estado para colapsar/expandir en desktop
+    const location = useLocation();
+    const theme = useTheme();
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
     };
 
+    const toggleSidebarCollapse = () => {
+        setIsSidebarCollapsed(!isSidebarCollapsed);
+    };
+
+    // Cerrar sidebar en pantallas pequeñas si se cambia la ruta
+    useEffect(() => {
+        if (window.innerWidth < parseInt(theme.breakpoints.lg)) {
+            setIsSidebarOpen(false);
+        }
+    }, [location.pathname]);
+
+    // Determinar el estado inicial del sidebar y manejar cambios de tamaño de ventana
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < parseInt(theme.breakpoints.lg)) {
+                setIsSidebarOpen(false); // Cerrar en móvil/tablet
+                setIsSidebarCollapsed(false); // Asegurar que no esté colapsado en móvil
+            } else {
+                setIsSidebarOpen(true); // Abrir en desktop
+            }
+        };
+
+        window.addEventListener("resize", handleResize);
+        handleResize(); // Establecer estado inicial
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     return (
-        <MainLayoutContainer $sidebarOpen={isOpen}>
-            <AlertContainer />
-            <SidebarWrapper $isOpen={isOpen}>
-                <Sidebar isOpen={isOpen} onClose={() => handleOpenSidebar} />
-            </SidebarWrapper>
-            <Container>
-                <Header onToggleSidebar={handleOpenSidebar} />
-                <Content>
-                    <Suspense fallback={<LoadingSpinner />}>
-                        <Row
-                            $align="center"
-                            $justify="space-between"
-                            $gap={"xs"}
-                        >
+        <MainLayoutContainer>
+            <Header
+                onToggleSidebar={toggleSidebar}
+                onToggleCollapse={toggleSidebarCollapse}
+                isSidebarCollapsed={isSidebarCollapsed}
+            />
+            <Workspace $sidebarOpen={isSidebarOpen} $isCollapsed={isSidebarCollapsed}>
+                <Overlay
+                    $isVisible={isSidebarOpen && window.innerWidth < parseInt(theme.breakpoints.lg)}
+                    onClick={toggleSidebar}
+                />
+                <SidebarWrapper $isOpen={isSidebarOpen}>
+                    <Sidebar
+                        isOpen={isSidebarOpen}
+                        isCollapsed={isSidebarCollapsed}
+                        onToggle={toggleSidebar}
+                    />
+                </SidebarWrapper>
+                <Container>
+                    <Content>
+                        <Suspense fallback={<LoadingSpinner />}>
                             <PageTitle />
-                            <Breadcrumbs />
-                        </Row>
-                        <Outlet />
-                    </Suspense>
-                </Content>
-                <Footer>
-                    <p>© 2025 Mi Proyecto</p>
-                </Footer>
-            </Container>
-            <Overlay $isVisible={false} onClick={() => []} />
+                            <Outlet />
+                        </Suspense>
+                    </Content>
+                    <Footer>
+                        <p>© 2025 Mi Proyecto</p>
+                    </Footer>
+                </Container>
+            </Workspace>
         </MainLayoutContainer>
     );
 }

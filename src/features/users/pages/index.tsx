@@ -1,11 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-    Box,
-    Button,
-    ButtonGroup,
-    Container,
-    useAlerts,
-} from "../../../shared/components";
+import { Box, Button, ButtonGroup, Container, useToast } from "../../../shared/components";
 import DataTable from "../../../shared/components/Tables/Table";
 import { useGetUsersQuery, useDeleteUserMutation } from "../services/UsersApi";
 import { useNavigate } from "react-router";
@@ -16,7 +10,7 @@ export default function UsersPage() {
     const { data, isLoading } = useGetUsersQuery({});
     const [searchValue, setSearchValue] = useState("");
     const navigator = useNavigate();
-    const { showSuccess, showError } = useAlerts();
+    const { showSuccess, showError } = useToast();
     const [deleteUser] = useDeleteUserMutation();
 
     const columns = useMemo(
@@ -36,14 +30,12 @@ export default function UsersPage() {
             {
                 accessorKey: "role",
                 header: "ROL",
-                cell: ({ row }: { row: any }) =>
-                    row.original.role?.name || "Sin rol",
+                cell: ({ row }: { row: any }) => row.original.role?.name || "Sin rol",
             },
             {
                 accessorKey: "active",
                 header: "ESTADO",
-                cell: ({ row }: { row: any }) =>
-                    row.original.active ? "Activo" : "Inactivo",
+                cell: ({ row }: { row: any }) => (row.original.active ? "Activo" : "Inactivo"),
             },
             {
                 id: "actions",
@@ -54,20 +46,11 @@ export default function UsersPage() {
                     };
 
                     const handleDelete = async () => {
-                        if (
-                            confirm(
-                                `¿Está seguro de eliminar el usuario "${row.original.name}"?`
-                            )
-                        ) {
+                        if (confirm(`¿Está seguro de eliminar el usuario "${row.original.name}"?`)) {
                             try {
-                                const result = await deleteUser(
-                                    row.original.id
-                                );
+                                const result = await deleteUser(row.original.id);
                                 if (result.error) {
-                                    showError(
-                                        result.error?.data?.message ||
-                                            "Error al eliminar el usuario"
-                                    );
+                                    showError(result.error?.data?.message || "Error al eliminar el usuario");
                                 } else {
                                     showSuccess("Usuario eliminado exitosamente");
                                 }
@@ -126,11 +109,7 @@ export default function UsersPage() {
                 headerActions={
                     <ButtonGroup>
                         {hasPermission("users-new") ? (
-                            <Button
-                                variant="primary"
-                                rightIcon={<IoMdAdd />}
-                                onClick={() => navigator("new")}
-                            >
+                            <Button variant="primary" rightIcon={<IoMdAdd />} onClick={() => navigator("new")}>
                                 Nuevo Usuario
                             </Button>
                         ) : null}
