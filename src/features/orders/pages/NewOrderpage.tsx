@@ -170,7 +170,7 @@ export default function NewOrderpage() {
     ];
 
     return (
-        <Container className="container" center size="xl" padding={"lg"}>
+        <Container className="container" center size="full" padding={"lg"}>
             <Box p="lg" bg="white" rounded shadow>
                 <FormProvider {...methods}>
                     <FormTabs
@@ -182,7 +182,6 @@ export default function NewOrderpage() {
                     />
                 </FormProvider>
             </Box>
-            <pre>{JSON.stringify(formData, null, 2)}</pre>
             <Modal
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}

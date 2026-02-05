@@ -87,7 +87,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         {images.map((image, index) => (
           <ThumbnailContainer key={index}>
             <Thumbnail
-              src={image}
+              src={`${import.meta.env.VITE_API_BASE_URL}${image}`}
               alt={`${alt} ${index + 1}`}
               thumbnailSize={thumbnailSize}
               onClick={() => openModal(index)}
@@ -107,7 +107,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         <ModalImageContainer onKeyDown={handleKeyDown} tabIndex={0}>
           {imageLoading && <LoadingSpinner />}
           <ModalImage
-            src={selectedImageIndex !== null ? images[selectedImageIndex] : ''}
+            src={selectedImageIndex !== null ? `${import.meta.env.VITE_API_BASE_URL}${images[selectedImageIndex]}` : ''}
             alt={selectedImageIndex !== null ? `${alt} ${selectedImageIndex + 1}` : ''}
             onLoad={handleImageLoad}
             style={{ display: imageLoading ? 'none' : 'block' }}

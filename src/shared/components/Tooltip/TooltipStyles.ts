@@ -16,45 +16,23 @@ export const TooltipWrapper = styled.div<{ $fullWidth?: boolean }>`
 `;
 
 export const TooltipContainer = styled.div<{ $position: TooltipPosition }>`
-  position: absolute;
+  position: fixed;
   pointer-events: none;
   z-index: 1000;
   display: flex;
+  /* left/top are set inline from computed viewport coords; transforms position relative to that anchor */
+  transform-origin: center center;
 
   ${(props) => {
     switch (props.$position) {
       case "top":
-        return `
-          bottom: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          padding-bottom: 8px;
-          justify-content: center;
-        `;
+        return `transform: translate(-50%, calc(-100% - 8px)); justify-content: center;`;
       case "bottom":
-        return `
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          padding-top: 8px;
-          justify-content: center;
-        `;
+        return `transform: translate(-50%, 8px); justify-content: center;`;
       case "left":
-        return `
-          right: 100%;
-          top: 50%;
-          transform: translateY(-50%);
-          padding-right: 8px;
-          align-items: center;
-        `;
+        return `transform: translate(calc(-100% - 8px), -50%); align-items: center;`;
       case "right":
-        return `
-          left: 100%;
-          top: 50%;
-          transform: translateY(-50%);
-          padding-left: 8px;
-          align-items: center;
-        `;
+        return `transform: translate(8px, -50%); align-items: center;`;
     }
   }}
 `;

@@ -1,6 +1,15 @@
 import { useMemo, useState } from "react";
-import { Badge, Box, Button, ButtonGroup, Container, Text, useToast } from "../../../shared/components";
-import DataTable from "../../../shared/components/Tables/Table";
+import {
+    Badge,
+    Box,
+    Button,
+    ButtonGroup,
+    Container,
+    DataTable,
+    LoadingSpinner,
+    Text,
+    useToast,
+} from "../../../shared/components";
 import { useGetComponentsQuery, useDeleteComponentMutation } from "../services/componentsApi";
 import { useNavigate } from "react-router";
 import { IoMdAdd, IoMdArrowRoundBack } from "react-icons/io";
@@ -8,11 +17,18 @@ import { useHasPermission } from "../../auth/hooks/useHasPermission";
 import { FaCheck, FaTimes } from "react-icons/fa";
 
 export default function ComponentsPage() {
-    const { data, isLoading } = useGetComponentsQuery({});
+    const [page, setPage] = useState(1);
     const [searchValue, setSearchValue] = useState("");
+    const [limit, setLimit] = useState(10);
     const navigator = useNavigate();
     const { showSuccess, showError } = useToast();
     const [deleteComponent] = useDeleteComponentMutation();
+    const { data, isLoading } = useGetComponentsQuery({
+        page,
+        limit,
+        filter: searchValue,
+    });
+    console.log(data);
 
     const columns = useMemo(
         () => [
@@ -22,11 +38,19 @@ export default function ComponentsPage() {
             },
             {
                 accessorKey: "title",
-                header: "TITLE",
+                header: "TITLE PAGE",
+            },
+            {
+                accessorKey: "label",
+                header: "LABEL MENU",
             },
             {
                 accessorKey: "componentKey",
                 header: "KEY",
+            },
+            {
+                accessorKey: "option",
+                header: "OPTION",
             },
             {
                 accessorKey: "action",
@@ -48,6 +72,17 @@ export default function ComponentsPage() {
                 header: "SHOW MENU",
                 cell: ({ row }: { row: any }) =>
                     row.original.showMenu ? <FaCheck color="green" /> : <FaTimes color="red" />,
+            },
+            {
+                accessorKey: "type",
+                header: "TYPE",
+                cell: ({ row }: { row: any }) => {
+                    if (row.original.type == "G") {
+                        return <Text variant="label-sm" truncate>Global</Text>;
+                    } else {
+                        return <Text variant="label-sm" truncate>Tenant</Text>;
+                    }
+                },
             },
             {
                 accessorKey: "active",
@@ -136,17 +171,25 @@ export default function ComponentsPage() {
                 }
                 title="Componentes"
             >
-                <DataTable
-                    columns={columns}
-                    data={data?.data || []}
-                    isLoading={isLoading}
-                    page={data?.page}
-                    total={data?.total}
-                    totalPages={data?.totalPages}
-                    searchValue={searchValue}
-                    onSearchChange={setSearchValue}
-                    searchPlaceholder="Buscar componentes..."
-                />
+                {isLoading ? (
+                    <LoadingSpinner />
+                ) : (
+                    <DataTable
+                        data={data?.data || []}
+                        columns={columns}
+                        initialPageSize={limit ?? 25}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        serverSide={true}
+                        page={data?.page}
+                        total={data?.total}
+                        totalPages={data?.totalPages}
+                        searchValue={searchValue}
+                        onSearchChange={setSearchValue}
+                        onPageChange={setPage}
+                        onPageSizeChange={setLimit}
+                        maxHeight={500}
+                    />
+                )}
             </Box>
         </Container>
     );

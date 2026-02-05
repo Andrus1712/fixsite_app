@@ -20,13 +20,14 @@ const TenantSelectorContainer = styled.div<{ $isCollapsed: boolean }>`
     padding: ${(props) => (props.$isCollapsed ? "0" : props.theme.spacing.sm)};
 `;
 
-const TenantButton = styled.div`
+const TenantButton = styled.div<{ $isCollapsed: boolean }>`
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: ${(props) => (props.$isCollapsed ? "center" : "space-between")};
     width: 100%;
-    padding: ${(props) => props.theme.spacing.sm} ${(props) => props.theme.spacing.md};
+    height: ${(props) => (props.$isCollapsed ? "40px" : "auto")};
+    padding: ${(props) => (props.$isCollapsed ? "0" : `${props.theme.spacing.sm} ${props.theme.spacing.md}`)};
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: ${(props) => props.theme.borderRadius.md};
@@ -39,11 +40,13 @@ const TenantButton = styled.div`
     }
 `;
 
-const TenantInfo = styled.div`
+const TenantInfo = styled.div<{ $isCollapsed: boolean }>`
     display: flex;
     align-items: center;
-    gap: ${(props) => props.theme.spacing.sm};
-    flex: 1;
+    gap: ${(props) => (props.$isCollapsed ? "0" : props.theme.spacing.sm)};
+    flex: ${(props) => (props.$isCollapsed ? "0 0 auto" : "100%")};
+    justify-content: center;
+    width: ${(props) => (props.$isCollapsed ? "100%" : "auto")};
     min-width: 0;
 `;
 
@@ -56,7 +59,7 @@ const TenantIcon = styled.div<{ $isCollapsed: boolean }>`
     font-size: 1.2rem;
 
     ${(props) => props.$isCollapsed && `
-        margin-right: 0;
+        margin: 0;
         font-size: 1.5rem;
     `}
 
@@ -118,21 +121,31 @@ const ArrowButton = styled.button<{ $isOpen: boolean }>`
     }
 `;
 
-const DropdownMenu = styled.div<{ $isOpen: boolean }>`
+const DropdownMenu = styled.div<{ $isOpen: boolean; $isCollapsed: boolean }>`
     position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
     background: ${(props) => props.theme.colors.surface};
     border: 1px solid ${(props) => props.theme.colors.border};
     border-radius: ${(props) => props.theme.borderRadius.md};
     box-shadow: ${(props) => props.theme.shadows.lg};
-    z-index: 1000;
+    z-index: 2000;
     overflow: hidden;
-    max-height: ${(props) => (props.$isOpen ? "300px" : "0")};
+    max-height: ${(props) => (props.$isOpen ? "400px" : "0")};
     opacity: ${(props) => (props.$isOpen ? 1 : 0)};
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: ${(props) => (props.$isOpen ? "auto" : "none")};
+
+    ${(props) =>
+        props.$isCollapsed
+            ? `
+        top: 0;
+        left: calc(100% + 12px);
+        width: 260px;
+    `
+            : `
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+    `}
 `;
 
 const DropdownItem = styled.div<{ $isActive: boolean }>`
@@ -262,8 +275,8 @@ function TenantSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
 
     return (
         <TenantSelectorContainer $isCollapsed={isCollapsed}>
-            <TenantButton onClick={() => setIsOpen(!isOpen)}>
-                <TenantInfo>
+            <TenantButton $isCollapsed={isCollapsed} onClick={() => setIsOpen(!isOpen)}>
+                <TenantInfo $isCollapsed={isCollapsed}>
                     <TenantIcon $isCollapsed={isCollapsed}>
                         <TiWorld />
                     </TenantIcon>
@@ -283,7 +296,7 @@ function TenantSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
                     </ArrowButton>
                 )}
             </TenantButton>
-            <DropdownMenu $isOpen={isOpen}>
+            <DropdownMenu $isOpen={isOpen} $isCollapsed={isCollapsed}>
                 <DropdownItem
                     $isActive={!currentTenantState}
                     onClick={() => currentTenantState && handleLogoutTenat()}

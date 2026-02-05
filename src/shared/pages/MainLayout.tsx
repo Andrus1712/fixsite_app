@@ -3,9 +3,8 @@ import { Suspense, useEffect, useState } from "react";
 import styled, { useTheme } from "styled-components";
 import Sidebar from "../components/Sidebar/Sidebar";
 import Header from "../components/Header/Header";
-import { Divider, LoadingSpinner, Row } from "../components";
+import { LoadingSpinner } from "../components";
 import PageTitle from "../components/PageTitle";
-import Breadcrumbs from "../components/Breadcrumbs";
 
 export const MainLayoutContainer = styled.div`
     height: 100vh;
@@ -15,7 +14,6 @@ export const MainLayoutContainer = styled.div`
 `;
 
 export const Workspace = styled.div<{ $sidebarOpen: boolean; $isCollapsed: boolean }>`
-    flex: 1;
     display: grid;
     grid-template-columns: ${(props) => {
         if (props.$sidebarOpen && !props.$isCollapsed) {
@@ -35,11 +33,11 @@ export const Workspace = styled.div<{ $sidebarOpen: boolean; $isCollapsed: boole
 `;
 
 export const SidebarWrapper = styled.div<{ $isOpen: boolean }>`
+    z-index: ${(props) => props.theme.zIndex.popover};
     @media (max-width: ${(props) => props.theme.breakpoints.lg}) {
         position: fixed;
         top: ${(props) => props.theme.layout.headerHeight};
         left: 0;
-        z-index: 999;
         height: calc(100vh - ${(props) => props.theme.layout.headerHeight});
         transform: translateX(${(props) => (props.$isOpen ? "0" : "-100%")});
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -52,13 +50,14 @@ export const Container = styled.div`
     flex-direction: column;
     overflow: hidden;
     height: 100%;
+    padding-bottom: 2rem;
 `;
 
 export const Content = styled.main`
-    flex: 1;
     padding: ${(props) => props.theme.layout.contentPaddingY} ${(props) => props.theme.layout.contentPaddingX};
     background-color: ${(props) => props.theme.colors.background};
     overflow-y: auto;
+    flex: 1;
 `;
 
 export const Footer = styled.footer`
@@ -144,11 +143,7 @@ function MainLayout() {
                 <Container>
                     <Content>
                         <Suspense fallback={<LoadingSpinner />}>
-                            <Row $align="center" $justify="space-between" $gap={"xs"}>
-                                <PageTitle />
-                                <Breadcrumbs />
-                            </Row>
-                            <Divider margin={"xs"} />
+                            <PageTitle />
                             <Outlet />
                         </Suspense>
                     </Content>

@@ -13,13 +13,24 @@ import {
     IoPauseCircle,
 } from "react-icons/io5";
 import styled from "styled-components";
+import { differenceInDays, differenceInMinutes, format, formatDistance, formatDistanceToNow, subDays } from "date-fns";
+import { es } from "date-fns/locale";
 
 export interface TimelineEvent {
     id: string;
     title: string;
     description?: string;
     timestamp: string;
-    type: "created" | "updated" | "assigned" | "status_change" | "comment" | "repair" | "completed" | "cancelled" | "custom";
+    type:
+        | "created"
+        | "updated"
+        | "assigned"
+        | "status_change"
+        | "comment"
+        | "repair"
+        | "completed"
+        | "cancelled"
+        | "custom";
     status?: "success" | "warning" | "error" | "info" | "default";
     user?: string;
     metadata?: Record<string, any>;
@@ -218,27 +229,21 @@ const getEventStatus = (type: TimelineEvent["type"]): TimelineEvent["status"] =>
     }
 };
 
-const formatTimestamp = (timestamp: string): string => {
-    try {
-        const date = new Date(timestamp);
-        return date.toLocaleString("es-ES", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    } catch {
-        return timestamp;
-    }
-};
+function formatearFechaInteligente(fecha: Date) {
+    const ahora = new Date();
+    const diasDeDiferencia = differenceInMinutes(ahora, fecha);
 
-export const Timeline: React.FC<TimelineProps> = ({
-    events,
-    className,
-    showConnector = true,
-    size = "md",
-}) => {
+    if (diasDeDiferencia > 20) {
+        return format(fecha, "d 'de' MMMM, yyyy ', a las' HH:mm", { locale: es });
+    }
+
+    return formatDistanceToNow(fecha, {
+        locale: es,
+        addSuffix: true,
+    });
+}
+
+export const Timeline: React.FC<TimelineProps> = ({ events, className, showConnector = true, size = "md" }) => {
     if (!events || events.length === 0) {
         return (
             <Card size="full" variant="outlined" padding="large">
@@ -255,7 +260,7 @@ export const Timeline: React.FC<TimelineProps> = ({
         <TimelineContainer className={className}>
             {sortedEvents.map((event, index) => (
                 <TimelineItem key={event.id} size={size}>
-                    <TimelineIcon status={event.status || getEventStatus(event.type)}>
+                    <TimelineIcon status={event.status ?? getEventStatus(event.type) ?? "default"}>
                         {event.icon || getEventIcon(event.type)}
                     </TimelineIcon>
 
@@ -274,7 +279,7 @@ export const Timeline: React.FC<TimelineProps> = ({
 
                                 <TimelineMeta>
                                     <TimelineTimestamp variant="caption" color="muted">
-                                        {formatTimestamp(event.timestamp)}
+                                        {formatearFechaInteligente(new Date(event.timestamp))}
                                     </TimelineTimestamp>
                                     {event.user && (
                                         <TimelineUser variant="caption" color="muted">
@@ -300,9 +305,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                                             <Text variant="caption" weight="medium" color="muted">
                                                 {key}:
                                             </Text>
-                                            <Badge variant="default" size="sm">
-                                                {String(value)}
-                                            </Badge>
+                                            <Badge variant="default">{String(value)}</Badge>
                                         </MetadataItem>
                                     ))}
                                 </TimelineMetadata>

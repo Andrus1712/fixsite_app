@@ -6,24 +6,12 @@ import { HiDotsVertical } from "react-icons/hi";
 import { IoPencil } from "react-icons/io5";
 import { BsNut } from "react-icons/bs";
 import styled from "styled-components";
-
-export interface FailureReport {
-    id: string;
-    code: string;
-    title: string;
-    description: string;
-    type: "Hardware" | "Software" | "Network" | "Other";
-    priority: "Low" | "Medium" | "High" | "Critical";
-    status: "Open" | "In Progress" | "Resolved" | "Closed";
-    images?: string[];
-    reportedDate?: string;
-    assignedTechnician?: string;
-}
+import type { Issue } from "../../models/ApiModel";
 
 export interface ReportedFailuresProps {
-    failures: FailureReport[];
-    onEditFailure?: (failure: FailureReport) => void;
-    onConfigureFailure?: (failure: FailureReport) => void;
+    failures: Issue[];
+    onEditFailure?: (failure: Issue) => void;
+    onConfigureFailure?: (failure: Issue) => void;
     className?: string;
 }
 
@@ -91,20 +79,6 @@ const getPriorityColor = (priority: string): any => {
     }
 };
 
-const getStatusColor = (status: string): any => {
-    switch (status.toLowerCase()) {
-        case "open":
-            return "danger";
-        case "in progress":
-            return "warning";
-        case "resolved":
-            return "success";
-        case "closed":
-            return "info";
-        default:
-            return "default";
-    }
-};
 
 const getTypeColor = (type: string): any => {
     switch (type.toLowerCase()) {
@@ -148,10 +122,10 @@ export const ReportedFailures: React.FC<ReportedFailuresProps> = ({
                             <FailureTitle>
                                 <TbAlertOctagonFilled
                                     size={20}
-                                    color={failure.priority === "Critical" ? "#ef4444" : "#f59e0b"}
+                                    color={failure.issue_priority_description.toLowerCase() === "critical" ? "#ef4444" : "#f59e0b"}
                                 />
                                 <Text variant="body1" weight="semibold" style={{ flex: 1 }}>
-                                    {failure.code} - {failure.title}
+                                    {failure.failure_codes_code || failure.id} - {failure.failure_codes_name || failure.issue_name}
                                 </Text>
                             </FailureTitle>
                             <DropdownButton
@@ -179,22 +153,23 @@ export const ReportedFailures: React.FC<ReportedFailuresProps> = ({
                             />
                         </FailureTitleRow>
                         <FailureBadges>
-                            <Badge variant={getTypeColor(failure.type)}>{failure.type}</Badge>
-                            <Badge variant={getPriorityColor(failure.priority)}>{failure.priority}</Badge>
-                            <Badge variant={getStatusColor(failure.status)}>{failure.status}</Badge>
+                            <Badge variant={getTypeColor(failure.failure_categories_name || failure.issue_type_description)}>{failure.failure_categories_name || failure.issue_type_description}</Badge>
+                            <Badge variant={getPriorityColor(failure.failure_severities_name || failure.issue_priority_description)}>{failure.failure_severities_name || failure.issue_priority_description}</Badge>
+                            {/* Assuming there is no status field in the new Issue interface, we use a placeholder or check if it exists */}
+                            <Badge variant="info">Reportada</Badge>
                         </FailureBadges>
                     </FailureHeader>
 
                     <FailureDescription>
                         <Text variant="body2" color="muted" style={{ lineHeight: 1.6 }}>
-                            {failure.description}
+                            {failure.failure_codes_description}
                         </Text>
                     </FailureDescription>
 
-                    {failure.images && failure.images.length > 0 && (
+                    {failure.issue_files && failure.issue_files.length > 0 && (
                         <FailureImages>
                             <ImageGallery
-                                images={failure.images}
+                                images={failure.issue_files}
                                 thumbnailSize={120}
                                 modalSize="lg"
                                 showCounter={true}
@@ -202,23 +177,23 @@ export const ReportedFailures: React.FC<ReportedFailuresProps> = ({
                         </FailureImages>
                     )}
 
-                    {(failure.reportedDate || failure.assignedTechnician) && (
+                    {(failure.issue_reported_date || failure.issue_reported_by) && (
                         <Row
                             $align="center"
                             $justify="space-between"
                             style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #e5e7eb" }}
                         >
                             <div>
-                                {failure.reportedDate && (
+                                {failure.issue_reported_date && (
                                     <Text variant="caption" color="muted">
-                                        Reportado: {failure.reportedDate}
+                                        Reportado el: {failure.issue_reported_date} {failure.issue_reported_time}
                                     </Text>
                                 )}
                             </div>
                             <div>
-                                {failure.assignedTechnician && (
+                                {failure.issue_reported_by && (
                                     <Text variant="caption" color="muted">
-                                        Técnico: {failure.assignedTechnician}
+                                        Por: {failure.issue_reported_by}
                                     </Text>
                                 )}
                             </div>

@@ -1,4 +1,5 @@
 import { forwardRef, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
     ClearButton,
     DropdownItem,
@@ -54,6 +55,8 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     const [searchTerm, setSearchTerm] = useState("");
     const [displayValue, setDisplayValue] = useState("");
     const containerRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLUListElement | null>(null);
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties | null>(null);
 
     // Debounce search term
     useEffect(() => {
@@ -74,7 +77,10 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+            const target = event.target as Node;
+            const insideContainer = containerRef.current && containerRef.current.contains(target);
+            const insideDropdown = dropdownRef.current && dropdownRef.current.contains(target);
+            if (!insideContainer && !insideDropdown) {
                 setIsOpen(false);
                 setSearchTerm("");
                 if (value) {
@@ -87,6 +93,36 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [value, options]);
+
+    // Calculate dropdown position when opened and on resize/scroll
+    useEffect(() => {
+        if (!isOpen) {
+            setDropdownStyle(null);
+            return;
+        }
+
+        const updatePosition = () => {
+            const el = containerRef.current;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const style: React.CSSProperties = {
+                position: "absolute",
+                top: rect.bottom + window.scrollY,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+                zIndex: 10050,
+            };
+            setDropdownStyle(style);
+        };
+
+        updatePosition();
+        window.addEventListener("resize", updatePosition);
+        window.addEventListener("scroll", updatePosition, true);
+        return () => {
+            window.removeEventListener("resize", updatePosition);
+            window.removeEventListener("scroll", updatePosition, true);
+        };
+    }, [isOpen]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = e.target.value;
@@ -148,7 +184,14 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                         </svg>
                     </ClearButton>
                 )}
-                <DropdownList $isOpen={isOpen}>
+                {/* Dropdown is rendered via portal to avoid being clipped by overflow parents (e.g., Modal) */}
+            </InputWrapper>
+            {isOpen && dropdownStyle && createPortal(
+                <DropdownList
+                    ref={(node: any) => (dropdownRef.current = node)}
+                    $isOpen={isOpen}
+                    style={dropdownStyle}
+                >
                     {(loading || isLoading) ? (
                         <LoadingItem>Buscando...</LoadingItem>
                     ) : serverError ? (
@@ -174,8 +217,9 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                             ))}
                         </>
                     )}
-                </DropdownList>
-            </InputWrapper>
+                </DropdownList>,
+                document.body
+            )}
             {error && <ErrorText>{error}</ErrorText>}
         </SelectContainer>
     );

@@ -9,7 +9,7 @@ import {
     IconWrapper,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import { FaBoxOpen, FaChartBar, FaCog, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
+import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
 import TenantSelector from "../TenantSelector";
 import { Tooltip } from "../Tooltip";
@@ -42,6 +42,8 @@ const iconMap: Record<string, JSX.Element> = {
     GrConfigure: <GrConfigure />,
     IoIosArrowDown: <IoIosArrowDown />,
     FaScrewdriverWrench: <FaScrewdriverWrench />,
+    FaPeopleCarry: <FaPeopleCarry />,
+    FaMicrochip: <FaMicrochip />,
 };
 
 function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {

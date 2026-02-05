@@ -1,10 +1,12 @@
-import { NavLink, useMatches } from "react-router";
+import { NavLink, useMatches, useLocation } from "react-router";
 import styled from "styled-components";
-import { Text } from "./Typography";
+import { FaChevronRight } from "react-icons/fa";
+import { useAppSelector } from "../store";
+import type { RootState } from "../store";
+import type { IComponents, IModules } from "../../features/permissions/models/Permission";
 
 const BreadcrumbContainer = styled.nav`
-    padding: 5px 0;
-    /* margin-bottom: 16px; */
+    padding: 0;
 `;
 
 const BreadcrumbList = styled.ol`
@@ -13,46 +15,69 @@ const BreadcrumbList = styled.ol`
     list-style: none;
     margin: 0;
     padding: 0;
-    font-size: 14px;
+    font-size: ${(props) => props.theme.fontSize.xs};
+    flex-wrap: wrap;
 `;
 
 const BreadcrumbItem = styled.li`
     display: flex;
     align-items: center;
+    color: ${(props) => props.theme.colors.textMuted};
 `;
 
 const BreadcrumbLink = styled(NavLink)`
     text-decoration: none;
-    color: ${(props) =>
-        props.color === props.theme.colors.text ? "#1F2937" : "inherit"};
+    color: inherit;
+    transition: color 0.2s ease;
+    font-weight: ${(props) => props.theme.fontWeight.medium};
 
     &:hover {
-        color: #374151;
-        text-decoration: underline;
+        color: ${(props) => props.theme.colors.primary};
     }
 `;
 
-const BreadcrumbText = styled.span`
-    color: #374151;
-    font-weight: 500;
-`;
-
 const Separator = styled.span`
-    margin: 0 8px;
-    color: #9ca3af;
+    margin: 0 ${(props) => props.theme.spacing.xs};
+    color: ${(props) => props.theme.colors.gray300};
+    display: flex;
+    align-items: center;
+    font-size: 10px;
 `;
 
 export default function Breadcrumbs() {
+    const location = useLocation();
     const matches = useMatches();
+    const { data } = useAppSelector((state: RootState) => state.auth);
 
-    const crumbs = matches
-        .filter((match) => match.handle && (match.handle as any)?.label)
-        .map((match) => ({
-            label: (match.handle as any)?.label,
-            pathname: match.pathname,
-        }));
+    // Get all components to look up parent labels
+    const allComponents = data?.modules?.flatMap((m: IModules) => m.components) || [];
 
-    if (crumbs.length === 0) return null;
+    // Skip "app" from segments as it is our "Home"
+    const pathnames = location.pathname.split("/").filter((x) => x && x !== "app");
+
+    const crumbs = pathnames.map((value, index) => {
+        const url = `/app/${pathnames.slice(0, index + 1).join("/")}`;
+
+        // 1. Try to find label in current router matches
+        const match = matches.find((m) => m.pathname === url);
+        let label = (match?.handle as any)?.label || (match?.handle as any)?.title;
+
+        // 2. If not found, try to find in components list (labels for parent paths)
+        if (!label) {
+            const component = allComponents.find((c: IComponents) => `/app${c.path}` === url);
+            label = component?.label || component?.title;
+        }
+
+        // 3. Fallback to capitalized segment name
+        if (!label) {
+            label = value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, " ");
+        }
+
+        return {
+            label,
+            pathname: url,
+        };
+    });
 
     return (
         <BreadcrumbContainer>
@@ -62,18 +87,13 @@ export default function Breadcrumbs() {
                 </BreadcrumbItem>
                 {crumbs.map((crumb, index) => (
                     <BreadcrumbItem key={crumb.pathname}>
-                        <Separator>&gt;</Separator>
+                        <Separator>
+                            <FaChevronRight />
+                        </Separator>
                         {index === crumbs.length - 1 ? (
-                            <Text color="secondary">{crumb.label}</Text>
+                            <span style={{ fontWeight: 700 }}>{crumb.label}</span>
                         ) : (
-                            <Text color="primary">
-                                <BreadcrumbLink
-                                    color="primary"
-                                    to={crumb.pathname}
-                                >
-                                    {crumb.label}
-                                </BreadcrumbLink>
-                            </Text>
+                            <BreadcrumbLink to={crumb.pathname}>{crumb.label}</BreadcrumbLink>
                         )}
                     </BreadcrumbItem>
                 ))}

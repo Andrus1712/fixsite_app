@@ -3,7 +3,7 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import { logout } from '../../features/auth/store/authSlice';
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: 'http://localhost:3000',
+    baseUrl: import.meta.env.VITE_API_BASE_URL,
     credentials: 'include', // Incluir cookies automáticamente
 });
 
@@ -20,7 +20,7 @@ const baseQueryWithReauth: BaseQueryFn<
             alert('Error de conexión: El servicio no está disponible. Por favor, inténtalo más tarde.');
             return result;
         }
-        
+
         // Token expirado o inválido
         if (result.error.status === 401) {
             await baseQuery({ url: 'auth/logout', method: 'POST' }, api, extraOptions);

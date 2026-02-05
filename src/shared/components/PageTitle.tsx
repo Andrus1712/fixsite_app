@@ -1,40 +1,60 @@
 import { useMatches } from "react-router";
-import styled, { useTheme } from "styled-components";
-import { Heading } from "./Typography";
+import styled from "styled-components";
+import { Heading, Subtitle } from "./Typography";
+import Breadcrumbs from "./Breadcrumbs";
 
-const TitleContainer = styled.div`
-    padding: ${(props) => props.theme.spacing.sm} 0;
-
-    @media (max-width: ${(props) => props.theme.breakpoints.md}) {
-        margin-bottom: ${(props) => props.theme.spacing.md};
-    }
+const HeaderWrapper = styled.div`
+    margin-bottom: ${(props) => props.theme.spacing.lg};
+    display: flex;
+    flex-direction: column;
+    gap: ${(props) => props.theme.spacing.xs};
 `;
 
+const TitleSection = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${(props) => props.theme.spacing.xxs};
+`;
+
+const StyledHeading = styled(Heading)`
+    word-break: break-word;
+    hyphens: auto;
+    letter-spacing: -0.02em;
+`;
+
+const BreadcrumbWrapper = styled.div`
+    margin-bottom: ${(props) => props.theme.spacing.xxs};
+`;
 
 export default function PageTitle() {
     const matches = useMatches();
-    const theme = useTheme();
     const currentMatch = matches[matches.length - 1];
-    const title =
-        (currentMatch?.handle as any)?.title ||
-        (currentMatch?.handle as any)?.label ||
-        "Inicio";
+
+    const handle = currentMatch?.handle as any;
+
+    const title = handle?.title || handle?.label || "Inicio";
+    const description = handle?.description || handle?.subtitle;
+
+    if (handle?.notFound) return null;
 
     return (
-        <TitleContainer>
-            {!(currentMatch?.handle as any)?.notFound ? (
-                <Heading
+        <HeaderWrapper>
+            <BreadcrumbWrapper>
+                <Breadcrumbs />
+            </BreadcrumbWrapper>
+            <TitleSection>
+                <StyledHeading
                     level="h2"
-                    color="gray800"
-                    truncate
-                    style={{
-                        fontWeight: theme.fontWeight.semibold,
-                        lineHeight: 1.2,
-                    }}
+                    color="gray900"
                 >
                     {title}
-                </Heading>
-            ) : null}
-        </TitleContainer>
+                </StyledHeading>
+                {description && (
+                    <Subtitle variant="subtitle2" color="muted">
+                        {description}
+                    </Subtitle>
+                )}
+            </TitleSection>
+        </HeaderWrapper>
     );
 }

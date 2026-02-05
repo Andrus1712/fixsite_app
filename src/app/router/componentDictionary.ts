@@ -31,6 +31,10 @@ const EditComponentPage = lazy(() => import("../../features/permissions/pages/Ed
 const PermissionsPage = lazy(() => import("../../features/permissions/pages/PermissionsPage"));
 const NewPermissionPage = lazy(() => import("../../features/permissions/pages/NewPermissionPage"));
 const EditPermissionPage = lazy(() => import("../../features/permissions/pages/EditPermissionPage"));
+// Tecnicos
+const TechnicianPage = lazy(() => import("../../features/technician/pages/TechnicianPage"));
+const NewTechnicianPage = lazy(() => import("../../features/technician/pages/NewTechnicianPage"));
+// const EditTechnicianPage = lazy(() => import("../../features/technician/pages/EditTechnicianPage"));
 
 
 
@@ -61,4 +65,8 @@ export const componentMap: Record<string, React.ComponentType> = {
     "permission-new": NewPermissionPage,
     "permission-edit": EditPermissionPage,
     //Servicices
+    // Tecnicos
+    "technician-index": TechnicianPage,
+    "technician-new": NewTechnicianPage,
+    "technician-edit": TechnicianPage,
 };

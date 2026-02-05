@@ -57,7 +57,7 @@ export const SidebarItems = styled.div<{ $isCollapsed?: boolean }>`
 
 export const ModuleContainer = styled.div`
     width: 100%;
-    margin-bottom: ${(props) => props.theme.spacing.xl};
+    margin-bottom: ${(props) => props.theme.spacing.xxs};
     
     &:last-child {
         margin-bottom: ${(props) => props.theme.spacing.md};

@@ -1,14 +1,20 @@
 import { useMemo, useState } from "react";
 import { Box, Button, ButtonGroup, Container, useToast } from "../../../shared/components";
-import DataTable from "../../../shared/components/Tables/Table";
+import { DataTable } from "../../../shared/components/Tables";
 import { useGetPermissionsAllQuery, useDeletePermissionMutation } from "../services/permissionApi";
 import { useNavigate } from "react-router";
 import { IoMdAdd, IoMdArrowRoundBack } from "react-icons/io";
 import { useHasPermission } from "../../auth/hooks/useHasPermission";
 
 export default function PermissionsPage() {
-    const { data, isLoading } = useGetPermissionsAllQuery({});
+    const [page, setPage] = useState(1);
     const [searchValue, setSearchValue] = useState("");
+    const [limit, setLimit] = useState(10);
+    const { data, isLoading } = useGetPermissionsAllQuery({
+        page,
+        limit,
+        filter: searchValue,
+    });
     const navigator = useNavigate();
     const { showSuccess, showError } = useToast();
     const [deletePermission] = useDeletePermissionMutation();
@@ -128,15 +134,19 @@ export default function PermissionsPage() {
                 title="Permisos"
             >
                 <DataTable
-                    columns={columns}
                     data={data?.data || []}
-                    isLoading={isLoading}
+                    columns={columns}
+                    initialPageSize={limit ?? 25}
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    serverSide={true}
                     page={data?.page}
                     total={data?.total}
                     totalPages={data?.totalPages}
                     searchValue={searchValue}
                     onSearchChange={setSearchValue}
-                    searchPlaceholder="Buscar permisos..."
+                    onPageChange={setPage}
+                    onPageSizeChange={setLimit}
+                    maxHeight={500}
                 />
             </Box>
         </Container>

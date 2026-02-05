@@ -10,7 +10,7 @@ export { default as SearchInput } from './SearchInput';
 export { default as TenantSelector } from './TenantSelector';
 export { default as TokenExpirationWatcher } from './TokenExpirationWatcher';
 export { default as PatternLock } from './PatternLock';
-export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as LoadingSpinner } from './Spinner/LoadingSpinner';
 export { default as ErrorBoundary } from './ErrorBoundary';
 
 // Feature Components (Directories with index)

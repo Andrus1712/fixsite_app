@@ -1,21 +1,33 @@
 const lightTheme = {
     colors: {
-        // Primary palette - Deep Indigo
-        primary: '#4338CA',
-        primaryLight: '#6366F1',
-        primaryDark: '#3730A3',
-        primaryHover: '#5B21B6',
-        
-        // Secondary palette - Emerald (from TenantSelector)
-        secondary: '#10B981',
-        secondaryLight: '#34D399',
-        secondaryDark: '#059669',
-        
+        // Primary palette - Digital Cobalt
+        primary: '#2E5BFF',
+        primaryLight: '#5E81FF',
+        primaryDark: '#1A3FB4',
+        primaryHover: '#254EDB',
+
+        // Secondary palette - Vibrant Emerald
+        secondary: '#00D18F',
+        secondaryLight: '#34E8B0',
+        secondaryDark: '#00A873',
+
         // Accent colors
         accent: '#F59E0B',
         accentLight: '#FCD34D',
         accentDark: '#D97706',
-        
+
+        // Standard colors (Convenience aliases)
+        red: '#EF4444',
+        blue: '#2E5BFF',
+        green: '#22C55E',
+        yellow: '#EAB308',
+        orange: '#F97316',
+        purple: '#A855F7',
+        pink: '#EC4899',
+        cyan: '#06B6D4',
+        teal: '#14B8A6',
+        lime: '#84CC16',
+
         // Neutrals - White, Black, Grays
         white: '#FFFFFF',
         black: '#000000',
@@ -31,7 +43,7 @@ const lightTheme = {
         gray800: '#1F2937',
         gray900: '#111827',
         gray950: '#030712',
-        
+
         // Semantic colors
         success: '#10B981',
         successLight: '#D1FAE5',
@@ -45,13 +57,13 @@ const lightTheme = {
         info: '#3B82F6',
         infoLight: '#DBEAFE',
         infoDark: '#1E40AF',
-        
+
         // Special colors (from TenantSelector)
         successBg: '#F0FCF3',
         successBorder: '#BAF7CF',
         successText: '#166334',
         successIndicator: '#23C45E',
-        
+
         // Background variants
         background: '#F9FAFB',
         backgroundSecondary: '#FFFFFF',
@@ -59,14 +71,14 @@ const lightTheme = {
         surface: '#FFFFFF',
         surfaceHover: '#F9FAFB',
         overlay: 'rgba(0, 0, 0, 0.5)',
-        
+
         // Text variants
         text: '#111827',
         textSecondary: '#6B7280',
         textMuted: '#9CA3AF',
         textInverse: '#FFFFFF',
         textDisabled: '#D1D5DB',
-        
+
         // Border colors
         border: '#E5E7EB',
         borderLight: '#F3F4F6',
@@ -77,22 +89,34 @@ const lightTheme = {
 
 const darkTheme = {
     colors: {
-        // Primary palette - Deep Indigo (adjusted for dark)
-        primary: '#6366F1',
-        primaryLight: '#8B5CF6',
-        primaryDark: '#4338CA',
-        primaryHover: '#7C3AED',
-        
-        // Secondary palette - Emerald
-        secondary: '#34D399',
-        secondaryLight: '#6EE7B7',
-        secondaryDark: '#10B981',
-        
+        // Primary palette - Digital Cobalt (Dark mode adjusted)
+        primary: '#4D7BFF',
+        primaryLight: '#7A9EFF',
+        primaryDark: '#2E5BFF',
+        primaryHover: '#5E81FF',
+
+        // Secondary palette - Vibrant Emerald
+        secondary: '#34E8B0',
+        secondaryLight: '#6EEFCF',
+        secondaryDark: '#00D18F',
+
         // Accent colors
         accent: '#FCD34D',
         accentLight: '#FDE68A',
         accentDark: '#F59E0B',
-        
+
+        // Standard colors (Convenience aliases)
+        red: '#F87171',
+        blue: '#4D7BFF',
+        green: '#4ADE80',
+        yellow: '#FDE047',
+        orange: '#FB923C',
+        purple: '#C084FC',
+        pink: '#F472B6',
+        cyan: '#22D3EE',
+        teal: '#2DD4BF',
+        lime: '#A3E635',
+
         // Neutrals - Inverted
         white: '#111827',
         black: '#FFFFFF',
@@ -108,7 +132,7 @@ const darkTheme = {
         gray800: '#F3F4F6',
         gray900: '#F9FAFB',
         gray950: '#FCFCFD',
-        
+
         // Semantic colors (dark variants)
         success: '#34D399',
         successLight: '#064E3B',
@@ -122,13 +146,13 @@ const darkTheme = {
         info: '#60A5FA',
         infoLight: '#0C1E3E',
         infoDark: '#93C5FD',
-        
+
         // Special colors (dark variants)
         successBg: '#064E3B',
         successBorder: '#065F46',
         successText: '#6EE7B7',
         successIndicator: '#34D399',
-        
+
         // Background variants
         background: '#111827',
         backgroundSecondary: '#1F2937',
@@ -136,14 +160,14 @@ const darkTheme = {
         surface: '#1F2937',
         surfaceHover: '#374151',
         overlay: 'rgba(0, 0, 0, 0.8)',
-        
+
         // Text variants
         text: '#F9FAFB',
         textSecondary: '#D1D5DB',
         textMuted: '#9CA3AF',
         textInverse: '#111827',
         textDisabled: '#6B7280',
-        
+
         // Border colors
         border: '#374151',
         borderLight: '#4B5563',
@@ -220,12 +244,46 @@ const commonTheme = {
         xl: '1280px',
         '2xl': '1536px'
     },
+    palette: {
+        red: {
+            50: '#FEF2F2', 100: '#FEE2E2', 200: '#FECACA', 300: '#FCA5A5', 400: '#F87171',
+            500: '#EF4444', 600: '#DC2626', 700: '#B91C1C', 800: '#991B1B', 900: '#7F1D1D', 950: '#450A0A'
+        },
+        blue: {
+            50: '#F0F4FF', 100: '#E1E9FF', 200: '#C2D2FF', 300: '#A4BCFF', 400: '#85A5FF',
+            500: '#2E5BFF', 600: '#264ED4', 700: '#1E40A9', 800: '#16327E', 900: '#0E2453', 950: '#07122A'
+        },
+        green: {
+            50: '#F0FDF4', 100: '#DCFCE7', 200: '#BBF7D0', 300: '#86EFAC', 400: '#4ADE80',
+            500: '#22C55E', 600: '#16A34A', 700: '#15803D', 800: '#166534', 900: '#14532D', 950: '#052E16'
+        },
+        yellow: {
+            50: '#FEFCE8', 100: '#FEF9C3', 200: '#FEF08A', 300: '#FDE047', 400: '#FACC15',
+            500: '#EAB308', 600: '#CA8A04', 700: '#A16207', 800: '#854D0E', 900: '#713F12', 950: '#422006'
+        },
+        orange: {
+            50: '#FFF7ED', 100: '#FFEDD5', 200: '#FED7AA', 300: '#FDBA74', 400: '#FB923C',
+            500: '#F97316', 600: '#EA580C', 700: '#C2410C', 800: '#9A3412', 900: '#7C2D12', 950: '#431407'
+        },
+        purple: {
+            50: '#FAF5FF', 100: '#F3E8FF', 200: '#E9D5FF', 300: '#D8B4FE', 400: '#C084FC',
+            500: '#A855F7', 600: '#9333EA', 700: '#7E22CE', 800: '#6B21A8', 900: '#581C87', 950: '#3B0764'
+        },
+        indigo: {
+            50: '#EEF2FF', 100: '#E0E7FF', 200: '#C7D2FE', 300: '#A5B4FC', 400: '#818CF8',
+            500: '#6366F1', 600: '#4F46E5', 700: '#4338CA', 800: '#3730A3', 900: '#312E81', 950: '#1E1B4B'
+        },
+        slate: {
+            50: '#F8FAFC', 100: '#F1F5F9', 200: '#E2E8F0', 300: '#CBD5E1', 400: '#94A3B8',
+            500: '#64748B', 600: '#475569', 700: '#334155', 800: '#1E293B', 900: '#0F172A', 950: '#020617'
+        }
+    },
     zIndex: {
-        dropdown: 1000,
+        dropdown: 1050,
         sticky: 1020,
         fixed: 1030,
         modal: 1040,
-        popover: 1050,
+        popover: 1000,
         tooltip: 1060
     }
 };

@@ -588,9 +588,8 @@ const NewOrdenComponent: React.FC = () => {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder={`Paso ${
-                                                        stepIndex + 1
-                                                    }`}
+                                                    placeholder={`Paso ${stepIndex + 1
+                                                        }`}
                                                 />
                                                 <RemoveButton
                                                     type="button"
@@ -658,7 +657,7 @@ const NewOrdenComponent: React.FC = () => {
                                         }
                                         disabled={
                                             uploadingImages[
-                                                issueIndex.toString()
+                                            issueIndex.toString()
                                             ]
                                         }
                                     />
@@ -675,13 +674,8 @@ const NewOrdenComponent: React.FC = () => {
                                                         key={imageIndex}
                                                     >
                                                         <img
-                                                            src={
-                                                                "http://localhost:3000" +
-                                                                url
-                                                            }
-                                                            alt={`Preview ${
-                                                                imageIndex + 1
-                                                            }`}
+                                                            src={`${import.meta.env.VITE_API_BASE_URL}${url}`}
+                                                            alt={`Preview ${imageIndex + 1}`}
                                                         />
                                                         <RemoveImageButton
                                                             type="button"

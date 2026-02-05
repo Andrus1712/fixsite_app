@@ -7,23 +7,55 @@ import {
     Column,
     Divider,
     DropdownButton,
+    DropdownButtonExample,
+    Flex,
     Grid,
+    Modal,
     Row,
+    SearchableSelect,
+    SearchInput,
     Table,
     Text,
     useToast,
 } from "../../../shared/components";
 import { ReportedFailures } from "./ReportedFailures";
 import type { Notes, WorkOrder } from "../models/OrderModel";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { HiDotsVertical } from "react-icons/hi";
 import { IoCheckmark, IoDocumentText, IoPencil, IoPrint, IoTrash } from "react-icons/io5";
 import { BsNut } from "react-icons/bs";
 import { FaCopy } from "react-icons/fa";
+import { useGetAllTechnicniansQuery } from "../../technician/services/TechnicianApi";
+import { useAssignOrderToTechnicianMutation } from "../services/orderApi";
+import { Link } from "react-router";
+
+interface DropdownMenuOption {
+    id: string;
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    isDanger?: boolean;
+    icon?: React.ReactNode;
+}
+
+interface DropdownMenuSection {
+    label?: string;
+    options: DropdownMenuOption[];
+}
 
 export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
-    const { showSuccess } = useToast();
+    const { showSuccess, showError } = useToast();
+    const [showModalSetTechnician, setShowModalSetTechnician] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
+    const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | number | null>(null);
+
+    const [assignOrderToTechnician, { isLoading: isAssigning }] = useAssignOrderToTechnicianMutation();
+
+    const { data: technicians, isLoading } = useGetAllTechnicniansQuery(
+        { filter: searchValue, limit: "todos" },
+        { skip: !showModalSetTechnician }
+    );
 
     const columns = useMemo<ColumnDef<Notes>[]>(
         () => [
@@ -39,77 +71,85 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                 accessorKey: "timestamp",
                 header: "FECHA DE CREACION",
                 cell: ({ row }) => {
-                    return dayjs(row.timestamp).format("DD/MM/YYYY HH:mm:ss");
+                    return dayjs(row.original.timestamp).format("DD/MM/YYYY HH:mm:ss");
                 },
             },
         ],
         []
     );
 
-    const acciones = [
-        {
-            id: "repair",
-            label: "Iniciar Reparación",
-            icon: <IoCheckmark />,
-            onClick: () => showSuccess("Reparación iniciada"),
-        },
-        {
-            id: "presupuesto",
-            label: "Hacer Presupuesto",
-            icon: <IoDocumentText />,
-            onClick: () => showSuccess("Presupuesto creado"),
-        },
-        {
-            id: "cancel",
-            label: "Cancelar Orden",
-            icon: <IoTrash />,
-            isDanger: true,
-            onClick: () => showSuccess("Orden cancelada"),
-        },
-    ];
-    const images = [
-        "https://i.redd.it/my-broken-s24-ultra-v0-8tv9o2nhdbrd1.jpg?width=4284&format=pjpg&auto=webp&s=91541b1c4ab42c5237cd3d79403fe92cf01e4077",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSBdcW_YpJMZBzdngFrhCY-wvlDumcAULddg&s",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbQMsUo2fxH7NeIcuK2pmoo9xikJb8p50hig&s",
-    ];
-    const images2 = [
-        "https://i.redd.it/my-broken-s24-ultra-v0-lt4gaxtme7sd1.jpg?width=3000&format=pjpg&auto=webp&s=5884d0da162a6a24e678e358eaff50cd588c8cfe",
-        "https://i.redd.it/my-broken-s24-ultra-v0-gi7n23nhdbrd1.jpg?width=3024&format=pjpg&auto=webp&s=dbd929f8500fab67f70776f995b4c4a6a1d19335",
-        "https://i.ytimg.com/vi/4t0g1tqGLEo/maxresdefault.jpg",
-    ];
+    const acciones = useMemo<DropdownMenuOption[] | DropdownMenuSection[]>(() => {
+        const base: DropdownMenuOption[] = [
+            {
+                id: "repair",
+                label: "Iniciar Reparación",
+                onClick: () => showSuccess("Reparación iniciada"),
+                disabled: true,
+            },
+            {
+                id: "presupuesto",
+                label: "Hacer Presupuesto",
+                onClick: () => showSuccess("Presupuesto creado"),
+            },
+        ];
+
+        if (data.assigned_technician_id == null) {
+            base.unshift({
+                id: "assign_technician",
+                label: "Asignar Tecnico",
+                onClick: () => setShowModalSetTechnician(true),
+            });
+        }
+
+        return [
+            {
+                label: "Gestión",
+                options: base,
+            },
+            {
+                label: "Administración",
+                options: [
+                    {
+                        id: "edit",
+                        label: "Editar Orden",
+                        onClick: () => showSuccess("Orden editada"),
+                    },
+                    {
+                        id: "cancel",
+                        label: "Cancelar Orden",
+                        icon: <IoTrash />,
+                        isDanger: true,
+                        onClick: () => showSuccess("Orden cancelada"),
+                    },
+                ],
+            },
+        ];
+    }, [data.assigned_technician_id, showSuccess]);
 
     // Datos mock para fallas reportadas
-    const reportedFailures = [
-        {
-            id: "1",
-            code: "HW-SP-003",
-            title: "Tarjeta lógica dañada",
-            description:
-                "El cliente informa que el dispositivo se cayó y la pantalla se agrietó. El táctil funciona correctamente, pero el cristal está dañado.",
-            type: "Hardware" as const,
-            priority: "High" as const,
-            status: "In Progress" as const,
-            images: images,
-            reportedDate: "15/01/2024",
-            assignedTechnician: data?.assigned_technician_id?.toString() || "Juan Pérez",
-        },
-        {
-            id: "2",
-            code: "HW-DSP-001",
-            title: "Pantalla táctil dañada",
-            description:
-                "El cliente informa que el dispositivo se cayó y la pantalla se agrietó. El táctil funciona correctamente, pero el cristal está dañado.",
-            type: "Hardware" as const,
-            priority: "Medium" as const,
-            status: "Open" as const,
-            images: images2,
-            reportedDate: "14/01/2024",
-            assignedTechnician: data?.assigned_technician_id?.toString() || "María García",
-        },
-    ];
+    const reportedFailures = data.issues;
+
+    const asignarTecnico = async () => {
+        if (!selectedTechnicianId) {
+            showError("Selecciona un técnico antes de asignar", "Error");
+            return;
+        }
+
+        try {
+            await assignOrderToTechnician({
+                order_code: data.order_code,
+                technician_id: Number(selectedTechnicianId),
+            }).unwrap();
+            setShowModalSetTechnician(false);
+            showSuccess("Técnico asignado correctamente");
+        } catch (err) {
+            console.error("Error asignando técnico:", err);
+            showError("Error al asignar técnico. Intenta nuevamente.", "Error");
+        }
+    };
 
     return (
-        <>
+        <div>
             <Grid $columns={{ xs: 1, sm: 1, lg: "3fr 1fr" }} $gap={{ xs: "sm", lg: "sm" }}>
                 <Column>
                     <Box
@@ -126,7 +166,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                 </Button>
                                 <DropdownButton
                                     label="Acciones"
-                                    variant="primary"
+                                    variant="pink"
                                     size="sm"
                                     items={acciones}
                                     rightIcon={<HiDotsVertical />}
@@ -187,27 +227,41 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                 <Text weight="normal" variant="overline" color="muted">
                                     Tecnico Asignado
                                 </Text>
-                                <Text variant="body1">
-                                    {data.assigned_technician_id ? data.assigned_technician_id : "No asignado"}
-                                </Text>
+                                {data.assigned_technician_id ? (
+                                    <Link to={`/app/technicians/${data.assigned_technician_id}`}>
+                                        <Text variant="body1">{data.technician?.name}</Text>
+                                    </Link>
+                                ) : (
+                                    "No asignado"
+                                )}
                             </Column>
                         </Grid>
                         <Divider />
                         <Table columns={columns} data={data.notes || []} />
                     </Box>
-                    <Box title="Fallas Reportadas" p="lg" bg="white" shadow rounded showDivider={false}>
-                        <ReportedFailures
-                            failures={reportedFailures}
-                            onEditFailure={(failure) => {
-                                console.log("Editar falla:", failure);
-                                // Aquí puedes agregar la lógica para editar la falla
-                            }}
-                            onConfigureFailure={(failure) => {
-                                console.log("Configurar falla:", failure);
-                                // Aquí puedes agregar la lógica para configurar la falla
-                            }}
-                        />
-                    </Box>
+                    <div
+                        style={{
+                            backgroundColor: "white",
+                            padding: "1rem",
+                            borderRadius: "0.5rem",
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1) }}",
+                        }}
+                    >
+                        <Text variant="label-lg" align="center">
+                            Fallas Reportadas
+                        </Text>
+                    </div>
+                    <ReportedFailures
+                        failures={reportedFailures}
+                        onEditFailure={(failure) => {
+                            console.log("Editar falla:", failure);
+                            // Aquí puedes agregar la lógica para editar la falla
+                        }}
+                        onConfigureFailure={(failure) => {
+                            console.log("Configurar falla:", failure);
+                            // Aquí puedes agregar la lógica para configurar la falla
+                        }}
+                    />
                 </Column>
                 <div>
                     <Column>
@@ -227,14 +281,14 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                                 {
                                                     id: "edit",
                                                     label: "Editar",
-                                                    onClick: () => { },
+                                                    onClick: () => {},
                                                     icon: <IoPencil />,
                                                 },
                                                 {
                                                     id: "info",
                                                     label: "Configuracion",
                                                     icon: <BsNut />,
-                                                    onClick: () => { },
+                                                    onClick: () => {},
                                                 },
                                             ],
                                         },
@@ -313,14 +367,14 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                                 {
                                                     id: "edit",
                                                     label: "Editar",
-                                                    onClick: () => { },
+                                                    onClick: () => {},
                                                     icon: <IoPencil />,
                                                 },
                                                 {
                                                     id: "info",
                                                     label: "Configuracion",
                                                     icon: <BsNut />,
-                                                    onClick: () => { },
+                                                    onClick: () => {},
                                                 },
                                             ],
                                         },
@@ -375,7 +429,37 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                     </Column>
                 </div>
             </Grid>
-            {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
-        </>
+            <Modal
+                isOpen={showModalSetTechnician}
+                onClose={() => setShowModalSetTechnician(false)}
+                title="Asignar Tecnico"
+                footer={
+                    <Flex $justify="flex-end" $gap="sm">
+                        <Button variant="outline" onClick={() => setShowModalSetTechnician(false)}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            onClick={asignarTecnico}
+                            disabled={
+                                !selectedTechnicianId || !technicians || technicians.data.length === 0 || isAssigning
+                            }
+                        >
+                            Asignar Tecnico
+                        </Button>
+                    </Flex>
+                }
+            >
+                <SearchableSelect
+                    label="Listado de Tecnicos Activos"
+                    allowClear
+                    fullWidth
+                    isLoading={isLoading}
+                    onSearch={setSearchValue}
+                    value={selectedTechnicianId || undefined}
+                    onChange={(val) => setSelectedTechnicianId(val)}
+                    options={technicians?.data.map((tech: any) => ({ label: tech.name, value: tech.id })) || []}
+                />
+            </Modal>
+        </div>
     );
 };

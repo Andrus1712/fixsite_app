@@ -1,16 +1,32 @@
 import { useMemo, useState, useEffect } from "react";
-import {
-    // useGetAllOrdersQuery,
-    useGetAllOrdersQueryExternal,
-} from "../services/orderApi";
+import { useGetAllOrdersQuery } from "../services/orderApi";
 import { useNavigate } from "react-router";
-import Button from "../../../shared/components/Buttons/Button";
-import { Box, Container, Table, PriorityIndicator, ExpandableList, Grid, useToast } from "../../../shared/components";
-import { formatDate } from "../../../shared/utils/DateFormatter";
+import {
+    Container,
+    DataTable,
+    PriorityIndicator,
+    ExpandableList,
+    useToast,
+    Box,
+    Badge,
+    Tooltip,
+    LoadingSpinner,
+} from "../../../shared/components";
+import ButtonGroup from "../../../shared/components/Buttons/ButtonGroup";
+import IconButton from "../../../shared/components/Buttons/IconButton";
+import { BsPencilSquare, BsTrash } from "react-icons/bs";
+import { FaEye } from "react-icons/fa";
+import { format } from "date-fns";
 
 function OrdersPage() {
-    // const {} = useGetAllOrdersQuery();
-    const { isLoading, data, isError, error, isSuccess, refetch } = useGetAllOrdersQueryExternal();
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [searchValue, setSearchValue] = useState("");
+    const { isLoading, data, isError, error, isSuccess, refetch } = useGetAllOrdersQuery({
+        page,
+        filter: searchValue,
+        limit,
+    });
 
     useEffect(() => {
         refetch();
@@ -39,6 +55,17 @@ function OrdersPage() {
             {
                 accessorKey: "order_code",
                 header: "ORDER CODE",
+                cell: ({ row }: { row: any }) => {
+                    return (
+                        <p
+                            style={{
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            {row.original.order_code}
+                        </p>
+                    );
+                },
             },
             {
                 accessorKey: "description",
@@ -83,7 +110,7 @@ function OrdersPage() {
                 header: "ASSIGNED TO",
                 cell: ({ row }: { row: any }) => {
                     return row.original.technician
-                        ? `(${row.original.technician.id})${row.original.technician.assigned_technician_name}`
+                        ? `(${row.original.technician.id})${row.original.technician.name}`
                         : "No assigned";
                 },
             },
@@ -92,46 +119,36 @@ function OrdersPage() {
                 header: "STATUS",
                 cell: ({ getValue }: { getValue: () => any }) => {
                     const status = getValue() as string;
-                    const getStatusColor = (status: string) => {
+                    const getStatusColor = (
+                        status: string
+                    ): "success" | "info" | "warning" | "danger" | "default" | "secondary" | "outline" => {
                         switch (status?.toLowerCase()) {
                             case "pending":
                             case "pendiente":
-                                return "#f59e0b";
+                                return "warning";
                             case "completed":
                             case "completado":
-                                return "#10b981";
+                                return "success";
                             case "cancelled":
                             case "cancelado":
-                                return "#ef4444";
+                                return "danger";
                             case "in progress":
                             case "en progreso":
-                                return "#3b82f6";
+                                return "info";
                             default:
-                                return "#6b7280";
+                                return "default";
                         }
                     };
 
-                    return (
-                        <span
-                            style={{
-                                backgroundColor: getStatusColor(status),
-                                color: "white",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                fontWeight: "500",
-                            }}
-                        >
-                            {status}
-                        </span>
-                    );
+                    return <Badge variant={getStatusColor(status)}>{status}</Badge>;
                 },
             },
             {
                 accessorKey: "createdAt",
                 header: "FECHA DE CREACION",
                 cell: ({ getValue }: { getValue: () => any }) => {
-                    return formatDate(getValue() as string, "es-CO");
+                    const date = new Date(getValue() as string);
+                    return format(date, "dd/MM/yyyy HH:mm");
                 },
             },
             {
@@ -146,87 +163,70 @@ function OrdersPage() {
                         console.log("Delete:", row.original);
                     };
 
+                    const handleInfoDetails = () => {
+                        navigator(`/app/order/${row.original.order_code}/details`);
+                    };
+
                     return (
-                        <div style={{ display: "flex", gap: "8px" }}>
-                            <button
-                                onClick={handleEdit}
-                                style={{
-                                    padding: "4px 8px",
-                                    backgroundColor: "#3b82f6",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    fontSize: "12px",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                style={{
-                                    padding: "4px 8px",
-                                    backgroundColor: "#ef4444",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "4px",
-                                    fontSize: "12px",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                Delete
-                            </button>
-                        </div>
+                        <ButtonGroup spacing="sm">
+                            <Tooltip content={"Informacion de la orden"} position="top">
+                                <IconButton
+                                    color="warning"
+                                    variant="ghost"
+                                    icon={<FaEye />}
+                                    size="sm"
+                                    onClick={handleInfoDetails}
+                                />
+                            </Tooltip>
+                            <Tooltip content={"Editar"} position="top">
+                                <IconButton
+                                    color="info"
+                                    variant="ghost"
+                                    icon={<BsPencilSquare />}
+                                    size="sm"
+                                    onClick={handleEdit}
+                                />
+                            </Tooltip>
+                            <Tooltip content={"Eliminar"} position="top">
+                                <IconButton
+                                    color="danger"
+                                    variant="ghost"
+                                    icon={<BsTrash />}
+                                    size="sm"
+                                    onClick={handleDelete}
+                                />
+                            </Tooltip>
+                        </ButtonGroup>
                     );
                 },
             },
         ],
         []
     );
-    const [searchValue, setSearchValue] = useState("");
 
     return (
         <Container size="full" center>
-            <Grid columns={"5fr 1fr"} fullHeight rows={2}>
-                <Box
-                    p="lg"
-                    bg="white"
-                    rounded
-                    shadow
-                    title="Listado de ordenes"
-                    headerActions={
-                        <Button variant="primary" size="md" onClick={() => navigator("new")}>
-                            Nueva Orden
-                        </Button>
-                    }
-                >
-                    <Table
+            <Box $p="lg" $shadow rounded $fullWidth title="Ordenes" bg="white">
+                {isLoading ? (
+                    <LoadingSpinner />
+                ) : (
+                    <DataTable
                         data={data?.data || []}
                         columns={columns}
-                        isLoading={isLoading}
-                        page={data?.page}
-                        total={data?.total}
-                        totalPages={data?.totalPages}
+                        initialPageSize={limit ?? 25}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        serverSide={true}
+                        page={data?.pagination.page}
+                        total={data?.pagination.total}
+                        totalPages={data?.pagination.totalPages}
                         searchValue={searchValue}
                         onSearchChange={setSearchValue}
-                        searchPlaceholder="Buscar ordenes..."
+                        onPageChange={setPage}
+                        onPageSizeChange={setLimit}
+                        maxHeight={500}
                     />
-                </Box>
-                <Box p="lg" bg="white" rounded shadow title="Filtro">
-                    <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse quae, illum voluptates magni fuga
-                        animi cupiditate tempore dicta, veniam, sequi maiores ut nemo accusamus temporibus iste aliquam
-                        rem quod sed. Lorem ipsum dolor sit amet consectetur adipisicing elit. Esse quae, illum
-                        voluptates magni fuga animi cupiditate tempore dicta, veniam, sequi maiores ut nemo accusamus
-                        temporibus iste aliquam rem quod sed. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Esse quae, illum voluptates magni fuga animi cupiditate tempore dicta, veniam, sequi maiores ut
-                        nemo accusamus temporibus iste aliquam rem quod sed. Lorem ipsum dolor sit amet consectetur
-                        adipisicing elit. Esse quae, illum voluptates magni fuga animi cupiditate tempore dicta, veniam,
-                        sequi maiores ut nemo accusamus temporibus iste aliquam rem quod sed. Lorem ipsum dolor sit amet
-                        consectetur adipisicing elit. Esse quae
-                    </p>
-                </Box>
-            </Grid>
+                )}
+            </Box>
         </Container>
     );
 }

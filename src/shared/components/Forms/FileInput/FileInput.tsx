@@ -197,7 +197,7 @@ const FileInput = ({
                     URL.revokeObjectURL(url);
                 };
             } else {
-                setFileUrl(`http://localhost:3000${file.url}`);
+                setFileUrl(`${import.meta.env.VITE_API_BASE_URL}${file.url}`);
             }
         }, [file]);
 
@@ -208,7 +208,7 @@ const FileInput = ({
                 if ('type' in file) {
                     text = await file.text();
                 } else {
-                    const response = await fetch(`http://localhost:3000${file.url}`);
+                    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${file.url}`);
                     text = await response.text();
                 }
                 setTextContent(text);

@@ -1,9 +1,4 @@
-import {
-    useReactTable,
-    getCoreRowModel,
-    flexRender,
-    type ColumnDef,
-} from "@tanstack/react-table";
+import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from "@tanstack/react-table";
 import {
     ButtonGroup,
     TableContainer,
@@ -16,16 +11,14 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    TableWrapper,
+    EmptyMessage,
+    EmptyIcon,
+    EmptyTitle,
+    EmptyDescription,
 } from "./TablesStyles";
 import SearchInput from "../SearchInput";
-import styled from "styled-components";
 import { Row } from "../Layouts";
-
-const TableWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-`;
 
 interface DataTableProps<T> {
     data: T[];
@@ -37,9 +30,10 @@ interface DataTableProps<T> {
     searchValue?: string;
     onSearchChange?: (value: string) => void;
     searchPlaceholder?: string;
+    onPageChange?: (page: number) => void;
 }
 
-export default function DataTable<T>({
+export default function SimpleTable<T>({
     data,
     columns,
     isLoading,
@@ -49,6 +43,7 @@ export default function DataTable<T>({
     searchValue = "",
     onSearchChange,
     searchPlaceholder,
+    onPageChange,
 }: DataTableProps<T>) {
     const table = useReactTable({
         data: data || [],
@@ -58,28 +53,32 @@ export default function DataTable<T>({
 
     if (isLoading) return <div>Loading...</div>;
 
+    const hasData = data && data.length > 0;
+
     return (
         <TableWrapper>
             {onSearchChange && (
                 <Row $align="center" $justify="flex-end">
-                    <SearchInput
-                        value={searchValue}
-                        onChange={onSearchChange}
-                        placeholder={searchPlaceholder}
-                    />
+                    <SearchInput value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
                 </Row>
             )}
-            <TableContainer>
-                <StyledTable>
+            {!hasData ? (
+                <EmptyMessage>
+                    <div>
+                        <EmptyIcon>📋</EmptyIcon>
+                        <EmptyTitle>Sin registros</EmptyTitle>
+                        <EmptyDescription>No hay registros para mostrar en este momento</EmptyDescription>
+                    </div>
+                </EmptyMessage>
+            ) : (
+                <TableContainer>
+                    <StyledTable>
                     <TableHead>
                         {table.getHeaderGroups().map((hg) => (
                             <tr key={hg.id}>
                                 {hg.headers.map((header) => (
                                     <TableHeader key={header.id}>
-                                        {flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext()
-                                        )}
+                                        {flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHeader>
                                 ))}
                             </tr>
@@ -90,10 +89,7 @@ export default function DataTable<T>({
                             <TableRow key={row.id}>
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>
-                                        {flexRender(
-                                            cell.column.columnDef.cell,
-                                            cell.getContext()
-                                        )}
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </TableCell>
                                 ))}
                             </TableRow>
@@ -105,20 +101,20 @@ export default function DataTable<T>({
                                 <FooterCell colSpan={columns.length}>
                                     <FooterContent>
                                         <InfoText>
-                                            Mostrando página {page} de{" "}
-                                            {totalPages} • Total: {total}{" "}
-                                            registros
+                                            Mostrando página {page} de {totalPages} • Total: {total} registros
                                         </InfoText>
                                         <ButtonGroup>
                                             <PaginationButton
                                                 type="button"
                                                 disabled={page === 1}
+                                                onClick={() => onPageChange && onPageChange(page - 1)}
                                             >
                                                 ← Anterior
                                             </PaginationButton>
                                             <PaginationButton
                                                 type="button"
                                                 disabled={page === totalPages}
+                                                onClick={() => onPageChange && onPageChange(page + 1)}
                                             >
                                                 Siguiente →
                                             </PaginationButton>
@@ -129,7 +125,8 @@ export default function DataTable<T>({
                         )}
                     </tfoot>
                 </StyledTable>
-            </TableContainer>
+                </TableContainer>
+            )}
         </TableWrapper>
     );
 }
