@@ -25,7 +25,7 @@ export interface SearchableSelectProps {
     fullWidth?: boolean;
     options: Option[];
     placeholder?: string;
-    value?: string | number;
+    value?: string | number | null;
     onChange?: (value: string | number | null) => void;
     onSearch?: (searchTerm: string) => void;
     loading?: boolean;

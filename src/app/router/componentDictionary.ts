@@ -36,6 +36,21 @@ const TechnicianPage = lazy(() => import("../../features/technician/pages/Techni
 const NewTechnicianPage = lazy(() => import("../../features/technician/pages/NewTechnicianPage"));
 // const EditTechnicianPage = lazy(() => import("../../features/technician/pages/EditTechnicianPage"));
 
+// Inventory
+const BrandPage = lazy(() => import("../../features/inventory/brand/pages/BrandPage"));
+const CreateEditBrandPage = lazy(() => import("../../features/inventory/brand/pages/CreateEditBrandPage"));
+// const ShowBrandPage = lazy(() => import("../../features/inventory/brand/pages/ShowBrandPage"));
+
+const CategoryPage = lazy(() => import("../../features/inventory/category/pages/CategoryPage"));
+const CreateEditCategoryPage = lazy(() => import("../../features/inventory/category/pages/CreateEditCategoryPage"));
+// const ShowCategoryPage = lazy(() => import("../../features/inventory/category/pages/ShowCategoryPage"));
+
+const ArticlePage = lazy(() => import("../../features/inventory/article/pages/ArticlePage"));
+const CreateEditArticlePage = lazy(() => import("../../features/inventory/article/pages/CreateEditArticlePage"));
+
+//Store
+const StorePage = lazy(() => import("../../features/inventory/store/pages/StorePage"));
+const ShowStorePage = lazy(() => import("../../features/inventory/store/pages/ShowStorePage"));
 
 
 export const componentMap: Record<string, React.ComponentType> = {
@@ -69,4 +84,23 @@ export const componentMap: Record<string, React.ComponentType> = {
     "technician-index": TechnicianPage,
     "technician-new": NewTechnicianPage,
     "technician-edit": TechnicianPage,
+    // Brand
+    "brand-index": BrandPage,
+    "brand-new": CreateEditBrandPage,
+    "brand-edit": CreateEditBrandPage,
+    "brand-show": BrandPage,
+    // Categories
+    "category-show": CreateEditCategoryPage,
+    "category-edit": CreateEditCategoryPage,
+    "category-new": CreateEditCategoryPage,
+    "category-index": CategoryPage,
+    // Articles
+    "article-index": ArticlePage,
+    "article-new": CreateEditArticlePage,
+    "article-edit": CreateEditArticlePage,
+    "article-show": ArticlePage,
+    // Store
+    "store-index": StorePage,
+    "inventory-index": StorePage,
+    "store-show": ShowStorePage,
 };

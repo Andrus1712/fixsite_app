@@ -6,6 +6,9 @@ import {
     getSortedRowModel,
     flexRender,
     type ColumnDef,
+    type RowSelectionState,
+    type OnChangeFn,
+    type Row,
 } from "@tanstack/react-table";
 import SearchInput from "../SearchInput";
 import {
@@ -60,6 +63,11 @@ interface DataTableProps<T> {
     onSearchChange?: (value: string) => void;
     onPageChange?: (page: number) => void; // 1-based
     maxHeight?: string | number;
+    // row selection
+    enableRowSelection?: boolean | ((row: Row<T>) => boolean);
+    rowSelection?: RowSelectionState;
+    onRowSelectionChange?: OnChangeFn<RowSelectionState>;
+    getRowId?: (row: T, index: number) => string;
 }
 
 export default function DataTable<T>({
@@ -78,11 +86,18 @@ export default function DataTable<T>({
     onPageChange,
     onPageSizeChange,
     maxHeight,
+    enableRowSelection = false,
+    rowSelection: externalRowSelection,
+    onRowSelectionChange,
+    getRowId,
 }: DataTableProps<T>) {
     const [globalFilter, setGlobalFilter] = useState("");
     const [sorting, setSorting] = useState<any[]>([]);
+    const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
 
     const [pageSize, setPageSize] = useState(initialPageSize);
+
+    const rowSelectionState = externalRowSelection ?? internalRowSelection;
 
     const filteredData = useMemo(() => {
         // if serverSide, data is already filtered/paginated by server
@@ -98,8 +113,12 @@ export default function DataTable<T>({
         state: {
             sorting,
             pagination: serverSide ? { pageIndex: page ? page - 1 : 0, pageSize: initialPageSize } : undefined,
+            rowSelection: rowSelectionState,
         },
         onSortingChange: setSorting,
+        enableRowSelection,
+        onRowSelectionChange: onRowSelectionChange ?? setInternalRowSelection,
+        getRowId,
         manualPagination: serverSide,
         pageCount: serverSide ? (totalPages ?? Math.ceil((total ?? 0) / initialPageSize)) : undefined,
         initialState: { pagination: { pageSize: initialPageSize } },
@@ -108,11 +127,11 @@ export default function DataTable<T>({
         getPaginationRowModel: getPaginationRowModel(),
         onPaginationChange: serverSide
             ? (updater) => {
-                  // updater can be a function or object
-                  const next = typeof updater === "function" ? updater(table.getState().pagination) : updater;
-                  const nextIndex = next?.pageIndex ?? 0;
-                  if (onPageChange) onPageChange(nextIndex + 1);
-              }
+                // updater can be a function or object
+                const next = typeof updater === "function" ? updater(table.getState().pagination) : updater;
+                const nextIndex = next?.pageIndex ?? 0;
+                if (onPageChange) onPageChange(nextIndex + 1);
+            }
             : undefined,
     });
 
@@ -224,43 +243,74 @@ export default function DataTable<T>({
                         <TableHead>
                             {table.getHeaderGroups().map((hg) => (
                                 <tr key={hg.id}>
-                                    {hg.headers.map((header) => (
-                                        <TableHeader
-                                            key={header.id}
-                                            onClick={
-                                                header.column.getToggleSortingHandler
-                                                    ? header.column.getToggleSortingHandler()
-                                                    : undefined
-                                            }
-                                            style={{
-                                                cursor:
-                                                    header.column.getCanSort && header.column.getCanSort()
-                                                        ? "pointer"
-                                                        : "default",
-                                            }}
-                                        >
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {/* sort indicator */}
-                                            {header.column.getIsSorted && header.column.getIsSorted() ? (
-                                                <span style={{ marginLeft: 8 }}>
-                                                    {header.column.getIsSorted() === "asc" ? "↑" : "↓"}
-                                                </span>
-                                            ) : null}
-                                        </TableHeader>
-                                    ))}
+                                    {hg.headers.map((header) => {
+                                        const isSelectColumn = header.id === "select";
+                                        return (
+                                            <TableHeader
+                                                key={header.id}
+                                                onClick={
+                                                    !isSelectColumn && header.column.getToggleSortingHandler
+                                                        ? header.column.getToggleSortingHandler()
+                                                        : undefined
+                                                }
+                                                style={{
+                                                    cursor:
+                                                        !isSelectColumn &&
+                                                            header.column.getCanSort &&
+                                                            header.column.getCanSort()
+                                                            ? "pointer"
+                                                            : "default",
+                                                    width: isSelectColumn ? "50px" : undefined,
+                                                }}
+                                            >
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                                {/* sort indicator */}
+                                                {!isSelectColumn &&
+                                                    header.column.getIsSorted &&
+                                                    header.column.getIsSorted() ? (
+                                                    <span style={{ marginLeft: 8 }}>
+                                                        {header.column.getIsSorted() === "asc" ? "↑" : "↓"}
+                                                    </span>
+                                                ) : null}
+                                            </TableHeader>
+                                        );
+                                    })}
                                 </tr>
                             ))}
                         </TableHead>
                         <tbody>
-                            {table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))}
+                            {table.getRowModel().rows.map((row) => {
+                                const canSelect = typeof enableRowSelection === 'function'
+                                    ? enableRowSelection(row)
+                                    : enableRowSelection;
+                                return (
+                                    <TableRow
+                                        key={row.id}
+                                        onClick={(e) => {
+                                            if (canSelect && e.target === e.currentTarget) {
+                                                row.toggleSelected();
+                                            }
+                                        }}
+                                        style={{ cursor: canSelect ? "pointer" : "default" }}
+                                    >
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell
+                                                key={cell.id}
+                                                onClick={(e) => {
+                                                    if (canSelect) {
+                                                        const target = e.target as HTMLElement;
+                                                        if (!target.closest('button, a, input')) {
+                                                            row.toggleSelected();
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                );
+                            })}
                         </tbody>
                         <TableFooter>
                             <tr>

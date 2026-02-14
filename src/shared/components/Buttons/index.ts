@@ -5,3 +5,4 @@ export * from './DropdownButton';
 export * from './DropdownButtonExample';
 export * from './FloatingActionButton';
 export * from './IconButton';
+export * from './TableIconButton';

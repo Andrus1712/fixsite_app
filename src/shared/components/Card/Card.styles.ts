@@ -81,6 +81,7 @@ export const StyledCard = styled.div<StyledCardProps>`
         return css`
           border: 1px solid #e5e7eb;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+          cursor: pointer;
           &:hover {
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
           }

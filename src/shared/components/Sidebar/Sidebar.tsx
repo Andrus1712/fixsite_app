@@ -9,7 +9,7 @@ import {
     IconWrapper,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
+import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTags, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
 import TenantSelector from "../TenantSelector";
 import { Tooltip } from "../Tooltip";
@@ -21,6 +21,8 @@ import { MdOutlineWebAsset } from "react-icons/md";
 import { IoIosArrowDown } from "react-icons/io";
 import { useTheme } from "styled-components";
 import { FaScrewdriverWrench } from "react-icons/fa6";
+import { TbAwardFilled } from "react-icons/tb";
+import { PiBoxArrowDownFill } from "react-icons/pi";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -44,6 +46,8 @@ const iconMap: Record<string, JSX.Element> = {
     FaScrewdriverWrench: <FaScrewdriverWrench />,
     FaPeopleCarry: <FaPeopleCarry />,
     FaMicrochip: <FaMicrochip />,
+    FaTags: <FaTags />,
+    TbAwardFilled: <TbAwardFilled />,
 };
 
 function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {
