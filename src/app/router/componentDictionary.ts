@@ -52,6 +52,18 @@ const CreateEditArticlePage = lazy(() => import("../../features/inventory/articl
 const StorePage = lazy(() => import("../../features/inventory/store/pages/StorePage"));
 const ShowStorePage = lazy(() => import("../../features/inventory/store/pages/ShowStorePage"));
 
+// material-receipts
+const CreateMaterialReceiptsPage = lazy(() => import("../../features/inventory/movement/pages/CreateMaterialReceiptsPage"));
+
+// stock-transfers
+const CreateStockTransferPage = lazy(() => import("../../features/inventory/movement/pages/CreateStockTransferPage"));
+
+// material-issues
+const CreateMaterialIssuePage = lazy(() => import("../../features/inventory/movement/pages/CreateMaterialIssuePage"));
+
+// inventory-adjustments
+const CreateInventoryAdjustmentPage = lazy(() => import("../../features/inventory/movement/pages/CreateInventoryAdjustmentPage"));
+
 
 export const componentMap: Record<string, React.ComponentType> = {
     "user-index": UsersPage,
@@ -103,4 +115,12 @@ export const componentMap: Record<string, React.ComponentType> = {
     "store-index": StorePage,
     "inventory-index": StorePage,
     "store-show": ShowStorePage,
+    // material-receipts 
+    "material-receipts-new": CreateMaterialReceiptsPage,
+    // stock-transfers
+    "stock-transfer-new": CreateStockTransferPage,
+    // material-issues
+    "material-issues-new": CreateMaterialIssuePage,
+    // inventory-adjustments
+    "inventory-adjustments-new": CreateInventoryAdjustmentPage,
 };

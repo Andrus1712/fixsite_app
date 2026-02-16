@@ -84,6 +84,7 @@ export interface RequestInventory {
     store_to_name: string;
     created_by: string;
     created_at: string;
+    approved_by: string;
     count_items: string;
     reason?: string,
     items: Partial<items[]>;

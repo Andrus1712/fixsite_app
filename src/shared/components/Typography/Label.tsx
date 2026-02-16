@@ -12,6 +12,7 @@ interface LabelProps extends HTMLAttributes<HTMLLabelElement> {
     weight?: LabelWeight;
     uppercase?: boolean;
     required?: boolean;
+    htmlFor?: string;
 }
 
 const getSizeStyles = (size: LabelSize) => {

@@ -31,8 +31,10 @@ export interface SearchableSelectProps {
     loading?: boolean;
     isLoading?: boolean;
     serverError?: any;
+    id?: string;
     name?: string;
     allowClear?: boolean;
+    disabled?: boolean;
 }
 
 const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
@@ -48,7 +50,9 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     isLoading = false,
     serverError,
     name,
+    id = name,
     allowClear = true,
+    disabled = false,
     ...props
 }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -125,6 +129,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     }, [isOpen]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (disabled) return;
         const inputValue = e.target.value;
         setSearchTerm(inputValue);
         setDisplayValue(inputValue);
@@ -140,6 +145,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     };
 
     const handleClear = (e: React.MouseEvent) => {
+        if (disabled) return;
         e.stopPropagation();
         setDisplayValue("");
         setSearchTerm("");
@@ -147,6 +153,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     };
 
     const handleInputFocus = () => {
+        if (disabled) return;
         if (isOpen) {
             setIsOpen(false);
             setSearchTerm("");
@@ -166,6 +173,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
             {label && <Label>{label}</Label>}
             <InputWrapper>
                 <StyledSearchInput
+                    id={id}
                     ref={ref}
                     name={name}
                     value={isOpen ? searchTerm : displayValue}
@@ -174,10 +182,11 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                     placeholder={displayValue === "" && !isOpen ? (placeholder || "Seleccione una opción") : placeholder}
                     $hasError={!!error}
                     $hasValue={!!displayValue && allowClear}
+                    disabled={disabled}
                     autoComplete="off"
                     {...props}
                 />
-                {displayValue && allowClear && (
+                {displayValue && allowClear && !disabled && (
                     <ClearButton onClick={handleClear} type="button">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -186,7 +195,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                 )}
                 {/* Dropdown is rendered via portal to avoid being clipped by overflow parents (e.g., Modal) */}
             </InputWrapper>
-            {isOpen && dropdownStyle && createPortal(
+            {isOpen && !disabled && dropdownStyle && createPortal(
                 <DropdownList
                     ref={(node: any) => (dropdownRef.current = node)}
                     $isOpen={isOpen}
@@ -200,7 +209,7 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                         <NoOptions>No se encontraron opciones</NoOptions>
                     ) : (
                         <>
-                            {value && allowClear && (
+                            {value !== 0 && value !== null && value !== undefined && allowClear && (
                                 <DropdownItem $active={false} onClick={handleClear}>
                                     <em>Limpiar selección</em>
                                 </DropdownItem>

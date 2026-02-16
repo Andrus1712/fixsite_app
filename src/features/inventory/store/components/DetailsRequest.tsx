@@ -62,7 +62,7 @@ const UserSection = styled.div`
     display: flex;
     gap: 12px;
     align-items: center;
-    padding: 16px 0;
+    padding: 10px 0;
     border-top: 1px solid #e5e7eb;
 `;
 
@@ -88,8 +88,8 @@ const DetailsRequest = ({ data }: { data: RequestInventory; }) => {
 
     return (
         <Flex justify="space-between" direction="column" fullHeight>
-            <Flex direction="column" $flex={1}>
-                <Flex gap="12px" style={{ marginBottom: '16px' }}>
+            <Flex direction="column" $flex={1} style={{ minHeight: 0 }}>
+                <Flex gap="12px" style={{ marginBottom: '16px', flexShrink: 0 }}>
                     <StatsCard>
                         <Text variant="label-sm" color="gray600" uppercase>TOTAL ARTICULOS</Text>
                         <Text size="2xl" weight="bold">{totalItems} Units</Text>
@@ -101,7 +101,7 @@ const DetailsRequest = ({ data }: { data: RequestInventory; }) => {
                 </Flex>
 
                 {data.reason && (
-                    <div>
+                    <div style={{ flexShrink: 0 }}>
                         <Text variant="label-sm" color="gray600" uppercase>REASON FOR ADJUSTMENT</Text>
                         <ReasonBox>
                             <Text variant="paragraph-sm" color="gray700">"{data.reason}"</Text>
@@ -109,9 +109,9 @@ const DetailsRequest = ({ data }: { data: RequestInventory; }) => {
                     </div>
                 )}
 
-                <div style={{ marginTop: '16px', flex: 1, height: '100%' }}>
-                    <Text variant="label-sm" color="gray600" uppercase>LISTADO DE ARTICULOS</Text>
-                    <div style={{ marginTop: '12px', overflow: 'auto', maxHeight: '430px' }}>
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1 }}>
+                    <Text variant="label-sm" color="gray600" uppercase style={{ flexShrink: 0 }}>LISTADO DE ARTICULOS</Text>
+                    <div style={{ marginTop: '12px', overflow: 'auto', flex: 1 }}>
                         {data.items.map((item) => (
                             <>
                                 <ItemCard key={item?.id}>
@@ -130,7 +130,7 @@ const DetailsRequest = ({ data }: { data: RequestInventory; }) => {
                     </div>
                 </div>
             </Flex>
-            <UserSection>
+            <UserSection style={{ flexShrink: 0 }}>
                 <Avatar>{getInitials(data.created_by)}</Avatar>
                 <Flex align="flex-start" direction="column" gap={"xs"}>
                     <Text weight="semibold">Solicitado por {data.created_by}</Text>

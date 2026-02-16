@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
-import { Aside, Badge, Box, Button, Checkbox, DataTable, DropdownButton, Flex, LoadingSpinner, TableIconButton, Text, useAlert, useToast } from "../../../../shared/components";
+import { Aside, Badge, Box, Button, Checkbox, DataTable, DropdownButton, Flex, LoadingSpinner, Text, useAlert, useToast } from "../../../../shared/components";
 import { useParams } from "react-router";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
-import { FaBan, FaCheck, FaEye } from "react-icons/fa";
-import { MdArrowLeft, MdArrowRightAlt, MdOutlineCompareArrows } from "react-icons/md";
+import { FaBan, FaCheck } from "react-icons/fa";
 import { HiMiniArrowLeftOnRectangle, HiMiniArrowPath, HiMiniArrowRightStartOnRectangle } from "react-icons/hi2";
 import { CgArrowsExchange } from "react-icons/cg";
 import { format } from "date-fns";
@@ -13,7 +12,10 @@ import { IoIosSend } from "react-icons/io";
 import { BsPencilSquare } from "react-icons/bs";
 import { HiDotsVertical } from "react-icons/hi";
 import { IoEye } from "react-icons/io5";
-import { useSubmitRequestMutation } from "../../movement/services/MaterialReceiptsApi";
+import { useApproveMaterialReceiptsMutation, useCancelMaterialReceiptsMutation, useRejectMaterialReceiptsMutation, useSubmitMaterialReceiptsRequestMutation } from "../../movement/services/MaterialReceiptsApi";
+import { useApproveStockTransferMutation, useCancelStockTransferMutation, useRejectStockTransferMutation, useSubmitStockTransferMutation } from "../../movement/services/StockTransfersApi";
+import { useApproveMaterialIssueMutation, useCancelMaterialIssueMutation, useRejectMaterialIssueMutation, useSubmitMaterialIssueMutation } from "../../movement/services/MaterialIssuesApi";
+import { useApproveInventoryAdjustmentMutation, useCancelInventoryAdjustmentMutation, useRejectInventoryAdjustmentMutation, useSubmitInventoryAdjustmentMutation } from "../../movement/services/InventoryAdjustmentsApi";
 
 const RequestMaterial = () => {
     const [filter, setFilter] = useState("");
@@ -38,7 +40,69 @@ const RequestMaterial = () => {
         skip: !store_id
     });
 
-    const [submitRequest, { isLoading: isSubmitting }] = useSubmitRequestMutation();
+    // Material receipts
+    const [submitMR, { isLoading: isSubmittingMR }] = useSubmitMaterialReceiptsRequestMutation();
+    const [cancelMR, { isLoading: isCancelingMR }] = useCancelMaterialReceiptsMutation();
+    const [rejectMR, { isLoading: isRejectingMR }] = useRejectMaterialReceiptsMutation();
+    const [approveMR, { isLoading: isApprovingMR }] = useApproveMaterialReceiptsMutation();
+
+    // Stock transfers
+    const [submitST, { isLoading: isSubmittingST }] = useSubmitStockTransferMutation();
+    const [cancelST, { isLoading: isCancelingST }] = useCancelStockTransferMutation();
+    const [rejectST, { isLoading: isRejectingST }] = useRejectStockTransferMutation();
+    const [approveST, { isLoading: isApprovingST }] = useApproveStockTransferMutation();
+
+    // Material issues
+    const [submitMI, { isLoading: isSubmittingMI }] = useSubmitMaterialIssueMutation();
+    const [cancelMI, { isLoading: isCancelingMI }] = useCancelMaterialIssueMutation();
+    const [rejectMI, { isLoading: isRejectingMI }] = useRejectMaterialIssueMutation();
+    const [approveMI, { isLoading: isApprovingMI }] = useApproveMaterialIssueMutation();
+
+    // Inventory adjustments
+    const [submitIA, { isLoading: isSubmittingIA }] = useSubmitInventoryAdjustmentMutation();
+    const [cancelIA, { isLoading: isCancelingIA }] = useCancelInventoryAdjustmentMutation();
+    const [rejectIA, { isLoading: isRejectingIA }] = useRejectInventoryAdjustmentMutation();
+    const [approveIA, { isLoading: isApprovingIA }] = useApproveInventoryAdjustmentMutation();
+
+    const getSubmitMethod = (reference: string) => {
+        switch (reference) {
+            case 'MATERIAL_RECEIPT': return submitMR;
+            case 'STOCK_TRANSFER': return submitST;
+            case 'MATERIAL_ISSUE': return submitMI;
+            case 'INVENTORY_ADJUSTMENT': return submitIA;
+            default: return submitMR;
+        }
+    };
+
+    const getCancelMethod = (reference: string) => {
+        switch (reference) {
+            case 'MATERIAL_RECEIPT': return cancelMR;
+            case 'STOCK_TRANSFER': return cancelST;
+            case 'MATERIAL_ISSUE': return cancelMI;
+            case 'INVENTORY_ADJUSTMENT': return cancelIA;
+            default: return cancelMR;
+        }
+    };
+
+    const getRejectMethod = (reference: string) => {
+        switch (reference) {
+            case 'MATERIAL_RECEIPT': return rejectMR;
+            case 'STOCK_TRANSFER': return rejectST;
+            case 'MATERIAL_ISSUE': return rejectMI;
+            case 'INVENTORY_ADJUSTMENT': return rejectIA;
+            default: return rejectMR;
+        }
+    };
+
+    const getApproveMethod = (reference: string) => {
+        switch (reference) {
+            case 'MATERIAL_RECEIPT': return approveMR;
+            case 'STOCK_TRANSFER': return approveST;
+            case 'MATERIAL_ISSUE': return approveMI;
+            case 'INVENTORY_ADJUSTMENT': return approveIA;
+            default: return approveMR;
+        }
+    };
 
     // const referenceIcon = (reference: string) => {
     //     switch (reference) {
@@ -62,10 +126,10 @@ const RequestMaterial = () => {
             case "APPROVED": return "success";
             case "REJECTED": return "danger";
             case "PENDING": return "warning";
+            case "CANCELLED": return "default";
             default: return "info";
         }
     };
-
 
     const showInfoRequest = (data: any) => {
         setOpenAside(true);
@@ -73,20 +137,78 @@ const RequestMaterial = () => {
     };
 
     const handleSubmitRequest = (row: any) => {
-        console.log(row);
-        
         showConfirm(
-            "Enviar solicitudes",
+            "Enviar solicitud",
             `¿Estás seguro de que deseas enviar la solicitud ${row.code}?`,
             async () => {
                 try {
-                    const payload = await submitRequest(row.id_request).unwrap();
+                    const submitMethod = getSubmitMethod(row.reference);
+                    const payload = await submitMethod(row.id_request).unwrap();
                     if (payload.success) {
                         showSuccess(payload.message);
                     }
-                } catch (error) {
+                } catch (error: any) {
                     console.error("Error al enviar la solicitud:", error);
-                    showError("Ocurrió un error al enviar la solicitud.");
+                    showError(error.data?.message, "Ocurrió un error al enviar la solicitud.");
+                }
+            },
+        );
+    };
+
+    const handleCancelRequest = (row: any) => {
+        showConfirm(
+            "Cancelar solicitud",
+            `¿Estás seguro de que deseas cancelar la solicitud ${row.code}?`,
+            async () => {
+                try {
+                    const cancelMethod = getCancelMethod(row.reference);
+                    const payload = await cancelMethod(row.id_request).unwrap();
+                    if (payload.success) {
+                        showSuccess(payload.message);
+                    }
+                } catch (error: any) {
+                    console.error("Error al enviar la solicitud:", error);
+                    showError(error.data?.message, "Ocurrió un error al enviar la solicitud.");
+                }
+            },
+        );
+    };
+
+    const handleRejectRequest = (row: any) => {
+        setOpenAside(false);
+        showConfirm(
+            "Rechazar solicitud",
+            `¿Estás seguro de que deseas Rechazar la solicitud ${row.code}?`,
+            async () => {
+                try {
+                    const rejectMethod = getRejectMethod(row.reference);
+                    const payload = await rejectMethod(row.id_request).unwrap();
+                    if (payload.success) {
+                        showSuccess(payload.message);
+                    }
+                } catch (error: any) {
+                    console.error("Error al enviar la solicitud:", error);
+                    showError(error.data?.message, "Ocurrió un error al enviar la solicitud.");
+                }
+            },
+        );
+    };
+
+    const handleApproveRequest = (row: any) => {
+        setOpenAside(false);
+        showConfirm(
+            "Aprobar solicitud",
+            `¿Estás seguro de que deseas Aprobar la solicitud ${row.code}?`,
+            async () => {
+                try {
+                    const approveMethod = getApproveMethod(row.reference);
+                    const payload = await approveMethod(row.id_request).unwrap();
+                    if (payload.success) {
+                        showSuccess(payload.message);
+                    }
+                } catch (error: any) {
+                    console.error("Error al enviar la solicitud:", error);
+                    showError(error.data?.message, "Ocurrió un error al enviar la solicitud.");
                 }
             },
         );
@@ -107,17 +229,19 @@ const RequestMaterial = () => {
                     />
                 </div>
             ),
+            size: 100
         },
         {
-            accessorKey: "code",
             header: "# de solicitud",
+            accessorKey: "code",
+            size: 200
         },
         {
             header: "Referencia",
             cell: ({ row }: any) => (
                 <Badge variant="outline"><Flex>{REFERENCE_ICONS[row.original.reference]} {row.original.reference}</Flex></Badge>
             ),
-            accessorKey: "reference",
+            accessorKey: "reference"
         },
         {
             accessorKey: "store_from_name",
@@ -130,10 +254,15 @@ const RequestMaterial = () => {
         {
             accessorKey: "count_items",
             header: "Items",
+            size: 50
         },
         {
             accessorKey: "created_by",
             header: "Solicitado por",
+        },
+        {
+            accessorKey: "approved_by",
+            header: "Aprobado por",
         },
         {
             accessorKey: "created_at",
@@ -150,7 +279,7 @@ const RequestMaterial = () => {
             )
         },
         {
-            header: "Acciones",
+            header: "Accion",
             cell: ({ row }: any) => {
                 const actions = [];
 
@@ -176,7 +305,7 @@ const RequestMaterial = () => {
                             id: "cancel",
                             label: "Cancelar",
                             icon: <FaBan />,
-                            onClick: () => null
+                            onClick: () => handleCancelRequest(row.original)
                         }
                     );
                 }
@@ -206,15 +335,27 @@ const RequestMaterial = () => {
                     onClick: () => showInfoRequest(row)
                 });
                 return (
-                    <DropdownButton
-                        items={[{ label: "Acciones", options: actions }]}
-                        rightIcon={<HiDotsVertical />}
-                        size="sm"
-                    />
+                    <Flex justify="center">
+                        <DropdownButton
+                            items={[{ label: "Acciones", options: actions }]}
+                            rightIcon={<HiDotsVertical />}
+                            size="sm"
+                        />
+                    </Flex>
                 );
-            }
+            },
+            size: 100
         }
     ], []);
+
+    const isProcessing = isLoading || isSubmittingMR || isCancelingMR || isRejectingMR || isApprovingMR ||
+        isSubmittingST || isCancelingST || isRejectingST || isApprovingST ||
+        isSubmittingMI || isCancelingMI || isRejectingMI || isApprovingMI ||
+        isSubmittingIA || isCancelingIA || isRejectingIA || isApprovingIA;
+
+    if (isProcessing) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <>
@@ -252,7 +393,6 @@ const RequestMaterial = () => {
                         onSearchChange={setFilter}
                         onPageChange={setPage}
                         onPageSizeChange={setLimit}
-                        maxHeight={500}
                         enableRowSelection={(row) => (row?.original?.status === 'PENDING' || row?.original?.status === 'DRAFT')}
                         rowSelection={rowSelection}
                         onRowSelectionChange={setRowSelection}
@@ -275,10 +415,10 @@ const RequestMaterial = () => {
                 width="500px"
                 footer={
                     (currentRequest?.status === 'PENDING' || currentRequest?.status === 'DRAFT') ? <Flex fullWidth justify="space-between">
-                        <Button variant="success" fullWidth leftIcon={<FaCheck />}>
+                        <Button variant="success" fullWidth leftIcon={<FaCheck />} onClick={() => handleApproveRequest(currentRequest)}>
                             Approve
                         </Button>
-                        <Button variant="outline" fullWidth leftIcon={<FaBan />}>
+                        <Button variant="outline" fullWidth leftIcon={<FaBan />} onClick={() => handleRejectRequest(currentRequest)}>
                             Reject
                         </Button>
                     </Flex> : null}

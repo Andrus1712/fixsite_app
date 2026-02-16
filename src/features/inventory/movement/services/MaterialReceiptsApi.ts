@@ -1,4 +1,5 @@
 import { baseApi } from "../../../../shared/store/baseApi";
+import type { MaterialReceiptsFormData } from "../schemas/material-receipts.schema";
 
 interface MaterialReceipts {
     id: number;
@@ -49,6 +50,7 @@ interface MaterialReceipts {
     status: string;
     createdBy: string;
     createdAt: string;
+    approvedBy?: string;
     items: [{
         id: number;
         quantity: number;
@@ -60,6 +62,16 @@ interface MaterialReceiptsResponse {
     success: boolean;
     message: string;
     data: MaterialReceipts;
+}
+
+interface CreateMaterialReceipts {
+    store_id: number;
+    purchaseOrder_id?: number;
+    items: {
+        article_id: number;
+        quantity: number;
+        unitCost: number;
+    }[];
 }
 
 const MaterialReceiptsApi = baseApi.injectEndpoints({
@@ -74,7 +86,16 @@ const MaterialReceiptsApi = baseApi.injectEndpoints({
                 params: { page, limit, filter, store_id },
             }),
         }),
-        submitRequest: builder.mutation<MaterialReceiptsResponse, number>({
+        createMaterialReceiptsRequest: builder.mutation<MaterialReceiptsResponse, MaterialReceiptsFormData>({
+            query: (data) => ({
+                url: `/material-receipts/create`,
+                method: 'POST',
+                body: data
+            }),
+            transformResponse: (response: MaterialReceiptsResponse) => response,
+            invalidatesTags: ["Request"],
+        }),
+        submitMaterialReceiptsRequest: builder.mutation<MaterialReceiptsResponse, number>({
             query: (id) => ({
                 url: `/material-receipts/submit/${id}`,
                 method: 'PATCH',
@@ -82,28 +103,28 @@ const MaterialReceiptsApi = baseApi.injectEndpoints({
             transformResponse: (response: MaterialReceiptsResponse) => response,
             invalidatesTags: ["Request"],
         }),
-        approveRequest: builder.mutation<MaterialReceipts, number>({
+        approveMaterialReceipts: builder.mutation<MaterialReceiptsResponse, number>({
             query: (id) => ({
                 url: `/material-receipts/approve/${id}`,
                 method: 'PATCH',
             }),
-            transformResponse: (response: MaterialReceiptsResponse) => response.data,
-            invalidatesTags: ["Request"],
+            transformResponse: (response: MaterialReceiptsResponse) => response,
+            invalidatesTags: ["Request", "Store"],
         }),
-        rejectRequest: builder.mutation<MaterialReceipts, number>({
+        rejectMaterialReceipts: builder.mutation<MaterialReceiptsResponse, number>({
             query: (id) => ({
                 url: `/material-receipts/reject/${id}`,
                 method: 'PATCH',
             }),
-            transformResponse: (response: MaterialReceiptsResponse) => response.data,
+            transformResponse: (response: MaterialReceiptsResponse) => response,
             invalidatesTags: ["Request"],
         }),
-        cancelRequest: builder.mutation<MaterialReceipts, number>({
+        cancelMaterialReceipts: builder.mutation<MaterialReceiptsResponse, number>({
             query: (id) => ({
                 url: `/material-receipts/cancel/${id}`,
                 method: 'PATCH',
             }),
-            transformResponse: (response: MaterialReceiptsResponse) => response.data,
+            transformResponse: (response: MaterialReceiptsResponse) => response,
             invalidatesTags: ["Request"],
         }),
     }),
@@ -111,8 +132,9 @@ const MaterialReceiptsApi = baseApi.injectEndpoints({
 
 export const {
     useGetAllMaterialReceiptsQuery,
-    useSubmitRequestMutation,
-    useApproveRequestMutation,
-    useRejectRequestMutation,
-    useCancelRequestMutation,
+    useCreateMaterialReceiptsRequestMutation,
+    useSubmitMaterialReceiptsRequestMutation,
+    useApproveMaterialReceiptsMutation,
+    useRejectMaterialReceiptsMutation,
+    useCancelMaterialReceiptsMutation,
 } = MaterialReceiptsApi;

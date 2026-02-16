@@ -1,10 +1,9 @@
 import { FaCog, FaExchangeAlt, FaShare } from "react-icons/fa";
-import { Badge, Box, Button, DataTable, FormGroup, Input, Modal, Text, LoadingSpinner, Checkbox, useToast, Flex, Tooltip } from "../../../../shared/components";
+import { Badge, Box, Button, DataTable, FormGroup, Input, Modal, Text, LoadingSpinner, Checkbox, useToast, Flex, Tooltip, TableIconButton } from "../../../../shared/components";
 import { useHasPermission } from "../../../auth/hooks/useHasPermission";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { useMemo, useState } from "react";
 import { useGetStoreInventoryByIdQuery, useUpdateStoreInventoryMutation } from "../services/StoreApi";
-import IconButton from "../../../../shared/components/Buttons/IconButton";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -52,7 +51,7 @@ const StoreArticles = () => {
         });
     };
 
-    const onSubmit = async (data: InventoryFormData) => {
+    const onSubmitAdjustStock = async (data: InventoryFormData) => {
         if (!selectedInventory) return;
 
         try {
@@ -90,7 +89,7 @@ const StoreArticles = () => {
             accessorKey: "articles_sku",
             header: "SKU",
             cell: ({ row }: any) => (
-                <Flex style={{ width: "100px" }}>
+                <Flex justify="flex-start" align="center">
                     <Link to={`/app/articles/${row.original.articles_id}`}>
                         <Text>{row.original.articles_sku}</Text>
                     </Link>
@@ -98,25 +97,24 @@ const StoreArticles = () => {
             ),
         },
         {
+            accessorKey: "articles_name",
             header: "Nombre",
             cell: ({ row }: any) => (
-                <div style={{ width: "300px" }}>
-                    <Text variant="body2" weight="bold">{row.original.articles_name}</Text>
-                </div>
+                <Text variant="body2" weight="bold">{row.original.articles_name}</Text>
             ),
-            accessorKey: "articles_name",
+            size: 350
         },
         {
             accessorKey: "article_categories_name",
-            header: "Categoría",
+            header: "Categoría"
         },
         {
             accessorKey: "article_brands_name",
-            header: "Marca",
+            header: "Marca"
         },
         {
             accessorKey: "stores_name",
-            header: "Bodega",
+            header: "Bodega"
         },
         {
             header: "Cantidad",
@@ -126,11 +124,11 @@ const StoreArticles = () => {
                         <Text variant="body2">{row.original.inventory_stock}</Text>
                     </Flex>
                 </Tooltip>
-            )
+            ),
         },
         {
             accessorKey: "articles_unit_measurement",
-            header: "UInidad de Medida",
+            header: "Medida"
         },
         {
             header: "Estado",
@@ -149,16 +147,15 @@ const StoreArticles = () => {
         {
             header: "Accion",
             cell: ({ row }: any) => (
-                <IconButton
-                    color="neutral"
-                    icon={<FaCog />}
-                    onClick={() => openModal(
+                <Flex align="center" justify="flex-start">
+                    <TableIconButton color="primary" icon={<FaCog />} tooltip="Configurar stock" onClick={() => openModal(
                         row.original.inventory_id,
                         row.original.inventory_max_stock,
                         row.original.inventory_min_stock
-                    )}
-                />
-            )
+                    )} />
+                </Flex>
+            ),
+            size: 80
         }
     ], []);
 
@@ -174,18 +171,28 @@ const StoreArticles = () => {
                 headerActions={
                     <>
                         <ButtonGroup>
-                            <Button
-                                leftIcon={<HiInboxArrowDown />}
-                                variant="indigo"
-                            >
-                                Agregar Articulo
-                            </Button>
-                            <Button
-                                leftIcon={<FaShare />}
-                                variant="pink"
-                            >
-                                Traslado
-                            </Button>
+                            {hasPermission("material-receipts-new") &&
+                                <Button
+                                    leftIcon={<HiInboxArrowDown />}
+                                    variant="indigo"
+                                    onClick={() => navigator("/app/material-receipts/new", {
+                                        state: { store }
+                                    })}
+                                >
+                                    Agregar Articulo
+                                </Button>
+                            }
+
+                            {hasPermission("stock-transfer-new") &&
+                                <Button
+                                    leftIcon={<FaShare />}
+                                    variant="pink"
+                                    onClick={() => navigator("/app/stock-transfer/new", {
+                                        state: { store }
+                                    })}
+                                >
+                                    Traslado
+                                </Button>}
                             <Button
                                 leftIcon={<FaExchangeAlt />}
                                 variant="warning"
@@ -217,7 +224,7 @@ const StoreArticles = () => {
                 )}
             </Box>
             <Modal isOpen={!!selectedInventory} onClose={closeModal} title="Configuración del Item">
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={handleSubmit(onSubmitAdjustStock)}>
                     <FormGroup>
                         <Input
                             label="Stock Máximo"
