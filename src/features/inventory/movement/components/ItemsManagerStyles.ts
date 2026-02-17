@@ -67,6 +67,7 @@ export const ModalArticlesList = styled.div`
     display: flex;
     flex-direction: column;
     gap: 8px;
+    z-index: ${(props) => props.theme.zIndex.modal};
 `;
 
 export const ArticleItem = styled.div`
@@ -77,6 +78,7 @@ export const ArticleItem = styled.div`
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     transition: all 0.2s;
+    gap: ${(props) => props.theme.spacing.md};
 
     &:hover {
         background-color: #f9fafb;

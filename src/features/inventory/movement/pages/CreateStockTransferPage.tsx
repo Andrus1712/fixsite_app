@@ -3,7 +3,7 @@ import { Box, Button, Flex, FormGroup, Label, LoadingSpinner, SearchableSelect, 
 import { type StockTransferFormData, stockTransferSchema } from "../schemas/stock-transfer.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import { useGetAllStoresQuery } from "../../store/services/StoreApi";
+import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../store/services/StoreApi";
 import { useGetAllArticlesQuery } from "../../article/services/ArticleApi";
 import { StockTransferItemsManager } from "../components/StockTransferItemsManager";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
@@ -32,9 +32,13 @@ const CreateStockTransferPage = () => {
         limit: 100,
     });
 
-    const { data: articles, isLoading: isArticlesLoading } = useGetAllArticlesQuery({
+    const { data: articles } = useGetStoreInventoryByIdQuery({
         page: 1,
+        filter: "",
         limit: 100,
+        store_id: formData.fromStore_id
+    }, {
+        skip: !formData.fromStore_id
     });
 
     const [createStockTransfer] = useCreateStockTransferMutation();
@@ -112,13 +116,22 @@ const CreateStockTransferPage = () => {
                     <FormGroup>
                         <StockTransferItemsManager
                             items={formData.items || []}
-                            articles={articles?.data || []}
+                            articles={articles?.data.map((item: any) => ({
+                                id: item.articles_id,
+                                name: item.articles_name,
+                                sku: item.articles_sku,
+                                description: item.articles_description,
+                                stock: item.inventory_stock,
+                                store_id: item.stores_id,
+                                store_name: item.stores_name,
+                            })) || []}
                             onChange={(items) => setValue("items", items, { shouldValidate: true })}
                             error={errors?.items?.message}
                         />
                     </FormGroup>
                 </Flex>
             </form>
+            <pre>{JSON.stringify(formData, null, 2)}</pre>
         </Box>
     );
 };

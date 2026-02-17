@@ -10,6 +10,9 @@ interface Article {
     name: string;
     sku: string;
     description?: string;
+    store_id?: number;
+    stock?: number;
+    store_name?: string;
 }
 
 interface Item {
@@ -103,18 +106,49 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
         },
         {
             header: "Cantidad",
-            cell: ({ row }: any) => (
-                <Flex align="center" justify="space-between" gap={"xs"}>
-                    <IconButton variant="ghost" size="xs" icon={<PiPlus />} color="success" onClick={() => updateQuantity(row.original.article_id, row.original.quantity + 1)} />
-                    <Input
-                        variant="outlined"
-                        type="number"
-                        min={1}
-                        value={row.original.quantity}
-                        onChange={(e) => updateQuantity(row.original.article_id, parseInt(e.target.value) || 1)} />
-                    <IconButton variant="ghost" size="xs" icon={<PiMinus />} color="danger" onClick={() => updateQuantity(row.original.article_id, row.original.quantity - 1)} />
-                </Flex>
-            ),
+            cell: ({ row }: any) => {
+                const [localStock, setLocalStock] = useState(row.original.stock);
+
+                useEffect(() => {
+                    setLocalStock(row.original.stock);
+                }, [row.original.stock]);
+
+                return (
+                    <Flex align="center" justify="space-between" gap={"xs"}>
+                        <IconButton
+                            variant="ghost"
+                            size="xs"
+                            icon={<PiPlus />}
+                            color="success"
+                            onClick={() => {
+                                const newValue = localStock + 1;
+                                setLocalStock(newValue);
+                                updateQuantity(row.original.article_id, newValue);
+                            }} />
+                        <Input
+                            variant="outlined"
+                            type="number"
+                            min={1}
+                            value={localStock}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value) || 1;
+                                setLocalStock(value);
+                            }}
+                            onBlur={() => {
+                                updateQuantity(row.original.article_id, localStock);
+                            }} />
+                        <IconButton
+                            variant="ghost"
+                            size="xs"
+                            icon={<PiMinus />}
+                            color="danger"
+                            onClick={() => {
+                                const newValue = localStock - 1;
+                                setLocalStock(newValue > 0 ? newValue : 1);
+                                updateQuantity(row.original.article_id, newValue);
+                            }} />
+                    </Flex>);
+            },
             size: 50,
         },
         {
@@ -160,7 +194,7 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
                 {error && <div style={{ color: "#dc2626", fontSize: "14px", marginBottom: "8px" }}>{error}</div>}
 
                 {itemsWithArticles.length > 0 ? (
-                    <DataTable columns={columns} data={itemsWithArticles} maxHeight={500} />
+                    <DataTable columns={columns} data={itemsWithArticles} getRowId={(row) => row.article_id.toString()} />
                 ) : (
                     <div style={{
                         padding: "24px",
@@ -200,16 +234,15 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
                             const isAdded = items.some(i => i.article_id === article.id);
                             return (
                                 <ArticleItem key={article.id}>
-                                    <div>
+                                    <Flex direction="column">
                                         <div style={{ fontWeight: 600, marginBottom: "4px" }}>
                                             {article.sku} - {article.name}
                                         </div>
                                         {article.description && (
-                                            <div style={{ fontSize: "13px", color: "#6b7280" }}>
-                                                {article.description}
-                                            </div>
+                                            <Text multiline={3} variant="label-sm">{article.description}</Text>
                                         )}
-                                    </div>
+                                        <Text variant="body2" weight="semibold">Cantidad disponible: {article.stock}</Text>
+                                    </Flex>
                                     <Button
                                         variant={isAdded ? "secondary" : "primary"}
                                         onClick={() => addItem(article.id)}

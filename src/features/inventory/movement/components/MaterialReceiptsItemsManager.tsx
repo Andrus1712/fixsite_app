@@ -11,6 +11,10 @@ interface Article {
     name: string;
     sku: string;
     description?: string;
+    store_id?: number;
+    stock?: number;
+    store_name?: string;
+    articles_unit_measurement?: string;
 }
 
 interface Item {
@@ -30,7 +34,7 @@ interface ItemsManagerProps {
     error?: string;
 }
 
-export const ItemsManager = ({ items, articles, onChange, error }: ItemsManagerProps) => {
+export const MaterialReceiptsItemsManager = ({ items, articles, onChange, error }: ItemsManagerProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchSku, setSearchSku] = useState("");
     const [filteredArticles, setFilteredArticles] = useState<Article[]>(articles || []);
@@ -108,38 +112,86 @@ export const ItemsManager = ({ items, articles, onChange, error }: ItemsManagerP
         },
         {
             header: "Cantidad",
-            cell: ({ row }: any) => (
-                <Flex align="center" justify="space-between" gap={"xs"}>
-                    <IconButton variant="ghost" size="xs" icon={<PiPlus />} color="success" onClick={() => updateQuantity(row.original.article_id, row.original.quantity + 1)} />
-                    <Input
-                        variant="outlined"
-                        type="number"
-                        min={1}
-                        name={row.original.article_id}
-                        value={row.original.quantity}
-                        onChange={(e) => updateQuantity(row.original.article_id, parseInt(e.target.value) || 1)} />
-                    <IconButton variant="ghost" size="xs" icon={<PiMinus />} color="danger" onClick={() => updateQuantity(row.original.article_id, row.original.quantity - 1)} />
-                </Flex>
-            )
+            cell: ({ row }: any) => {
+                const [localStock, setLocalStock] = useState(row.original.quantity);
+
+                useEffect(() => {
+                    setLocalStock(row.original.quantity);
+                }, [row.original.quantity]);
+
+                return (
+                    <Flex align="center" justify="space-between" gap={"xs"}>
+                        <IconButton
+                            variant="ghost"
+                            size="xs"
+                            icon={<PiPlus />}
+                            color="success"
+                            onClick={() => {
+                                const newValue = localStock + 1;
+                                setLocalStock(newValue);
+                                updateQuantity(row.original.article_id, newValue);
+                            }}
+                        />
+
+                        <Input
+                            variant="outlined"
+                            type="number"
+                            min={1}
+                            value={localStock}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value) || 1;
+                                setLocalStock(value);
+                            }}
+                            onBlur={() => {
+                                updateQuantity(row.original.article_id, localStock);
+                            }}
+                        />
+
+                        <IconButton
+                            variant="ghost"
+                            size="xs"
+                            icon={<PiMinus />}
+                            color="danger"
+                            onClick={() => {
+                                const newValue = localStock - 1;
+                                setLocalStock(newValue > 0 ? newValue : 1);
+                                updateQuantity(row.original.article_id, newValue);
+                            }}
+                        />
+                    </Flex>
+                );
+            }
         },
         {
             header: "Unidad de medida",
-            accessorKey: "article.unit_measurement",
+            accessorKey: "article.articles_unit_measurement",
+            size: 100
         },
         {
             header: "Costo Unitario",
-            cell: ({ row }: any) => (
-                <Flex align="center" justify="space-between" gap={"xs"}>
-                    $
-                    <Input
-                        variant="outlined"
-                        type="number"
-                        min={1}
-                        name={row.original.unitCost}
-                        value={parseFloat(row.original.unitCost).toFixed(2)}
-                        onChange={(e) => updateUnitCost(row.original.article_id, parseFloat(e.target.value))} />
-                </Flex>
-            ),
+            cell: ({ row }: any) => {
+                const [localCost, setLocalCost] = useState(row.original.unitCost || 0);
+
+                useEffect(() => {
+                    setLocalCost(row.original.unitCost);
+                }, [row.original.unitCost]);
+
+                return (
+                    <Flex align="center" justify="space-between" gap={"xs"}>
+                        $
+                        <Input
+                            variant="outlined"
+                            type="number"
+                            min={1}
+                            value={parseFloat(localCost).toFixed(2)}
+                            onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0;
+                                setLocalCost(value);
+                            }}
+                            onBlur={() => updateUnitCost(row.original.article_id, parseFloat(localCost))} />
+                    </Flex>
+                );
+            },
         },
         {
             id: "actions",
@@ -149,6 +201,7 @@ export const ItemsManager = ({ items, articles, onChange, error }: ItemsManagerP
                     <TableIconButton tooltip="Eliminar" color="danger" icon={<IoTrash />} onClick={() => removeItem(row.original.article_id)} />
                 </Flex>
             ),
+            size: 50
         }
     ], [updateQuantity, updateUnitCost, removeItem, itemsWithArticles]);
 
@@ -172,7 +225,7 @@ export const ItemsManager = ({ items, articles, onChange, error }: ItemsManagerP
                 {itemsWithArticles.length > 0 ? (
                     <>
                         <DataTable columns={columns}
-                            data={itemsWithArticles} />
+                            data={itemsWithArticles} getRowId={(row) => row.article_id.toString()} />
                         {/* <ItemsTable>
                             <thead>
                                 <tr>
@@ -264,16 +317,15 @@ export const ItemsManager = ({ items, articles, onChange, error }: ItemsManagerP
                             const isAdded = items.some(i => i.article_id === article.id);
                             return (
                                 <ArticleItem key={article.id}>
-                                    <div>
+                                    <Flex direction="column">
                                         <div style={{ fontWeight: 600, marginBottom: "4px" }}>
                                             {article.sku} - {article.name}
                                         </div>
                                         {article.description && (
-                                            <div style={{ fontSize: "13px", color: "#6b7280" }}>
-                                                {article.description}
-                                            </div>
+                                            <Text multiline={3} variant="label-sm">{article.description}</Text>
                                         )}
-                                    </div>
+                                        <Text variant="body2" weight="semibold">Cantidad disponible: {article.stock}</Text>
+                                    </Flex>
                                     <Button
                                         variant={isAdded ? "secondary" : "primary"}
                                         onClick={() => addItem(article.id)}

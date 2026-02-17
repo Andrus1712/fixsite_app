@@ -8,6 +8,9 @@ interface Article {
     name: string;
     sku: string;
     description?: string;
+    store_id?: number;
+    stock?: number;
+    store_name?: string;
 }
 
 interface Item {
@@ -59,10 +62,10 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
         [items, articles]
     );
 
-    const addItem = (articleId: number) => {
-        const exists = items.find(i => i.article_id === articleId);
+    const addItem = (articleId: Article) => {
+        const exists = items.find(i => i.article_id === articleId.id);
         if (!exists) {
-            onChange([...items, { article_id: articleId, currentQuantity: 0, newQuantity: 0 }]);
+            onChange([...items, { article_id: articleId.id, currentQuantity: articleId?.stock ? articleId?.stock : 0, newQuantity: 0 }]);
         }
         setSearchSku("");
         setIsModalOpen(false);
@@ -88,14 +91,13 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
         {
             accessorKey: "article.sku",
             header: "SKU",
-            size: 50,
         },
         {
             header: "Artículo",
             cell: ({ row }: any) => (
                 <Flex gap={"xss"} direction="column">
                     <Text weight="semibold">{row.original.article.name}</Text>
-                    <Text truncate variant="label-sm">{row.original.article.description}</Text>
+                    <Text multiline={2} variant="label-sm">{row.original.article.description}</Text>
                 </Flex>
             ),
         },
@@ -105,23 +107,39 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
                 <Input
                     variant="outlined"
                     type="number"
+                    disabled
                     min={0}
                     value={row.original.currentQuantity}
                     onChange={(e) => updateCurrentQuantity(row.original.article_id, parseInt(e.target.value) || 0)} />
             ),
-            size: 50,
         },
         {
             header: "Nueva Cantidad",
-            cell: ({ row }: any) => (
-                <Input
-                    variant="outlined"
-                    type="number"
-                    min={0}
-                    value={row.original.newQuantity}
-                    onChange={(e) => updateNewQuantity(row.original.article_id, parseInt(e.target.value) || 0)} />
-            ),
-            size: 50,
+            cell: ({ row }: any) => {
+                console.log(row.original);
+                
+                const [localNewQuantity, setLocalNewQuantity] = useState(row.original.newQuantity);
+
+                useEffect(() => {
+                    setLocalNewQuantity(row.original.newQuantity);
+                }, [row.original.newQuantity]);
+
+                return (
+                    <Input
+                        variant="outlined"
+                        type="number"
+                        min={1}
+                        value={localNewQuantity}
+                        onChange={(e) => {
+                            const value = parseInt(e.target.value) || 1;
+                            setLocalNewQuantity(value);
+                        }}
+                        onBlur={() => {
+                            updateNewQuantity(row.original.article_id, localNewQuantity);
+                        }}
+                    />
+                );
+            },
         },
         {
             header: "Diferencia",
@@ -133,7 +151,6 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
                     </Text>
                 );
             },
-            size: 40,
         },
         {
             id: "actions",
@@ -143,7 +160,7 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
                     <TableIconButton tooltip="Eliminar" color="danger" icon={<IoTrash />} onClick={() => removeItem(row.original.article_id)} />
                 </Flex>
             ),
-            size: 40,
+            size: 50
         }
     ], [updateCurrentQuantity, updateNewQuantity, removeItem]);
 
@@ -165,7 +182,7 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
                 {error && <div style={{ color: "#dc2626", fontSize: "14px", marginBottom: "8px" }}>{error}</div>}
 
                 {itemsWithArticles.length > 0 ? (
-                    <DataTable columns={columns} data={itemsWithArticles} maxHeight={500} />
+                    <DataTable columns={columns} data={itemsWithArticles} getRowId={(row) => row.article_id.toString()} />
                 ) : (
                     <div style={{
                         padding: "24px",
@@ -205,19 +222,18 @@ export const InventoryAdjustmentItemsManager = ({ items, articles, onChange, err
                             const isAdded = items.some(i => i.article_id === article.id);
                             return (
                                 <ArticleItem key={article.id}>
-                                    <div>
+                                    <Flex direction="column">
                                         <div style={{ fontWeight: 600, marginBottom: "4px" }}>
                                             {article.sku} - {article.name}
                                         </div>
                                         {article.description && (
-                                            <div style={{ fontSize: "13px", color: "#6b7280" }}>
-                                                {article.description}
-                                            </div>
+                                            <Text multiline={3} variant="label-sm">{article.description}</Text>
                                         )}
-                                    </div>
+                                        <Text variant="body2" weight="semibold">Cantidad disponible: {article.stock}</Text>
+                                    </Flex>
                                     <Button
                                         variant={isAdded ? "secondary" : "primary"}
-                                        onClick={() => addItem(article.id)}
+                                        onClick={() => addItem(article)}
                                         disabled={isAdded}
                                         type="button"
                                     >

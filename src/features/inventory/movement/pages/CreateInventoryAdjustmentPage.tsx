@@ -3,8 +3,7 @@ import { Box, Button, Flex, FormGroup, Input, Label, LoadingSpinner, SearchableS
 import { type InventoryAdjustmentFormData, inventoryAdjustmentSchema } from "../schemas/inventory-adjustment.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import { useGetAllStoresQuery } from "../../store/services/StoreApi";
-import { useGetAllArticlesQuery } from "../../article/services/ArticleApi";
+import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../store/services/StoreApi";
 import { InventoryAdjustmentItemsManager } from "../components/InventoryAdjustmentItemsManager";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
 import { useCreateInventoryAdjustmentMutation } from "../services/InventoryAdjustmentsApi";
@@ -13,6 +12,7 @@ const CreateInventoryAdjustmentPage = () => {
     const navigator = useNavigate();
     const { state } = useLocation();
     const storeParams = state?.store;
+
     const { showError, showSuccess } = useToast();
 
     const { register, watch, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<InventoryAdjustmentFormData>({
@@ -33,9 +33,13 @@ const CreateInventoryAdjustmentPage = () => {
         skip: storeParams?.id
     });
 
-    const { data: articles, isLoading: isArticlesLoading } = useGetAllArticlesQuery({
+    const { data: articles } = useGetStoreInventoryByIdQuery({
         page: 1,
+        filter: "",
         limit: 100,
+        store_id: formData.store_id
+    }, {
+        skip: !formData.store_id
     });
 
     const [createInventoryAdjustment] = useCreateInventoryAdjustmentMutation();
@@ -48,7 +52,12 @@ const CreateInventoryAdjustmentPage = () => {
                 showError(result.error?.data?.message || "Error al crear el ajuste");
             } else {
                 showSuccess(`IA-${result.data.data.id}`, "Ajuste creado correctamente");
-                navigator(storeParams?.id ? "/app/inventory/store/" + storeParams.id : -1);
+                if (storeParams?.id) {
+                    navigator("/app/inventory/store/" + storeParams.id);
+                } else {
+                    navigator(-1);
+                };
+
             }
         } catch (error: any) {
             console.error("Error:", error);
@@ -106,7 +115,15 @@ const CreateInventoryAdjustmentPage = () => {
                     <FormGroup>
                         <InventoryAdjustmentItemsManager
                             items={formData.items || []}
-                            articles={articles?.data || []}
+                            articles={articles?.data.map((item: any) => ({
+                                id: item.articles_id,
+                                name: item.articles_name,
+                                sku: item.articles_sku,
+                                description: item.articles_description,
+                                stock: item.inventory_stock,
+                                store_id: item.stores_id,
+                                store_name: item.stores_name,
+                            })) || []}
                             onChange={(items) => setValue("items", items, { shouldValidate: true })}
                             error={errors?.items?.message}
                         />

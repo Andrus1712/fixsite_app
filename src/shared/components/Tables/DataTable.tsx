@@ -218,7 +218,7 @@ export default function DataTable<T>({
                 <TableContainer>
                     <TableScroll>
                         <StyledTable
-                            style={{ width: table.getTotalSize() }}
+                            style={{ width: '100%' }}
                         >
                             <TableHead>
                                 {table.getHeaderGroups().map((headerGroup) => (

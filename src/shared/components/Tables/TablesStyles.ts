@@ -97,6 +97,8 @@ export const ResizeHandle = styled.div<{ isResizing: boolean; }>`
 
 export const StyledTable = styled.table`
   border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
 `;
 
 export const TableBody = styled.tbody``;

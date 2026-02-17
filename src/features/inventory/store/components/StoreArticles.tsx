@@ -25,6 +25,8 @@ const StoreArticles = () => {
 
     const { store_id } = useParams();
     const { state } = useLocation();
+    // consulta la info del store_id cuando no viene por parametros
+    
 
     const store = state?.store;
 
@@ -192,13 +194,19 @@ const StoreArticles = () => {
                                     })}
                                 >
                                     Traslado
-                                </Button>}
-                            <Button
-                                leftIcon={<FaExchangeAlt />}
-                                variant="warning"
-                            >
-                                Ajustar Stock
-                            </Button>
+                                </Button>
+                            }
+                            {hasPermission("inventory-adjustments-new") &&
+                                <Button
+                                    leftIcon={<FaExchangeAlt />}
+                                    variant="warning"
+                                    onClick={() => navigator("/app/inventory-adjustments/new", {
+                                        state: { store }
+                                    })}
+                                >
+                                    Ajustar Stock
+                                </Button>
+                            }
                         </ButtonGroup>
                     </>
                 }
@@ -219,7 +227,6 @@ const StoreArticles = () => {
                         onSearchChange={setFilter}
                         onPageChange={setPage}
                         onPageSizeChange={setLimit}
-                        maxHeight={500}
                     />
                 )}
             </Box>
