@@ -51,7 +51,7 @@ const CreateMaterialIssuePage = () => {
             } else {
                 showSuccess(`MI-${result.data.data.id}`, "Salida creada correctamente");
                 if (storeParams?.id) {
-                    navigator(storeParams?.id ? "/app/inventory/store/" + storeParams.id);
+                    navigator(`/app/inventory/store/${storeParams.id}`);
                 } else {
                     navigator(-1);
                 }

@@ -4,6 +4,7 @@ import { IoAdd, IoTrash, IoSearch } from "react-icons/io5";
 import { SearchContainer, ModalArticlesList, ArticleItem } from "./ItemsManagerStyles";
 import IconButton from "../../../../shared/components/Buttons/IconButton";
 import { PiMinus, PiPlus } from "react-icons/pi";
+import { useLocation } from "react-router";
 
 interface Article {
     id: number;
@@ -38,6 +39,9 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
     const [filteredArticles, setFilteredArticles] = useState<Article[]>(articles || []);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
+    const { state } = useLocation();
+    const orderId = state?.orderId;
+
     useEffect(() => {
         if (isModalOpen && searchInputRef.current) {
             searchInputRef.current.focus();
@@ -67,7 +71,7 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
     const addItem = (articleId: number) => {
         const exists = items.find(i => i.article_id === articleId);
         if (!exists) {
-            onChange([...items, { article_id: articleId, quantity: 1, destinationReference: "" }]);
+            onChange([...items, { article_id: articleId, quantity: 1, destinationReference: orderId ? orderId : "" }]);
         }
         setSearchSku("");
         setIsModalOpen(false);
@@ -107,17 +111,17 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
         {
             header: "Cantidad",
             cell: ({ row }: any) => {
-                const [localStock, setLocalStock] = useState(row.original.stock);
+                const [localStock, setLocalStock] = useState(row.original.quantity);
 
                 useEffect(() => {
-                    setLocalStock(row.original.stock);
-                }, [row.original.stock]);
+                    setLocalStock(row.original.quantity);
+                }, [row.original.quantity]);
 
                 return (
                     <Flex align="center" justify="space-between" gap={"xs"}>
                         <IconButton
                             variant="ghost"
-                            size="xs"
+                            size="md"
                             icon={<PiPlus />}
                             color="success"
                             onClick={() => {
@@ -139,17 +143,18 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
                             }} />
                         <IconButton
                             variant="ghost"
-                            size="xs"
+                            size="md"
                             icon={<PiMinus />}
-                            color="danger"
+                            color={localStock == 1 ? "neutral" : "danger"}
                             onClick={() => {
                                 const newValue = localStock - 1;
                                 setLocalStock(newValue > 0 ? newValue : 1);
                                 updateQuantity(row.original.article_id, newValue);
-                            }} />
+                            }}
+                            disabled={localStock == 1}
+                        />
                     </Flex>);
             },
-            size: 50,
         },
         {
             header: "Referencia de Destino",
@@ -158,8 +163,9 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
                     variant="outlined"
                     type="text"
                     value={row.original.destinationReference}
-                    onChange={(e) => updateReference(row.original.article_id, e.target.value)}
+                    onChange={(e) => orderId ? null : updateReference(row.original.article_id, e.target.value)}
                     placeholder="Ej: Orden de trabajo #123"
+                    disabled={orderId ? true : false}
                 />
             ),
             size: 80,
@@ -207,6 +213,7 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
                     </div>
                 )}
             </Flex>
+            <pre>{JSON.stringify(items, null, 2)}</pre>
 
             <Modal
                 isOpen={isModalOpen}

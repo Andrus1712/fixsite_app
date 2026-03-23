@@ -115,7 +115,6 @@ const BrandPage = () => {
                         onSearchChange={setSearchValue}
                         onPageChange={setPage}
                         onPageSizeChange={setLimit}
-                        maxHeight={500}
                     />
                 )}
             </Box>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useGetAllArticlesQuery, useDeleteArticleMutation } from "../services/ArticleApi";
-import { Box, Button, Container, DataTable, Flex, LoadingSpinner, useToast } from "../../../../shared/components";
+import { Box, Button, Container, DataTable, Flex, LoadingSpinner, TableIconButton, useToast } from "../../../../shared/components";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { useHasPermission } from "../../../auth/hooks/useHasPermission";
@@ -69,29 +69,32 @@ const ArticlePage = () => {
                 id: "actions",
                 header: "Acciones",
                 cell: ({ row }: any) => (
-                    <Flex align="center">
-                        <ButtonGroup orientation="horizontal" spacing="md">
-                            {hasPermission("article-edit") && (
-                                <Button
-                                    size="sm"
-                                    variant="primary"
-                                    leftIcon={<FaEdit />}
-                                    onClick={() => navigator(`/app/articles/edit/${row.original.id}`)}
-                                    fullWidth
-                                />
-                            )}
-                            {hasPermission("article-delete") && (
-                                <Button
-                                    size="sm"
-                                    variant="danger"
-                                    leftIcon={<FaTrash />}
-                                    onClick={() => handleDelete(row.original.id)}
-                                    fullWidth
-                                />
-                            )}
-                        </ButtonGroup>
+                    <Flex align="center" gap={"xs"}>
+                        {/* <ButtonGroup orientation="horizontal" spacing="md"> */}
+                        {hasPermission("article-edit") && (
+                            // <Button
+                            //     size="sm"
+                            //     variant="primary"
+                            //     leftIcon={<FaEdit />}
+                            //     onClick={() => navigator(`/app/articles/edit/${row.original.id}`)}
+                            //     fullWidth
+                            // />
+                            <TableIconButton size="md" tooltip="Editar" icon={<FaEdit />} onClick={() => navigator(`/app/articles/edit/${row.original.id}`)} />
+                        )}
+                        {hasPermission("article-delete") && (
+                            // <Button
+                            //     size="sm"
+                            //     variant="danger"
+                            //     leftIcon={<FaTrash />}
+                            //     onClick={() => handleDelete(row.original.id)}
+                            //     fullWidth
+                            // />
+                            <TableIconButton size="md" tooltip="Eliminar" icon={<FaTrash />} color="danger" onClick={() => handleDelete(row.original.id)} />
+                        )}
+                        {/* </ButtonGroup> */}
                     </Flex>
                 ),
+                size: 90
             },
         ],
         [hasPermission, navigator]
@@ -136,7 +139,6 @@ const ArticlePage = () => {
                         onSearchChange={setSearchValue}
                         onPageChange={setPage}
                         onPageSizeChange={setLimit}
-                        maxHeight={500}
                     />
                 )}
             </Box>

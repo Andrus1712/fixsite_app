@@ -33,13 +33,14 @@ const getPaddingValue = (padding: SpacingKey | number | string | undefined, them
     return padding;
 };
 
-const StyledContainer = styled.div<{ $size?: ContainerSize; $center?: boolean }>`
+const StyledContainer = styled.div<{ $size?: ContainerSize; $center?: boolean; }>`
     width: 100%;
     max-width: ${(props) => getSizeValue(props.$size, props.theme)};
     margin: ${(props) => (props.$center !== false ? "0 auto" : "0")};
     display: flex;
     flex-direction: column;
     min-width: 0; /* Prevent horizontal collapse in flex containers */
+    z-index: ${(props) => props.theme.zIndex.content};
 `;
 
 const ContainerHeader = styled.div`
@@ -58,7 +59,7 @@ const Title = styled.h2`
     color: ${(props) => props.theme.colors.text};
 `;
 
-const Content = styled.div<{ $padding?: SpacingKey | number | string }>`
+const Content = styled.div<{ $padding?: SpacingKey | number | string; }>`
     padding: ${(props) => getPaddingValue(props.$padding, props.theme)};
     flex: 1;
     width: 100%;

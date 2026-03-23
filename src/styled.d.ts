@@ -186,6 +186,7 @@ declare module 'styled-components' {
       modal: number;
       popover: number;
       tooltip: number;
+      content: number;
     };
   }
 }
