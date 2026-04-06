@@ -3,11 +3,11 @@ import { Box, Button, Flex, FormGroup, Label, LoadingSpinner, SearchableSelect, 
 import { type StockTransferFormData, stockTransferSchema } from "../schemas/stock-transfer.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../store/services/StoreApi";
 import { useGetAllArticlesQuery } from "../../article/services/ArticleApi";
 import { StockTransferItemsManager } from "../components/StockTransferItemsManager";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
 import { useCreateStockTransferMutation } from "../services/StockTransfersApi";
+import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../storeModule/services/StoreApi";
 
 const CreateStockTransferPage = () => {
     const navigator = useNavigate();

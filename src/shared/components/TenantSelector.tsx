@@ -13,6 +13,7 @@ import { useGetPermissionsByRoleQuery } from "../../features/permissions/service
 import { FaDatabase } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 import { TiWorld } from "react-icons/ti";
+import { SOCKET_CONNECT, SOCKET_DISCONNECT } from "../store/socketMiddleware";
 
 const TenantSelectorContainer = styled.div<{ $isCollapsed: boolean }>`
     position: relative;
@@ -245,12 +246,15 @@ function TenantSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
     const handleChangeTenat = async (tenant: ITenants) => {
         try {
             if (tenant && currentTenant === "Global") {
+                // Modo tenant
                 await selectTenant({ tenantId: tenant.id }).unwrap();
                 dispatch(changeGlobalMode(false));
             } else {
                 await switchTenant({ tenantId: tenant.id }).unwrap(); // 0 para modo global
                 dispatch(changeGlobalMode(true));
             }
+            // Conectar socket.io al cambiar de tenant
+            dispatch({ type: SOCKET_CONNECT, payload: { tenantId: tenant.id, userId: data?.user?.username } });
             dispatch(setCurrentTenant({ tenant }));
             refetch();
             navigator("/app", { replace: true });
@@ -264,6 +268,8 @@ function TenantSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
         try {
             await logoutTenant().unwrap(); // 0 para modo global
             dispatch(changeGlobalMode(true));
+            // desconectar de socket.io al cambiar de tenant
+            dispatch({type: SOCKET_DISCONNECT, payload: { tenantId: currentTenantState?.id, userId: data?.user?.username }});
             dispatch(setCurrentTenant({ tenant: null }));
             refetch();
             navigator("/app", { replace: true });

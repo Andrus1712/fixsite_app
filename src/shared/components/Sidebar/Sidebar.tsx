@@ -22,7 +22,6 @@ import { IoIosArrowDown } from "react-icons/io";
 import { useTheme } from "styled-components";
 import { FaScrewdriverWrench } from "react-icons/fa6";
 import { TbAwardFilled } from "react-icons/tb";
-import { PiBoxArrowDownFill } from "react-icons/pi";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -51,7 +50,7 @@ const iconMap: Record<string, JSX.Element> = {
 };
 
 function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {
-    const { data } = useAppSelector((state) => state.auth);
+    const { data, socketTenantConected } = useAppSelector((state) => state.auth);
     const theme = useTheme();
 
     const isDesktop = window.innerWidth >= parseInt(theme.breakpoints.lg);
@@ -62,6 +61,17 @@ function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {
                 style={{ padding: isCollapsed ? "8px 8px" : "8px 12px", borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}
             >
                 <TenantSelector isCollapsed={isCollapsed} />
+            </div>
+            <div>
+                {socketTenantConected ? (
+                    <p style={{ color: theme.colors.success, fontSize: "12px", textAlign: "center", margin: "4px 0" }}>
+                        Conectado al socket
+                    </p>
+                ) : (
+                    <p style={{ color: theme.colors.error, fontSize: "12px", textAlign: "center", margin: "4px 0" }}>
+                        Desconectado del socket
+                    </p>
+                )}
             </div>
             <SidebarItems $isCollapsed={isCollapsed}>
                 {data?.modules &&

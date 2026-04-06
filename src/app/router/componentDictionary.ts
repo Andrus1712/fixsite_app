@@ -49,8 +49,8 @@ const ArticlePage = lazy(() => import("../../features/inventory/article/pages/Ar
 const CreateEditArticlePage = lazy(() => import("../../features/inventory/article/pages/CreateEditArticlePage"));
 
 //Store
-const StorePage = lazy(() => import("../../features/inventory/store/pages/StorePage"));
-const ShowStorePage = lazy(() => import("../../features/inventory/store/pages/ShowStorePage"));
+const StorePage = lazy(() => import("../../features/inventory/storeModule/pages/StorePage"));
+const ShowStorePage = lazy(() => import("../../features/inventory/storeModule/pages/ShowStorePage"));
 
 // material-receipts
 const CreateMaterialReceiptsPage = lazy(() => import("../../features/inventory/movement/pages/CreateMaterialReceiptsPage"));

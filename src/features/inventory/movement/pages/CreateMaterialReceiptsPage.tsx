@@ -3,10 +3,10 @@ import { Box, Button, Flex, FormGroup, Label, LoadingSpinner, SearchableSelect, 
 import { type MaterialReceiptsFormData, materialReceiptsSchema } from "../schemas/material-receipts.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../store/services/StoreApi";
 import { MaterialReceiptsItemsManager } from "../components/MaterialReceiptsItemsManager";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
 import { useCreateMaterialReceiptsRequestMutation } from "../services/MaterialReceiptsApi";
+import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../storeModule/services/StoreApi";
 
 const CreateMaterialReceiptsPage = () => {
 

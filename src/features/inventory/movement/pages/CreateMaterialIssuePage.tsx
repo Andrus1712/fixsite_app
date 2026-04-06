@@ -3,10 +3,10 @@ import { Box, Button, Flex, FormGroup, Label, LoadingSpinner, SearchableSelect, 
 import { type MaterialIssueFormData, materialIssueSchema } from "../schemas/material-issue.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../store/services/StoreApi";
 import { MaterialIssueItemsManager } from "../components/MaterialIssueItemsManager";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
 import { useCreateMaterialIssueMutation } from "../services/MaterialIssuesApi";
+import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../storeModule/services/StoreApi";
 
 const CreateMaterialIssuePage = () => {
     const navigator = useNavigate();

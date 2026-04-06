@@ -3,7 +3,7 @@ import { Box, Button, Flex, FormGroup, Input, Label, LoadingSpinner, SearchableS
 import { type InventoryAdjustmentFormData, inventoryAdjustmentSchema } from "../schemas/inventory-adjustment.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation, useNavigate } from "react-router";
-import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../store/services/StoreApi";
+import { useGetAllStoresQuery, useGetStoreInventoryByIdQuery } from "../../storeModule/services/StoreApi";
 import { InventoryAdjustmentItemsManager } from "../components/InventoryAdjustmentItemsManager";
 import ButtonGroup from "../../../../shared/components/Buttons/ButtonGroup";
 import { useCreateInventoryAdjustmentMutation } from "../services/InventoryAdjustmentsApi";
