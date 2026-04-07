@@ -1,10 +1,12 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, type Middleware } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux';
 import { persistStore, persistReducer, type PersistConfig } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { baseApi } from './baseApi';
 import authReducer from '../../features/auth/store/authSlice';
 import toastReducer from './toastSlice';
+import statsReducer from '../../features/inventory/storeModule/store/statsSlice';
+import { socketMiddleware } from './socketMiddleware';
 // import { ordersApi } from '../../features/orders/services/orderApi';
 
 const persistConfig: PersistConfig<any> = {
@@ -27,6 +29,7 @@ export const store = configureStore({
     // users: usersSlice.reducer, 
     auth: persistedAuthReducer,
     toast: toastReducer,
+    stats: statsReducer,
   },
 
   // 2. Middlewares: Necesario para que RTK Query funcione
@@ -35,7 +38,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat([baseApi.middleware]),
+    }).concat(baseApi.middleware, socketMiddleware),
 });
 
 export const persistor = persistStore(store);

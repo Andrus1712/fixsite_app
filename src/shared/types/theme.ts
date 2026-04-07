@@ -284,7 +284,8 @@ const commonTheme = {
         fixed: 1030,
         modal: 1040,
         popover: 1000,
-        tooltip: 1060
+        tooltip: 1060,
+        content: 1010
     }
 };
 

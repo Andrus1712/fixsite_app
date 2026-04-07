@@ -12,12 +12,15 @@ import {
     FormGroup,
     Modal,
     DropdownButton,
+    type BadgeVariant,
+    Box,
 } from "../../../../shared/components";
 import { IoAdd, IoCheckmark, IoClose, IoEye, IoPencil, IoTrash, IoTime, IoHardwareChip } from "react-icons/io5";
 import { HiDotsVertical } from "react-icons/hi";
 import styled from "styled-components";
 import type { ColumnDef } from "@tanstack/react-table";
 import DataTable from "../../../../shared/components/Tables/Table";
+import { useNavigate } from "react-router";
 
 export interface RepairPart {
     id: string;
@@ -85,7 +88,7 @@ const ModalContent = styled.div`
     gap: 16px;
 `;
 
-const getStatusColor = (status: RepairPart["status"]): string => {
+const getStatusColor = (status: RepairPart["status"]): BadgeVariant => {
     switch (status) {
         case "requested":
             return "warning";
@@ -94,11 +97,11 @@ const getStatusColor = (status: RepairPart["status"]): string => {
         case "ordered":
             return "default";
         case "received":
-            return "primary";
+            return "success";
         case "installed":
             return "success";
         case "rejected":
-            return "error";
+            return "danger";
         default:
             return "default";
     }
@@ -152,6 +155,8 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [selectedPart, setSelectedPart] = useState<RepairPart | null>(null);
     const [rejectReason, setRejectReason] = useState("");
+
+    const navigator = useNavigate();
 
     // Form state for new part request
     const [newPart, setNewPart] = useState({
@@ -273,102 +278,53 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
         return { total, requested, approved, received, installed, totalCost };
     }, [parts]);
 
-    const handleRequestPart = () => {
-        if (onRequestPart) {
-            onRequestPart({
-                ...newPart,
-                requestedBy: "Usuario actual", // This should come from auth context
-            });
-            setNewPart({
-                name: "",
-                description: "",
-                partNumber: "",
-                quantity: 1,
-                estimatedCost: 0,
-                supplier: "",
-                category: "other",
-                notes: "",
-            });
-            setShowRequestModal(false);
-        }
-    };
+    // const handleRequestPart = () => {
+    //     if (onRequestPart) {
+    //         onRequestPart({
+    //             ...newPart,
+    //             requestedBy: "Usuario actual", // This should come from auth context
+    //         });
+    //         setNewPart({
+    //             name: "",
+    //             description: "",
+    //             partNumber: "",
+    //             quantity: 1,
+    //             estimatedCost: 0,
+    //             supplier: "",
+    //             category: "other",
+    //             notes: "",
+    //         });
+    //         setShowRequestModal(false);
+    //     }
+    // };
 
-    const handleRejectPart = () => {
-        if (selectedPart && onRejectPart) {
-            onRejectPart(selectedPart.id, rejectReason);
-            setShowRejectModal(false);
-            setSelectedPart(null);
-            setRejectReason("");
-        }
-    };
+    // const handleRejectPart = () => {
+    //     if (selectedPart && onRejectPart) {
+    //         onRejectPart(selectedPart.id, rejectReason);
+    //         setShowRejectModal(false);
+    //         setSelectedPart(null);
+    //         setRejectReason("");
+    //     }
+    // };
 
     return (
         <PartsContainer>
-            <PartsHeader>
+            <Box headerActions={
                 <div>
-                    <Text variant="h3" weight="semibold">
-                        Gestión de Piezas
-                    </Text>
-                    <Text variant="body2" color="muted">
-                        Solicita, aprueba y administra las piezas necesarias para la reparación
-                    </Text>
+                    {canRequestParts && (
+                        <Button variant="primary" size="sm" onClick={() => navigator("/app/material-issues/new", {
+                            state: { orderId }
+                        })} leftIcon={<IoAdd />}>
+                            Solicitar Pieza
+                        </Button>
+                    )}
                 </div>
-                {canRequestParts && (
-                    <Button variant="primary" size="sm" onClick={() => setShowRequestModal(true)} leftIcon={<IoAdd />}>
-                        Solicitar Pieza
-                    </Button>
-                )}
-            </PartsHeader>
-
-            <PartsStats>
-                <StatCard variant="outlined">
-                    <Text variant="h4" weight="bold">
-                        {stats.total}
-                    </Text>
-                    <Text variant="caption" color="muted">
-                        Total Piezas
-                    </Text>
-                </StatCard>
-                <StatCard variant="outlined">
-                    <Text variant="h4" weight="bold" style={{ color: "#F59E0B" }}>
-                        {stats.requested}
-                    </Text>
-                    <Text variant="caption" color="muted">
-                        Pendientes
-                    </Text>
-                </StatCard>
-                <StatCard variant="outlined">
-                    <Text variant="h4" weight="bold" style={{ color: "#10B981" }}>
-                        {stats.approved}
-                    </Text>
-                    <Text variant="caption" color="muted">
-                        Aprobadas
-                    </Text>
-                </StatCard>
-                <StatCard variant="outlined">
-                    <Text variant="h4" weight="bold" style={{ color: "#3B82F6" }}>
-                        {stats.received}
-                    </Text>
-                    <Text variant="caption" color="muted">
-                        Recibidas
-                    </Text>
-                </StatCard>
-                <StatCard variant="outlined">
-                    <Text variant="h4" weight="bold">
-                        ${stats.totalCost.toFixed(2)}
-                    </Text>
-                    <Text variant="caption" color="muted">
-                        Costo Total
-                    </Text>
-                </StatCard>
-            </PartsStats>
-
-            <Card size="full">
+            }>
                 <DataTable data={parts} columns={columns} searchPlaceholder="Buscar piezas..." />
-            </Card>
+            </Box>
 
             {/* Request Part Modal */}
-            <Modal
+            {/* <Modal
                 isOpen={showRequestModal}
                 onClose={() => setShowRequestModal(false)}
                 title="Solicitar Nueva Pieza"
@@ -466,10 +422,10 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
                         </Button>
                     </Row>
                 </ModalContent>
-            </Modal>
+            </Modal> */}
 
             {/* Reject Part Modal */}
-            <Modal
+            {/* <Modal
                 isOpen={showRejectModal}
                 onClose={() => setShowRejectModal(false)}
                 title="Rechazar Solicitud de Pieza"
@@ -498,10 +454,10 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
                         </Button>
                     </Row>
                 </ModalContent>
-            </Modal>
+            </Modal> */}
 
             {/* Part Details Modal */}
-            <Modal
+            {/* <Modal
                 isOpen={!!selectedPart && !showRejectModal}
                 onClose={() => setSelectedPart(null)}
                 title={`Detalles de Pieza - ${selectedPart?.name}`}
@@ -590,7 +546,7 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
                         </Row>
                     </ModalContent>
                 )}
-            </Modal>
+            </Modal> */}
         </PartsContainer>
     );
 };

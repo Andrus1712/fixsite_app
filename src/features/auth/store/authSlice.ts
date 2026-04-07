@@ -9,6 +9,7 @@ interface AuthState {
     currentTenant: ITenants | null;
     globalMode: boolean;
     permission: IPermission[];
+    socketTenantConected: boolean;
 }
 
 const initialState: AuthState = {
@@ -17,7 +18,8 @@ const initialState: AuthState = {
     currentRole: null,
     currentTenant: null,
     globalMode: true,
-    permission: []
+    permission: [],
+    socketTenantConected: false,
 };
 
 const authSlice = createSlice({
@@ -72,6 +74,9 @@ const authSlice = createSlice({
 
         checkAuthUser: (state, action: PayloadAction<boolean>) => {
             state.isAuthenticated = action.payload;
+        },
+        socketTenantConected: (state, action: PayloadAction<boolean>) => {
+            state.socketTenantConected = action.payload;
         }
     },
 });
@@ -86,6 +91,7 @@ export const {
     updateTenants,
     setCurrentTenant,
     changeGlobalMode,
-    checkAuthUser
+    checkAuthUser,
+    socketTenantConected
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -38,13 +38,26 @@ const baseQueryWithReauth: BaseQueryFn<
  */
 export const baseApi = createApi({
     // path para el reducer en el store
-    reducerPath: 'baseApi',
+    reducerPath: "baseApi",
 
     // Función para realizar las solicitudes HTTP con interceptor de 401
     baseQuery: baseQueryWithReauth,
 
     // Tags para el caching y la invalidación (centralizados o definidos en cada feature)
-    tagTypes: ['User', 'Product', 'Permission', 'Order', 'Role', 'Component', 'Tenant'],
+    tagTypes: [
+        "User",
+        "Product",
+        "Permission",
+        "Order",
+        "Role",
+        "Component",
+        "Tenant",
+        "Brand",
+        "Category",
+        "Article",
+        "Store",
+        "Request"
+    ],
 
     // Deshabilitar reintentos automáticos
     refetchOnMountOrArgChange: false,

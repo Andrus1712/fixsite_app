@@ -9,6 +9,7 @@ import DynamicRoutes from "../router/DynamicRoutes";
 import { AlertContainer, LoadingSpinner } from "../../shared/components";
 import "../../../public/css/main.css";
 import { AlertProvider } from "./AlertProvider";
+import SocketWatcher from "../../shared/components/SocketWatcher";
 
 export const AppProviders = () => (
     <ErrorBoundary>
@@ -17,6 +18,7 @@ export const AppProviders = () => (
                 <ThemeProvider theme={theme}>
                     {/* <GlobalStyle /> */}
                     <AlertProvider>
+                        <SocketWatcher />
                         <DynamicRoutes />
                         <AlertContainer />
                     </AlertProvider>

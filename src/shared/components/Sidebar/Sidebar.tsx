@@ -9,7 +9,7 @@ import {
     IconWrapper,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
+import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTags, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
 import TenantSelector from "../TenantSelector";
 import { Tooltip } from "../Tooltip";
@@ -21,6 +21,7 @@ import { MdOutlineWebAsset } from "react-icons/md";
 import { IoIosArrowDown } from "react-icons/io";
 import { useTheme } from "styled-components";
 import { FaScrewdriverWrench } from "react-icons/fa6";
+import { TbAwardFilled } from "react-icons/tb";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -44,10 +45,12 @@ const iconMap: Record<string, JSX.Element> = {
     FaScrewdriverWrench: <FaScrewdriverWrench />,
     FaPeopleCarry: <FaPeopleCarry />,
     FaMicrochip: <FaMicrochip />,
+    FaTags: <FaTags />,
+    TbAwardFilled: <TbAwardFilled />,
 };
 
 function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {
-    const { data } = useAppSelector((state) => state.auth);
+    const { data, socketTenantConected } = useAppSelector((state) => state.auth);
     const theme = useTheme();
 
     const isDesktop = window.innerWidth >= parseInt(theme.breakpoints.lg);
@@ -58,6 +61,17 @@ function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {
                 style={{ padding: isCollapsed ? "8px 8px" : "8px 12px", borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}
             >
                 <TenantSelector isCollapsed={isCollapsed} />
+            </div>
+            <div>
+                {socketTenantConected ? (
+                    <p style={{ color: theme.colors.success, fontSize: "12px", textAlign: "center", margin: "4px 0" }}>
+                        Conectado al socket
+                    </p>
+                ) : (
+                    <p style={{ color: theme.colors.error, fontSize: "12px", textAlign: "center", margin: "4px 0" }}>
+                        Desconectado del socket
+                    </p>
+                )}
             </div>
             <SidebarItems $isCollapsed={isCollapsed}>
                 {data?.modules &&
