@@ -5,6 +5,7 @@ export const TableWrapper = styled.div`
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  min-width: 0;
 `;
 
 export const ControlsRow = styled.div`
@@ -26,6 +27,10 @@ export const LeftControls = styled.div`
 export const RightControls = styled.div`
   display: flex;
   gap: 8px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 export const PerPageSelect = styled.select`
@@ -40,6 +45,7 @@ export const SearchInput = styled.input`
   border-radius: 8px;
   border: 1px solid ${(p) => p.theme.colors.gray200};
   min-height: 36px;
+  width: 100%;
 `;
 
 export const TableContainer = styled.div`
@@ -49,12 +55,14 @@ export const TableContainer = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 `;
 
 export const TableScroll = styled.div`
   width: 100%;
   overflow-x: auto;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 export const TableHead = styled.thead`
@@ -98,7 +106,8 @@ export const ResizeHandle = styled.div<{ isResizing: boolean; }>`
 export const StyledTable = styled.table`
   border-collapse: collapse;
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
+  min-width: 600px;
 `;
 
 export const TableBody = styled.tbody``;

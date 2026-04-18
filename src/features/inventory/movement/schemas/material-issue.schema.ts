@@ -7,6 +7,7 @@ export const materialIssueSchema = z.object({
         quantity: z.number().min(1, "Cantidad debe ser mayor a 0"),
         destinationReference: z.string().min(1, "Referencia de destino es requerida"),
     })).min(1, "Debe agregar al menos un item"),
+    destinationReference: z.string().min(1, "Referencia de destino es requerida"),
 });
 
 export type MaterialIssueFormData = z.infer<typeof materialIssueSchema>;

@@ -32,6 +32,7 @@ export * from './Header';
 export * from './Tooltip';
 export * from './StatusDot';
 export * from './Aside';
+export * from './Accordion';
 
 // Re-exporting specific defaults for convenience if needed by legacy code
 // (Already covered by export * if index exists, but being explicit for Button)

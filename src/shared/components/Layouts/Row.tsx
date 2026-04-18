@@ -44,6 +44,11 @@ const StyledRow = styled.div<{
     gap: ${(props) => getSpacing(props.$gap, props.theme)};
     width: ${(props) => (props.$fullWidth ? "100%" : "auto")};
     height: ${(props) => (props.$fullHeight ? "100%" : "auto")};
+    min-width: 0;
+
+    & > * {
+        min-width: 0;
+    }
 `;
 
 export default function Row({

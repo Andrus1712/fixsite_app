@@ -20,7 +20,6 @@ export const socketMiddleware: Middleware = (store) => (next) => (action: any) =
             });
 
             socket.on(RealtimeEvents.CONNECTED, (data) => {
-                console.log(data);
                 store.dispatch(addToast({ type: "success", title: "Conexión establecida", message: "Conectado al servidor de tiempo real" }));
                 store.dispatch(socketTenantConected(true)); // Dispatch para actualizar el estado de conexión del socket
             });
@@ -32,8 +31,6 @@ export const socketMiddleware: Middleware = (store) => (next) => (action: any) =
 
             // ─── Eventos globales → Redux ────────────────────────────────
             socket.on(RealtimeEvents.STATS_UPDATE, (data: InventoryStats) => {
-                console.log(data);
-                alert("Estadísticas actualizadas: " + JSON.stringify(data));
                 store.dispatch(statsUpdated(data));
             });
 

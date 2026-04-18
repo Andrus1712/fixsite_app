@@ -1,2 +1,2 @@
-export { ReportedFailures } from './ReportedFailures';
-export type { ReportedFailuresProps, FailureReport } from './ReportedFailures';
+export { ReportedFailures, FailureAccordionContent } from './ReportedFailures';
+export type { ReportedFailuresProps } from './ReportedFailures';

@@ -61,10 +61,8 @@ const Title = styled.h2`
 
 const Content = styled.div<{ $padding?: SpacingKey | number | string; }>`
     padding: ${(props) => getPaddingValue(props.$padding, props.theme)};
-    flex: 1;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: auto; /* Allow horizontal scroll for wide content like tables/tabs */
     
     @media (max-width: ${(props) => props.theme.breakpoints.md}) {
         padding: ${(props) => props.theme.spacing.sm};

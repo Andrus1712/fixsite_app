@@ -3,6 +3,7 @@ import {
     Badge,
     Box,
     Button,
+    ButtonGroup,
     Card,
     Column,
     Divider,
@@ -19,16 +20,22 @@ import {
     useToast,
 } from "../../../shared/components";
 import { ReportedFailures } from "./ReportedFailures";
-import type { Notes, WorkOrder } from "../models/OrderModel";
+import type { Issue, Notes, WorkOrder } from "../models/OrderModel";
 import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { HiDotsVertical } from "react-icons/hi";
 import { IoCheckmark, IoDocumentText, IoPencil, IoPrint, IoTrash } from "react-icons/io5";
 import { BsNut } from "react-icons/bs";
-import { FaCopy } from "react-icons/fa";
+import { FaCopy, FaEdit, FaTools, FaTrash } from "react-icons/fa";
 import { useGetAllTechnicniansQuery } from "../../technician/services/TechnicianApi";
 import { useAssignOrderToTechnicianMutation } from "../services/orderApi";
 import { Link } from "react-router";
+import { AiFillTool } from "react-icons/ai";
+import { IoIosCheckmarkCircle, IoMdAdd } from "react-icons/io";
+import FixIssueModal from "./FixIssueModal";
+import { Accordion, AccordionItem } from "../../../shared/components";
+import { FailureAccordionContent } from "./ReportedFailures";
+import IconButton from "../../../shared/components/Buttons/IconButton";
 
 interface DropdownMenuOption {
     id: string;
@@ -44,11 +51,24 @@ interface DropdownMenuSection {
     options: DropdownMenuOption[];
 }
 
-export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
+const getPriorityVariant = (priority: string): any => {
+    switch (priority?.toLowerCase()) {
+        case 'critical': case 'high': return 'danger';
+        case 'medium': return 'warning';
+        case 'low': return 'info';
+        default: return 'default';
+    }
+};
+
+export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
     const { showSuccess, showError } = useToast();
     const [showModalSetTechnician, setShowModalSetTechnician] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | number | null>(null);
+    const [selectedIssuesId, setSelectedIssueId] = useState<Issue[] | null>(null);
+
+    // Modal para corregir fallas
+    const [showFixIssueModal, setShowFixIssueModal] = useState(false);
 
     const [assignOrderToTechnician, { isLoading: isAssigning }] = useAssignOrderToTechnicianMutation();
 
@@ -148,9 +168,14 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
         }
     };
 
+    const hanldeFixOneIssue = (issue: Issue) => {
+        setSelectedIssueId([issue]);
+        setShowFixIssueModal(true);
+    };
+
     return (
         <div>
-            <Grid $columns={{ xs: 1, sm: 1, lg: "3fr 1fr" }} $gap={{ xs: "sm", lg: "sm" }}>
+            <Grid $columns={{ xs: 1, lg: "3fr 1fr" }} $gap={{ xs: "sm", lg: "sm" }}>
                 <Column>
                     <Box
                         bg="white"
@@ -187,6 +212,14 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                             alert("Click");
                                         }}
                                     />
+                                </Row>
+                            </Column>
+                            <Column align="flex-start" justify="flex-start">
+                                <Text weight="normal" variant="overline" color="muted">
+                                    Tipo de orden
+                                </Text>
+                                <Row $align="center" $gap={"xs"}>
+                                    <Text variant="body1">{data.order_type_name}</Text>
                                 </Row>
                             </Column>
                             <Column align="flex-start" justify="flex-start">
@@ -239,192 +272,220 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                         <Divider />
                         <Table columns={columns} data={data.notes || []} />
                     </Box>
-                    <div
-                        style={{
-                            backgroundColor: "white",
-                            padding: "1rem",
-                            borderRadius: "0.5rem",
-                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1) }}",
-                        }}
+                    <Accordion
+                        title="Fallas Reportadas"
+                        defaultExpanded
+                        badge={reportedFailures?.length ? { text: String(reportedFailures.length), variant: 'danger' } : undefined}
+                        headerActions={
+                            <DropdownButton
+                                items={[{
+                                    label: 'Acción',
+                                    options: [
+                                        { id: 'fix_issue', label: 'Corregir fallas', onClick: () => setShowFixIssueModal(true), icon: <AiFillTool /> },
+                                        { id: 'new_issue', label: 'Nueva falla', icon: <IoMdAdd />, onClick: () => { } },
+                                    ],
+                                }]}
+                                rightIcon={<HiDotsVertical />}
+                                size="sm"
+                            />
+                        }
                     >
-                        <Text variant="label-lg" align="center">
-                            Fallas Reportadas
+                        {reportedFailures?.map((failure) => (
+                            <AccordionItem
+                                key={failure.id}
+                                title={`${failure.failure_codes_code || failure.id} - ${failure.failure_codes_name || failure.issue_name}`}
+                                badge={{ text: failure.failure_severities_name || failure.issue_priority_description, variant: getPriorityVariant(failure.issue_priority_description) }}
+                                headerActions={
+                                    <ButtonGroup>
+                                        <IconButton variant="ghost" color="neutral" size="sm" icon={<FaTools />} onClick={() => hanldeFixOneIssue(failure)} />
+                                        <IconButton variant="ghost" color="info" size="sm" icon={<FaEdit />} />
+                                        <IconButton variant="ghost" color="danger" size="sm" icon={<FaTrash />} />
+                                    </ButtonGroup>
+                                }
+                            >
+                                <FailureAccordionContent failure={failure} />
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                    <Accordion
+                        title="Servicios Efectuados"
+                        badge={{ text: '0', variant: 'default' }}
+                        headerActions={
+                            <DropdownButton
+                                items={[{
+                                    label: 'Acción',
+                                    options: [
+                                        { id: 'new_service', label: 'Nuevo servicio', icon: <IoMdAdd />, onClick: () => { } },
+                                    ],
+                                }]}
+                                rightIcon={<HiDotsVertical />}
+                                size="sm"
+                            />
+                        }
+                    >
+                        <Text variant="body2" color="muted">
+                            No se han registrado servicios efectuados para esta orden.
                         </Text>
-                    </div>
-                    <ReportedFailures
-                        failures={reportedFailures}
-                        onEditFailure={(failure) => {
-                            console.log("Editar falla:", failure);
-                            // Aquí puedes agregar la lógica para editar la falla
-                        }}
-                        onConfigureFailure={(failure) => {
-                            console.log("Configurar falla:", failure);
-                            // Aquí puedes agregar la lógica para configurar la falla
-                        }}
-                    />
+                    </Accordion>
                 </Column>
                 <div>
-                    <Column>
-                        <Box
-                            bg="white"
-                            p={"lg"}
-                            rounded
-                            shadow
-                            title="Informacion del dispositivo"
-                            subtitle={data.devices[0].serial_number}
-                            headerActions={
-                                <DropdownButton
-                                    items={[
-                                        {
-                                            label: "Accion",
-                                            options: [
-                                                {
-                                                    id: "edit",
-                                                    label: "Editar",
-                                                    onClick: () => {},
-                                                    icon: <IoPencil />,
-                                                },
-                                                {
-                                                    id: "info",
-                                                    label: "Configuracion",
-                                                    icon: <BsNut />,
-                                                    onClick: () => {},
-                                                },
-                                            ],
-                                        },
-                                    ]}
-                                    rightIcon={<HiDotsVertical />}
-                                />
-                            }
-                            showDivider={false}
-                        >
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Dispositivo:
-                                </Text>
-                                <Text variant="body1">{data.devices[0].device_name}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Tipo:
-                                </Text>
-                                <Text variant="body1">
-                                    {data.devices[0].device_type} - {data.devices[0].device_type_name}
-                                </Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Marca:
-                                </Text>
-                                <Text variant="body1">
-                                    {data.devices[0].device_brand} - {data.devices[0].device_brand_name}
-                                </Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Imei:
-                                </Text>
-                                <Text variant="body1">
-                                    <Text>{data.devices[0].imei}</Text>
-                                </Text>
-                            </Row>
+                    <Column align="flex-start" justify="flex-start" $gap="md">
+                        <Box bg="white" rounded shadow $fullWidth>
+                            <Box
+                                p={"lg"}
+                                title="Informacion del dispositivo"
+                                subtitle={data.devices[0].serial_number}
+                                headerActions={
+                                    <DropdownButton
+                                        items={[
+                                            {
+                                                label: "Accion",
+                                                options: [
+                                                    {
+                                                        id: "edit",
+                                                        label: "Editar",
+                                                        onClick: () => { },
+                                                        icon: <IoPencil />,
+                                                    },
+                                                    {
+                                                        id: "info",
+                                                        label: "Configuracion",
+                                                        icon: <BsNut />,
+                                                        onClick: () => { },
+                                                    },
+                                                ],
+                                            },
+                                        ]}
+                                        rightIcon={<HiDotsVertical />}
+                                    />
+                                }
+                                showDivider={false}
+                            >
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Dispositivo:
+                                    </Text>
+                                    <Text variant="body1">{data.devices[0].device_name}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Tipo:
+                                    </Text>
+                                    <Text variant="body1">
+                                        {data.devices[0].device_type} - {data.devices[0].device_type_name}
+                                    </Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Marca:
+                                    </Text>
+                                    <Text variant="body1">
+                                        {data.devices[0].device_brand} - {data.devices[0].device_brand_name}
+                                    </Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Imei:
+                                    </Text>
+                                    <Text variant="body1">
+                                        <Text>{data.devices[0].imei}</Text>
+                                    </Text>
+                                </Row>
 
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Serial:
-                                </Text>
-                                <Text variant="body1">
-                                    <Text>{data.devices[0].serial_number}</Text>
-                                </Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Color:
-                                </Text>
-                                <Text variant="body1">
-                                    <Text>{data.devices[0].color}</Text>
-                                </Text>
-                            </Row>
-                        </Box>
-                        <Box
-                            bg="white"
-                            p={"lg"}
-                            rounded
-                            shadow
-                            title="Informacion del cliente"
-                            showDivider={false}
-                            headerActions={
-                                <DropdownButton
-                                    items={[
-                                        {
-                                            label: "Accion",
-                                            options: [
-                                                {
-                                                    id: "edit",
-                                                    label: "Editar",
-                                                    onClick: () => {},
-                                                    icon: <IoPencil />,
-                                                },
-                                                {
-                                                    id: "info",
-                                                    label: "Configuracion",
-                                                    icon: <BsNut />,
-                                                    onClick: () => {},
-                                                },
-                                            ],
-                                        },
-                                    ]}
-                                    rightIcon={<HiDotsVertical />}
-                                />
-                            }
-                        >
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Nombre del cliente
-                                </Text>
-                                <Text variant="body1">{data.customer.customer_name}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Email
-                                </Text>
-                                <Text variant="body1">{data.customer.customer_email}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Telefono de contacto
-                                </Text>
-                                <Text variant="body1">{data.customer.customer_phone}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Tipo Cliente
-                                </Text>
-                                <Text variant="body1">{data.customer.customer_type}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Ciudad
-                                </Text>
-                                <Text variant="body1">{data.customer.customer_city}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
-                            <Row $align="center" $justify="space-between">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Pais
-                                </Text>
-                                <Text variant="body1">{data.customer.customer_country}</Text>
-                            </Row>
-                            <Divider margin={"sm"} />
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Serial:
+                                    </Text>
+                                    <Text variant="body1">
+                                        <Text>{data.devices[0].serial_number}</Text>
+                                    </Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Color:
+                                    </Text>
+                                    <Text variant="body1">
+                                        <Text>{data.devices[0].color}</Text>
+                                    </Text>
+                                </Row>
+                            </Box>
+                            <Box
+                                p={"lg"}
+                                title="Informacion del cliente"
+                                showDivider={false}
+                                headerActions={
+                                    <DropdownButton
+                                        items={[
+                                            {
+                                                label: "Accion",
+                                                options: [
+                                                    {
+                                                        id: "edit",
+                                                        label: "Editar",
+                                                        onClick: () => { },
+                                                        icon: <IoPencil />,
+                                                    },
+                                                    {
+                                                        id: "info",
+                                                        label: "Configuracion",
+                                                        icon: <BsNut />,
+                                                        onClick: () => { },
+                                                    },
+                                                ],
+                                            },
+                                        ]}
+                                        rightIcon={<HiDotsVertical />}
+                                    />
+                                }
+                            >
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Nombre del cliente
+                                    </Text>
+                                    <Text variant="body1">{data.customer.customer_name}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Email
+                                    </Text>
+                                    <Text variant="body1">{data.customer.customer_email}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Telefono de contacto
+                                    </Text>
+                                    <Text variant="body1">{data.customer.customer_phone}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Tipo Cliente
+                                    </Text>
+                                    <Text variant="body1">{data.customer.customer_type}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Ciudad
+                                    </Text>
+                                    <Text variant="body1">{data.customer.customer_city}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                                <Row $align="center" $justify="space-between" $wrap>
+                                    <Text weight="normal" variant="overline" color="muted">
+                                        Pais
+                                    </Text>
+                                    <Text variant="body1">{data.customer.customer_country}</Text>
+                                </Row>
+                                <Divider margin={"sm"} />
+                            </Box>
                         </Box>
                     </Column>
                 </div>
@@ -460,6 +521,8 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                     options={technicians?.data.map((tech: any) => ({ label: tech.name, value: tech.id })) || []}
                 />
             </Modal>
+
+            <FixIssueModal isOpen={showFixIssueModal} onClose={() => { setShowFixIssueModal(false); setSelectedIssueId(null); }} selectedIssues={selectedIssuesId} orderTypeId={data.order_type_id} orderId={data.id} />
         </div>
     );
 };

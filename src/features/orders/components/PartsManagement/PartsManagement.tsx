@@ -41,7 +41,8 @@ export interface RepairPart {
 }
 
 export interface PartsManagementProps {
-    orderId: string;
+    orderId: number | string;
+    orderCode: string;
     parts: RepairPart[];
     onRequestPart?: (part: Omit<RepairPart, "id" | "status" | "requestedDate">) => void;
     onApprovePart?: (partId: string) => void;
@@ -143,6 +144,7 @@ const getCategoryIcon = (category: RepairPart["category"]): React.ReactNode => {
 
 export const PartsManagement: React.FC<PartsManagementProps> = ({
     orderId,
+    orderCode,
     parts,
     onRequestPart,
     onApprovePart,
@@ -313,7 +315,7 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
                 <div>
                     {canRequestParts && (
                         <Button variant="primary" size="sm" onClick={() => navigator("/app/material-issues/new", {
-                            state: { orderId }
+                            state: { orderId, orderCode }
                         })} leftIcon={<IoAdd />}>
                             Solicitar Pieza
                         </Button>

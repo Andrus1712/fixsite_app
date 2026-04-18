@@ -142,6 +142,10 @@ export interface WorkOrder {
     devices: Device[];
     issues: Issue[];
     notes: Notes[];
+
+    // order_type
+    order_type_id: number;
+    order_type_name: string;
 }
 
 export type Order = WorkOrder;

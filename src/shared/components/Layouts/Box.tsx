@@ -52,6 +52,7 @@ const StyledBox = styled.div<{
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    min-width: 0;
     
     margin: ${(p) => getSpacingValue(p.$m, p.theme) ?? "0"};
     ${(p) => p.$mt && `margin-top: ${getSpacingValue(p.$mt, p.theme)};`}

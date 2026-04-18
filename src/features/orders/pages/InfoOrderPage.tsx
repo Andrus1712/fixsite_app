@@ -40,7 +40,8 @@ const InfoOrderPage = () => {
             icon: <FiPackage />,
             content: (
                 <PartsManagement
-                    orderId={code || ""}
+                    orderId={orderData?.id || ""}
+                    orderCode={code || ""}
                     parts={[
                         {
                             id: "1",
@@ -83,7 +84,7 @@ const InfoOrderPage = () => {
     }
 
     return (
-        <Container size="full" center>
+        <Container size="full" center id="infoOrderPage">
             <Tabs
                 tabs={tabs}
                 defaultTab={0}

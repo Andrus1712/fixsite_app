@@ -40,7 +40,7 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     const { state } = useLocation();
-    const orderId = state?.orderId;
+    const orderId = state?.orderId.toString() || null;
 
     useEffect(() => {
         if (isModalOpen && searchInputRef.current) {
@@ -213,7 +213,6 @@ export const MaterialIssueItemsManager = ({ items, articles, onChange, error }: 
                     </div>
                 )}
             </Flex>
-            <pre>{JSON.stringify(items, null, 2)}</pre>
 
             <Modal
                 isOpen={isModalOpen}

@@ -13,12 +13,14 @@ const CreateMaterialIssuePage = () => {
     const { state } = useLocation();
     const storeParams = state?.store;
     const { showError, showSuccess } = useToast();
+    const orderId = state?.orderId.toString() || null;
 
     const { watch, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<MaterialIssueFormData>({
         resolver: zodResolver(materialIssueSchema),
         defaultValues: {
             store_id: storeParams?.id || undefined,
             items: [],
+            destinationReference: orderId,
         }
     });
 
@@ -117,6 +119,8 @@ const CreateMaterialIssuePage = () => {
                             error={errors?.items?.message}
                         />
                     </FormGroup>
+                    <pre>{JSON.stringify(errors, null, 2)}</pre>
+                    <pre>{JSON.stringify(formData, null, 2)}</pre>
                 </Flex>
             </form>
         </Box>

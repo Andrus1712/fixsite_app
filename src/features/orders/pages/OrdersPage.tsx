@@ -68,21 +68,12 @@ function OrdersPage() {
                 },
             },
             {
-                accessorKey: "description",
-                header: "DESCRIPTION",
+                accessorKey: "order_type_name",
+                header: "TIPO DE ORDEN",
             },
             {
-                id: "issue",
-                header: "ISSUE",
-                cell: ({ row }: { row: any }) => {
-                    return (
-                        <ExpandableList
-                            items={row.original.issues || []}
-                            displayField={["issue_type", "issue_name"]}
-                            emptyText="No issues"
-                        />
-                    );
-                },
+                accessorKey: "description",
+                header: "DESCRIPTION",
             },
             {
                 accessorKey: "devices",

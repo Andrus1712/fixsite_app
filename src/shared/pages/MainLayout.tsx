@@ -26,6 +26,8 @@ export const Workspace = styled.div<{ $sidebarOpen: boolean; $isCollapsed: boole
     }};
     position: relative;
     overflow: hidden;
+    flex: 1;
+    min-height: 0;
 
     @media (max-width: ${(props) => props.theme.breakpoints.lg}) {
         grid-template-columns: minmax(0, 1fr);
@@ -48,8 +50,7 @@ export const Container = styled.div`
     padding: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    height: 100%;
+    min-height: 0;
     padding-bottom: 2rem;
 `;
 
@@ -57,7 +58,9 @@ export const Content = styled.main`
     padding: ${(props) => props.theme.layout.contentPaddingY} ${(props) => props.theme.layout.contentPaddingX};
     background-color: ${(props) => props.theme.colors.background};
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
+    min-height: 0;
 `;
 
 export const Footer = styled.footer`

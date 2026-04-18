@@ -2,6 +2,7 @@ import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from "@tan
 import {
     ButtonGroup,
     TableContainer,
+    TableScroll,
     FooterCell,
     FooterContent,
     InfoText,
@@ -72,59 +73,61 @@ export default function SimpleTable<T>({
                 </EmptyMessage>
             ) : (
                 <TableContainer>
-                    <StyledTable>
-                    <TableHead>
-                        {table.getHeaderGroups().map((hg) => (
-                            <tr key={hg.id}>
-                                {hg.headers.map((header) => (
-                                    <TableHeader key={header.id}>
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                    </TableHeader>
-                                ))}
-                            </tr>
-                        ))}
-                    </TableHead>
-                    <tbody>
-                        {table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </tbody>
-                    <tfoot>
-                        {page && total && totalPages && (
-                            <tr>
-                                <FooterCell colSpan={columns.length}>
-                                    <FooterContent>
-                                        <InfoText>
-                                            Mostrando página {page} de {totalPages} • Total: {total} registros
-                                        </InfoText>
-                                        <ButtonGroup>
-                                            <PaginationButton
-                                                type="button"
-                                                disabled={page === 1}
-                                                onClick={() => onPageChange && onPageChange(page - 1)}
-                                            >
-                                                ← Anterior
-                                            </PaginationButton>
-                                            <PaginationButton
-                                                type="button"
-                                                disabled={page === totalPages}
-                                                onClick={() => onPageChange && onPageChange(page + 1)}
-                                            >
-                                                Siguiente →
-                                            </PaginationButton>
-                                        </ButtonGroup>
-                                    </FooterContent>
-                                </FooterCell>
-                            </tr>
-                        )}
-                    </tfoot>
-                </StyledTable>
+                    <TableScroll>
+                        <StyledTable>
+                        <TableHead>
+                            {table.getHeaderGroups().map((hg) => (
+                                <tr key={hg.id}>
+                                    {hg.headers.map((header) => (
+                                        <TableHeader key={header.id}>
+                                            {flexRender(header.column.columnDef.header, header.getContext())}
+                                        </TableHeader>
+                                    ))}
+                                </tr>
+                            ))}
+                        </TableHead>
+                        <tbody>
+                            {table.getRowModel().rows.map((row) => (
+                                <TableRow key={row.id}>
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </tbody>
+                        <tfoot>
+                            {page && total && totalPages && (
+                                <tr>
+                                    <FooterCell colSpan={columns.length}>
+                                        <FooterContent>
+                                            <InfoText>
+                                                Mostrando página {page} de {totalPages} • Total: {total} registros
+                                            </InfoText>
+                                            <ButtonGroup>
+                                                <PaginationButton
+                                                    type="button"
+                                                    disabled={page === 1}
+                                                    onClick={() => onPageChange && onPageChange(page - 1)}
+                                                >
+                                                    ← Anterior
+                                                </PaginationButton>
+                                                <PaginationButton
+                                                    type="button"
+                                                    disabled={page === totalPages}
+                                                    onClick={() => onPageChange && onPageChange(page + 1)}
+                                                >
+                                                    Siguiente →
+                                                </PaginationButton>
+                                            </ButtonGroup>
+                                        </FooterContent>
+                                    </FooterCell>
+                                </tr>
+                            )}
+                        </tfoot>
+                    </StyledTable>
+                    </TableScroll>
                 </TableContainer>
             )}
         </TableWrapper>

@@ -113,6 +113,7 @@ const StyledGrid = styled.div<{
     $justify?: string;
 }>`
     display: grid;
+    min-width: 0;
     
     ${(props) => getResponsiveStyles(props.$columns, props.theme, "grid-template-columns", getColumnsStyleValue)}
     ${(props) => getResponsiveStyles(props.$rows, props.theme, "grid-template-rows", getColumnsStyleValue)}
@@ -122,6 +123,10 @@ const StyledGrid = styled.div<{
     height: ${(props) => (props.$fullHeight ? "100%" : "auto")};
     align-items: ${(props) => props.$align || "stretch"};
     justify-content: ${(props) => props.$justify || "stretch"};
+
+    & > * {
+        min-width: 0;
+    }
 `;
 
 export default function Grid({
