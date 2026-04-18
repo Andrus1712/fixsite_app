@@ -1,5 +1,5 @@
 import React from "react";
-import { Row, Text, Badge, ImageGallery } from "../../../../shared/components";
+import { Row, Text, Badge, ImageGallery, Flex } from "../../../../shared/components";
 import type { Issue } from "../../models/ApiModel";
 
 export interface ReportedFailuresProps {
@@ -11,7 +11,7 @@ export interface ReportedFailuresProps {
 
 const getPriorityColor = (priority: string): any => {
     switch (priority.toLowerCase()) {
-        case "critical": case "high": return "danger";
+        case "crítica": case "high": return "danger";
         case "medium": return "warning";
         case "low": return "info";
         default: return "default";
@@ -20,39 +20,40 @@ const getPriorityColor = (priority: string): any => {
 
 const getTypeColor = (type: string): any => {
     switch (type.toLowerCase()) {
-        case "hardware": return "warning";
-        case "software": case "network": return "info";
+        case "hardware": return "default";
+        case "software": case "network": return "default";
         default: return "default";
     }
 };
 
 /** Contenido interno de una falla para usar dentro del Accordion */
-export const FailureAccordionContent: React.FC<{ failure: Issue }> = ({ failure }) => (
+export const FailureAccordionContent: React.FC<{ failure: Issue; }> = ({ failure }) => (
     <div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            <Badge variant={getTypeColor(failure.failure_categories_name || failure.issue_type_description)}>
-                {failure.failure_categories_name || failure.issue_type_description}
-            </Badge>
             <Badge variant={getPriorityColor(failure.failure_severities_name || failure.issue_priority_description)}>
                 {failure.failure_severities_name || failure.issue_priority_description}
             </Badge>
-            <Badge variant="info">Reportada</Badge>
+            <Badge variant="default">
+                {failure.failure_categories_name || failure.issue_type_description}
+            </Badge>
         </div>
 
-        {failure.failure_codes_description && (
-            <Text variant="body2" color="muted" style={{ lineHeight: 1.6, marginBottom: '12px' }}>
-                {failure.failure_codes_description}
-            </Text>
-        )}
+        <Flex direction="column" gap={"lg"}>
+            {failure.failure_codes_description && (
+                <Text variant="body2" color="black" style={{ lineHeight: 1.6 }}>
+                    {failure.failure_codes_description} - {failure.issue_name}
+                </Text>
+            )}
 
-        {failure.issue_files && failure.issue_files.length > 0 && (
-            <ImageGallery
-                images={failure.issue_files}
-                thumbnailSize={120}
-                modalSize="lg"
-                showCounter={true}
-            />
-        )}
+            {failure.issue_files && failure.issue_files.length > 0 && (
+                <ImageGallery
+                    images={failure.issue_files}
+                    thumbnailSize={120}
+                    modalSize="lg"
+                    showCounter={true}
+                />
+            )}
+        </Flex>
 
         {(failure.issue_reported_date || failure.issue_reported_by) && (
             <Row

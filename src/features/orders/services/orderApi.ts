@@ -2,6 +2,25 @@ import { baseApi } from "../../../shared/store/baseApi";
 import type { StandardResponse } from "../../../shared/types/api";
 import type { WorkOrder } from "../models/OrderModel";
 
+export interface CreateOrderIssueDto {
+    order_id: number;
+    issue_name: string;
+    issue_description: string;
+    issue_type: number;
+    issue_severity: number;
+    issue_code: number;
+    issue_additional_info?: string;
+    issue_steps_to_reproduce?: string[];
+    issue_environment?: string;
+    issue_additional_notes?: string;
+    issue_files?: {
+        filename: string;
+        originalName: string;
+        size: string;
+        url: string;
+    }[];
+}
+
 // export const ordersApi = createApi({
 //     reducerPath: "orderApi",
 //     baseQuery: fetchBaseQuery({ baseUrl: "/" }),
@@ -55,8 +74,16 @@ export const ordersApiExternal = baseApi.injectEndpoints({
             }),
             invalidatesTags: (result, error, arg) => [{ type: 'Order', id: arg.order_code }],
         }),
+        createOrderIssue: builder.mutation<StandardResponse<null>, CreateOrderIssueDto & { order_code: string }>({
+            query: ({ order_code: _omit, ...body }) => ({
+                url: 'orders/issues/create',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: (result, error, arg) => [{ type: 'Order', id: arg.order_code }],
+        }),
     }),
 });
 
 // export const { useGetAllOrdersQuery } = ordersApi;
-export const { useCreateOrderMutation, useUploadImageMutation, useGetAllOrdersQuery, useGetOrdersByCodeQuery, useAssignOrderToTechnicianMutation } = ordersApiExternal;
+export const { useCreateOrderMutation, useUploadImageMutation, useGetAllOrdersQuery, useGetOrdersByCodeQuery, useAssignOrderToTechnicianMutation, useCreateOrderIssueMutation } = ordersApiExternal;

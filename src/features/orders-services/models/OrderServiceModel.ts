@@ -1,6 +1,7 @@
 export interface OrderServiceRequest {
     orderTypeId: number;
-    issueIds: number[];
+    orderServiceIds: number[];
+    orderId: number;
 }
 
 export interface CreateOrderServiceDto {
@@ -10,6 +11,9 @@ export interface CreateOrderServiceDto {
     tiempo_estimado_minutos?: number;
     notas?: string;
     activo?: boolean;
+    /** Código de la orden — usado solo en frontend para invalidar el cache de la orden */
+    order_code?: string;
+    issues_ids: number[];
 }
 
 export interface ServiceIssue {
@@ -36,5 +40,44 @@ export interface AvailableService {
 
 export interface AvailableServicesResponse {
     data: AvailableService[];
+    total: number;
+}
+
+/** Servicio registrado en una orden (respuesta de orders-service/order/:id) */
+export interface OrderService {
+    id: number;
+    order_id: number;
+    service_id: number;
+    codigo: string;
+    descripcion: string;
+    precio_base: string;
+    precio: string;
+    tiempo_estimado_minutos: number;
+    notas: string | null;
+    activo: boolean;
+    createdAt: string;
+    updatedAt: string;
+    service: {
+        id: number;
+        codigo: string;
+        descripcion: string;
+        precio_base: string;
+        activo: boolean;
+        createdAt: string;
+        updatedAt: string;
+    },
+    issues: [{
+        id: number;
+        issue_name: string;
+        issue_description: string;
+        status: string;
+        is_resolved: boolean;
+        failure_code: string;
+        failure_name: string;
+    }];
+}
+
+export interface OrderServicesResponse {
+    data: OrderService[];
     total: number;
 }

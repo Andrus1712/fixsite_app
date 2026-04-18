@@ -56,7 +56,8 @@ export const baseApi = createApi({
         "Category",
         "Article",
         "Store",
-        "Request"
+        "Request",
+        "OrderService"
     ],
 
     // Deshabilitar reintentos automáticos

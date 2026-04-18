@@ -77,12 +77,15 @@ export interface Issue {
     issue_related_orders: number[] | null;
     order_id: number;
     // Campos adicionales para compatibilidad con la nueva respuesta
+    failure_codes_id: number;
     failure_codes_code: string;
     failure_codes_name: string;
     failure_codes_description: string;
     failure_severities_name: string;
     failure_categories_name: string;
     device_types_name: string;
+    status: string;
+    is_resolved: boolean;
 }
 
 export interface DeviceType {

@@ -3,7 +3,6 @@ import styled, { css } from 'styled-components';
 export const AccordionWrapper = styled.div<{ $depth: number }>`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme, $depth }) => $depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg};
-  overflow: hidden;
   width: 100%;
   background: ${({ theme }) => theme.colors.surface};
   ${({ $depth }) => $depth > 0 && css`
@@ -24,6 +23,10 @@ export const AccordionHeader = styled.div<{ $expanded: boolean; $depth: number }
   cursor: pointer;
   transition: background-color 0.2s ease;
   gap: ${({ theme }) => theme.spacing.sm};
+  border-radius: ${({ theme, $depth, $expanded }) =>
+    $expanded
+      ? `${$depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg} ${$depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg} 0 0`
+      : ($depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg)};
 
   &:hover {
     background-color: ${({ theme }) => theme.colors.surfaceHover};
@@ -62,9 +65,11 @@ export const ChevronIcon = styled.span<{ $expanded: boolean }>`
   transform: ${({ $expanded }) => $expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
 `;
 
-export const AccordionBody = styled.div<{ $expanded: boolean }>`
+export const AccordionBody = styled.div<{ $expanded: boolean; $depth: number }>`
   overflow: hidden;
   transition: max-height 0.3s ease, opacity 0.3s ease;
+  border-radius: ${({ theme, $depth }) =>
+    `0 0 ${$depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg} ${$depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg}`};
   ${({ $expanded }) =>
     $expanded
       ? css`max-height: 9999px; opacity: 1;`

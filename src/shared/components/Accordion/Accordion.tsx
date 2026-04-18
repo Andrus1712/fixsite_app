@@ -58,7 +58,7 @@ export const AccordionItem: React.FC<AccordionBaseProps> = ({
                     </ChevronIcon>
                 </HeaderRight>
             </AccordionHeader>
-            <AccordionBody $expanded={expanded}>
+            <AccordionBody $expanded={expanded} $depth={1}>
                 <AccordionContent $depth={1}>{children}</AccordionContent>
             </AccordionBody>
         </AccordionWrapper>
@@ -96,7 +96,7 @@ export const Accordion: React.FC<AccordionBaseProps> = ({
                     </ChevronIcon>
                 </HeaderRight>
             </AccordionHeader>
-            <AccordionBody $expanded={expanded}>
+            <AccordionBody $expanded={expanded} $depth={0}>
                 <AccordionContent $depth={0}>{children}</AccordionContent>
             </AccordionBody>
         </AccordionWrapper>

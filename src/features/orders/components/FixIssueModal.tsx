@@ -12,12 +12,14 @@ const FixIssueModal = ({
     selectedIssues,
     orderTypeId,
     orderId,
+    orderCode,
 }: {
     isOpen: boolean;
     onClose: () => void;
     selectedIssues: Issue[] | null;
     orderTypeId: number;
     orderId: number;
+    orderCode: string;
 }) => {
     const { showSuccess, showError } = useToast();
     const [searchValue, setSearchValue] = useState("");
@@ -29,8 +31,8 @@ const FixIssueModal = ({
 
     useEffect(() => {
         if (!isOpen || !selectedIssues?.length) return;
-        const issueIds = selectedIssues.map((issue) => issue.id);
-        getServicesAvailable({ orderTypeId, issueIds })
+        const orderServiceIds = selectedIssues.map((issue) => issue.failure_codes_id);
+        getServicesAvailable({ orderTypeId, orderServiceIds, orderId })
             .unwrap()
             .then((response) => setAvailableServices(response.data))
             .catch(console.error);
@@ -59,6 +61,8 @@ const FixIssueModal = ({
                         tiempo_estimado_minutos: s.tiempo_override ?? s.tiempoEstimadoMinutos,
                         notas: s.notas,
                         activo: true,
+                        order_code: orderCode,
+                        issues_ids: selectedIssues?.map(i => i.id) ?? []
                     }).unwrap()
                 )
             );

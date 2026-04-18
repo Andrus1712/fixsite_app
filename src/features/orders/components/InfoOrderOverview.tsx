@@ -17,9 +17,9 @@ import {
     SearchInput,
     Table,
     Text,
+    Tooltip,
     useToast,
 } from "../../../shared/components";
-import { ReportedFailures } from "./ReportedFailures";
 import type { Issue, Notes, WorkOrder } from "../models/OrderModel";
 import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -28,14 +28,16 @@ import { IoCheckmark, IoDocumentText, IoPencil, IoPrint, IoTrash } from "react-i
 import { BsNut } from "react-icons/bs";
 import { FaCopy, FaEdit, FaTools, FaTrash } from "react-icons/fa";
 import { useGetAllTechnicniansQuery } from "../../technician/services/TechnicianApi";
-import { useAssignOrderToTechnicianMutation } from "../services/orderApi";
+import { useAssignOrderToTechnicianMutation, useCreateOrderIssueMutation } from "../services/orderApi";
 import { Link } from "react-router";
 import { AiFillTool } from "react-icons/ai";
 import { IoIosCheckmarkCircle, IoMdAdd } from "react-icons/io";
 import FixIssueModal from "./FixIssueModal";
+import { NewIssueModal } from "./NewIssueModal";
 import { Accordion, AccordionItem } from "../../../shared/components";
 import { FailureAccordionContent } from "./ReportedFailures";
 import IconButton from "../../../shared/components/Buttons/IconButton";
+import { OrderServicesAccordion } from "../../orders-services/components/OrderServicesAccordionContent";
 
 interface DropdownMenuOption {
     id: string;
@@ -60,6 +62,24 @@ const getPriorityVariant = (priority: string): any => {
     }
 };
 
+
+const getStatusVariant = (status: string): any => {
+    switch (status?.toLowerCase()) {
+        case 'pending': return 'warning';
+        case 'resolved': return 'success';
+        case 'rejected': return 'danger';
+        default: return 'default';
+    }
+};
+const getStatusTextVariant = (status: string): any => {
+    switch (status?.toLowerCase()) {
+        case 'pending': return 'Pendiente';
+        case 'resolved': return 'Resuelta';
+        case 'rejected': return 'Cancelada';
+        default: return 'NaN';
+    }
+};
+
 export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
     const { showSuccess, showError } = useToast();
     const [showModalSetTechnician, setShowModalSetTechnician] = useState(false);
@@ -70,7 +90,11 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
     // Modal para corregir fallas
     const [showFixIssueModal, setShowFixIssueModal] = useState(false);
 
+    // Modal para nueva falla
+    const [showNewIssueModal, setShowNewIssueModal] = useState(false);
+
     const [assignOrderToTechnician, { isLoading: isAssigning }] = useAssignOrderToTechnicianMutation();
+    const [createOrderIssue, { isLoading: isCreatingIssue }] = useCreateOrderIssueMutation();
 
     const { data: technicians, isLoading } = useGetAllTechnicniansQuery(
         { filter: searchValue, limit: "todos" },
@@ -282,7 +306,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                                     label: 'Acción',
                                     options: [
                                         { id: 'fix_issue', label: 'Corregir fallas', onClick: () => setShowFixIssueModal(true), icon: <AiFillTool /> },
-                                        { id: 'new_issue', label: 'Nueva falla', icon: <IoMdAdd />, onClick: () => { } },
+                                        { id: 'new_issue', label: 'Nueva falla', icon: <IoMdAdd />, onClick: () => setShowNewIssueModal(true) },
                                     ],
                                 }]}
                                 rightIcon={<HiDotsVertical />}
@@ -293,40 +317,24 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                         {reportedFailures?.map((failure) => (
                             <AccordionItem
                                 key={failure.id}
+                                defaultExpanded
                                 title={`${failure.failure_codes_code || failure.id} - ${failure.failure_codes_name || failure.issue_name}`}
-                                badge={{ text: failure.failure_severities_name || failure.issue_priority_description, variant: getPriorityVariant(failure.issue_priority_description) }}
+                                badge={{ text: getStatusTextVariant(failure.status), variant: getStatusVariant(failure.status) }}
                                 headerActions={
-                                    <ButtonGroup>
-                                        <IconButton variant="ghost" color="neutral" size="sm" icon={<FaTools />} onClick={() => hanldeFixOneIssue(failure)} />
-                                        <IconButton variant="ghost" color="info" size="sm" icon={<FaEdit />} />
-                                        <IconButton variant="ghost" color="danger" size="sm" icon={<FaTrash />} />
-                                    </ButtonGroup>
+                                    (!failure.is_resolved && <ButtonGroup>
+                                        <IconButton variant="ghost" color="neutral" size="xs" icon={<FaEdit />} />
+                                        <Tooltip position="bottom" content="Reparar falla">
+                                            <IconButton variant="ghost" color="neutral" size="xs" icon={<FaTools />} onClick={() => hanldeFixOneIssue(failure)} />
+                                        </Tooltip>
+                                        <IconButton variant="ghost" color="danger" size="xs" icon={<FaTrash />} />
+                                    </ButtonGroup>)
                                 }
                             >
                                 <FailureAccordionContent failure={failure} />
                             </AccordionItem>
                         ))}
                     </Accordion>
-                    <Accordion
-                        title="Servicios Efectuados"
-                        badge={{ text: '0', variant: 'default' }}
-                        headerActions={
-                            <DropdownButton
-                                items={[{
-                                    label: 'Acción',
-                                    options: [
-                                        { id: 'new_service', label: 'Nuevo servicio', icon: <IoMdAdd />, onClick: () => { } },
-                                    ],
-                                }]}
-                                rightIcon={<HiDotsVertical />}
-                                size="sm"
-                            />
-                        }
-                    >
-                        <Text variant="body2" color="muted">
-                            No se han registrado servicios efectuados para esta orden.
-                        </Text>
-                    </Accordion>
+                    <OrderServicesAccordion orderId={data.id} orderCode={data.order_code} onNewService={() => { }} />
                 </Column>
                 <div>
                     <Column align="flex-start" justify="flex-start" $gap="md">
@@ -522,7 +530,24 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                 />
             </Modal>
 
-            <FixIssueModal isOpen={showFixIssueModal} onClose={() => { setShowFixIssueModal(false); setSelectedIssueId(null); }} selectedIssues={selectedIssuesId} orderTypeId={data.order_type_id} orderId={data.id} />
-        </div>
+            <FixIssueModal isOpen={showFixIssueModal} onClose={() => { setShowFixIssueModal(false); setSelectedIssueId(null); }} selectedIssues={selectedIssuesId} orderTypeId={data.order_type_id} orderId={data.id} orderCode={data.order_code} />
+
+            <NewIssueModal
+                isOpen={showNewIssueModal}
+                onClose={() => setShowNewIssueModal(false)}
+                orderId={data.id}
+                deviceTypeId={String(data.devices[0].device_type)}
+                onSave={async (issueData) => {
+                    try {
+                        await createOrderIssue({ order_id: data.id, order_code: data.order_code, ...issueData }).unwrap();
+                        showSuccess("Falla agregada correctamente");
+                        setShowNewIssueModal(false);
+                    } catch {
+                        showError("Error al agregar la falla. Intenta nuevamente.", "Error");
+                    }
+                }}
+                isLoading={isCreatingIssue}
+            />
+        </div >
     );
 };

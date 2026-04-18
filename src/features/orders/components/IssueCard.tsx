@@ -34,9 +34,10 @@ interface IssueCardProps {
     index: number;
     onUpdate: (id: number, field: keyof Issue, value: any) => void;
     onRemove: (id: number) => void;
+    deviceTypeId?: string;
 }
 
-export const IssueCard = ({ issue, index, onUpdate, onRemove }: IssueCardProps) => {
+export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" }: IssueCardProps) => {
     const [uploadMultiple] = useUploadMultipleMutation();
     const [codesFilter, setCodesFilter] = useState<string>("");
     const [categoryFilter, setCategoryFilter] = useState<string>("");
@@ -68,7 +69,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove }: IssueCardProps) 
         {
             filter: codesFilter,
             categoryId: issue.issueType ? issue.issueType.toString() : "",
-            deviceTypeId: "",
+            deviceTypeId: deviceTypeId,
             severityId: issue.severity ? issue.severity.toString() : "",
         },
         {
