@@ -52,7 +52,6 @@ export const TableContainer = styled.div`
   border-radius: 12px;
   border: 1px solid ${(p) => p.theme.colors.gray200};
   background: ${(p) => p.theme.colors.white};
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   min-width: 0;

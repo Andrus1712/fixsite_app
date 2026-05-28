@@ -9,6 +9,9 @@ interface Tab {
 interface TabsProps {
     tabs: Tab[];
     defaultTab?: number;
+    onChange?: (index: number) => void;
+    fullWidth?: boolean;
+    variant?: 'primary' | 'segmented';
 }
 
 const Tabs = ({ tabs, defaultTab = 0 }: TabsProps) => {

@@ -48,46 +48,46 @@ export const OrderServicesAccordionContent = ({ orderId, orderCode }: OrderServi
     const columns = useMemo<ColumnDef<OrderService>[]>(
         () => [
             {
-                accessorKey: "service.codigo",
+                accessorKey: "service.code",
                 header: "Código",
                 size: 900,
             },
             {
-                accessorKey: "service.descripcion",
+                accessorKey: "service.description",
                 header: "Descripción",
                 size: 900,
             },
             {
                 header: "Fallas solucionadas",
                 cell: ({ row }) => {
-                    return row.original.issues?.map((falla, index) => (
+                    return row.original.issues?.map((issue, index) => (
                         <Flex key={index} $align="center" style={{ gap: "4px" }}>
                             <Text variant="body2">•</Text>
-                            <Text variant="body2">{falla.failure_code.trim()}</Text>
+                            <Text variant="body2">{issue.failure_code ?? issue.title}</Text>
                         </Flex>
                     ));
                 }
             },
             {
-                accessorKey: "service.precio_base",
+                accessorKey: "service.base_price",
                 header: "Precio Base",
                 size: 130,
-                cell: ({ getValue }) => formatCurrency(getValue<string>()),
+                cell: ({ getValue }) => formatCurrency(getValue<number>()),
             },
             {
-                accessorKey: "precio",
+                accessorKey: "price",
                 header: "Precio Aplicado",
                 size: 140,
                 cell: ({ getValue }) => formatCurrency(getValue<string>()),
             },
             {
-                accessorKey: "tiempo_estimado_minutos",
+                accessorKey: "estimated_minutes",
                 header: "Tiempo Est.",
                 size: 110,
                 cell: ({ getValue }) => formatMinutes(getValue<number>()),
             },
             {
-                accessorKey: "notas",
+                accessorKey: "notes",
                 header: "Notas",
                 size: 900,
                 cell: ({ getValue }) => {
@@ -170,7 +170,7 @@ interface OrderServicesAccordionProps {
     onNewService?: () => void;
 }
 
-export const OrderServicesAccordion = ({ orderId, orderCode, onNewService }: OrderServicesAccordionProps) => {
+export const OrderServicesAccordion = ({ orderId, orderCode }: OrderServicesAccordionProps) => {
     const { data } = useGetOrderServiceQuery({ order_id: orderId });
     const total = data?.total ?? 0;
 

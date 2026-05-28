@@ -22,15 +22,15 @@ export interface TimelineEvent {
     description?: string;
     timestamp: string;
     type:
-        | "created"
-        | "updated"
-        | "assigned"
-        | "status_change"
-        | "comment"
-        | "repair"
-        | "completed"
-        | "cancelled"
-        | "custom";
+    | "created"
+    | "updated"
+    | "assigned"
+    | "status_change"
+    | "comment"
+    | "repair"
+    | "completed"
+    | "cancelled"
+    | "custom";
     status?: "success" | "warning" | "error" | "info" | "default";
     user?: string;
     metadata?: Record<string, any>;

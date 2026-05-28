@@ -1,0 +1,8 @@
+{"timestamp":1779333720411,"command":"kirograph_context","originalTokens":15000,"compressedTokens":496,"strategy":"graph:kirograph_context","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1779334983703,"command":"kirograph_context","originalTokens":15000,"compressedTokens":1023,"strategy":"graph:kirograph_context","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1779334989485,"command":"kirograph_files","originalTokens":2000,"compressedTokens":10,"strategy":"graph:kirograph_files","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1779335242998,"command":"npx tsc --noEmit 2>&1 | head -80","originalTokens":0,"compressedTokens":0,"strategy":"empty","sessionId":"96f700e0074ce676","source":"exec"}
+{"timestamp":1779335256600,"command":"npx tsc --noEmit 2>&1","originalTokens":0,"compressedTokens":0,"strategy":"empty","sessionId":"96f700e0074ce676","source":"exec"}
+{"timestamp":1779651938227,"command":"kirograph_context","originalTokens":15000,"compressedTokens":1470,"strategy":"graph:kirograph_context","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1779651963656,"command":"kirograph_search","originalTokens":3300,"compressedTokens":12,"strategy":"graph:kirograph_search","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1779652268968,"command":"cd /Users/desarrollo/proyectos/react/fixsite_app && npx tsc --noEmit 2>&1 | head -80","originalTokens":0,"compressedTokens":0,"strategy":"empty","sessionId":"96f700e0074ce676","source":"exec"}

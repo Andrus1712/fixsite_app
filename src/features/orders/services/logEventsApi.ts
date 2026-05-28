@@ -14,7 +14,7 @@ export const logEventsApi = baseApi.injectEndpoints({
         }),
         getLogEventsByOrderId: builder.query<LogEvent[], { order_id: string }>({
             query: ({ order_id }) => ({
-                url: `log-events/${order_id}`,
+                url: `log-events/order/${order_id}`,
                 method: "GET",
             }),
             transformResponse: (response: StandardResponse<LogEvent[]>) => response.data,

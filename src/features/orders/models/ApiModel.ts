@@ -1,5 +1,5 @@
 import type { StandardResponse } from "../../../shared/types/api";
-import type { OrderDetail as WorkOrder } from "./OrderModel";
+import type { WorkOrder } from "./OrderModel";
 
 export interface ApiResponse extends StandardResponse<WorkOrder[]> {
     total: number;

@@ -20,7 +20,7 @@ import {
     Tooltip,
     useToast,
 } from "../../../shared/components";
-import type { Issue, Notes, WorkOrder } from "../models/OrderModel";
+import type { OrderIssue, Notes, WorkOrder } from "../models/OrderModel";
 import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { HiDotsVertical } from "react-icons/hi";
@@ -85,7 +85,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
     const [showModalSetTechnician, setShowModalSetTechnician] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | number | null>(null);
-    const [selectedIssuesId, setSelectedIssueId] = useState<Issue[] | null>(null);
+    const [selectedIssuesId, setSelectedIssueId] = useState<OrderIssue[] | null>(null);
 
     // Modal para corregir fallas
     const [showFixIssueModal, setShowFixIssueModal] = useState(false);
@@ -192,7 +192,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
         }
     };
 
-    const hanldeFixOneIssue = (issue: Issue) => {
+    const hanldeFixOneIssue = (issue: OrderIssue) => {
         setSelectedIssueId([issue]);
         setShowFixIssueModal(true);
     };
@@ -318,7 +318,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                             <AccordionItem
                                 key={failure.id}
                                 defaultExpanded
-                                title={`${failure.failure_codes_code || failure.id} - ${failure.failure_codes_name || failure.issue_name}`}
+                                title={`${failure.failure_code || failure.id} - ${failure.failure_code_name || failure.title}`}
                                 badge={{ text: getStatusTextVariant(failure.status), variant: getStatusVariant(failure.status) }}
                                 headerActions={
                                     (!failure.is_resolved && <ButtonGroup>

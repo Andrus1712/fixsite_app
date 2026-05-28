@@ -2,50 +2,32 @@ import { z } from "zod";
 import { FileUploadSchema } from "../../../shared/schemas";
 
 /**
- * Schema para problemas/fallas reportadas
- * @description Valida la información de problemas reportados en el dispositivo
+ * Schema para fallas reportadas en una orden
+ * @description Valida la información de fallas reportadas en el dispositivo
  */
 export const IssueSchema = z.object({
-    issue_name: z.string().optional(),
-    issue_description: z.string().min(1, "La descripción del problema es obligatoria."),
-    issue_type: z
-        .number({ message: "El tipo de problema es obligatorio." })
-        .int()
-        .positive()
-        .nullable(),
-    issue_code: z
-        .number({ message: "El código de problema es obligatorio." })
+    title: z.string().optional(),
+    description: z.string().min(1, "La descripción del problema es obligatoria."),
+    failure_code_id: z
+        .number({ message: "El código de falla es obligatorio." })
         .int()
         .positive(),
-    issue_severity: z
-        .number({ message: "La severidad del problema es obligatoria." })
-        .int()
-        .positive()
-        .nullable(),
-    issue_additional_info: z.string().optional(),
-    issue_steps_to_reproduce: z.array(z.string()).optional(),
-    issue_environment: z.string().optional(),
-    issue_additional_notes: z.string().optional(),
-    issue_files: z.array(FileUploadSchema).optional(),
+    additional_notes: z.string().optional(),
+    steps_to_reproduce: z.array(z.string()).optional(),
+    reported_by: z.string().optional(),
+    attachments: z.array(FileUploadSchema).optional(),
 });
 
-/**
- * Tipo inferido del schema de problema
- */
+/** Tipo inferido del schema de falla */
 export type IssueFormData = z.infer<typeof IssueSchema>;
 
-/**
- * Valores por defecto para un problema
- */
+/** Valores por defecto para una falla */
 export const issueDefaultValues: IssueFormData = {
-    issue_name: "",
-    issue_description: "",
-    issue_type: null,
-    issue_code: 0,
-    issue_severity: null,
-    issue_additional_info: "",
-    issue_steps_to_reproduce: [],
-    issue_environment: "",
-    issue_additional_notes: "",
-    issue_files: [],
+    title: "",
+    description: "",
+    failure_code_id: 0,
+    additional_notes: "",
+    steps_to_reproduce: [],
+    reported_by: "",
+    attachments: [],
 };

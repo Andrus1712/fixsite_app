@@ -1,9 +1,14 @@
 import { baseApi } from "../../../shared/store/baseApi";
-import type { AvailableServicesResponse, CreateOrderServiceDto, OrderServiceRequest, OrderServicesResponse } from "../models/OrderServiceModel";
+import type {
+    AvailableServicesRequest,
+    AvailableServicesResponse,
+    CreateOrderServiceDto,
+    OrderServicesResponse,
+} from "../models/OrderServiceModel";
 
 export const ordersServicesApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        getServicesAvailable: builder.mutation<AvailableServicesResponse, OrderServiceRequest>({
+        getServicesAvailable: builder.mutation<AvailableServicesResponse, AvailableServicesRequest>({
             query: (body) => ({
                 url: `services/available`,
                 method: "POST",
@@ -21,7 +26,7 @@ export const ordersServicesApi = baseApi.injectEndpoints({
                 ...(arg.order_code ? [{ type: "Order" as const, id: arg.order_code }] : []),
             ],
         }),
-        getOrderService: builder.query<OrderServicesResponse, { order_id: number; }>({
+        getOrderService: builder.query<OrderServicesResponse, { order_id: number }>({
             query: ({ order_id }) => ({
                 url: `orders-service/order/${order_id}`,
                 method: "GET",

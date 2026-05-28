@@ -1,4 +1,3 @@
-
 export interface Customer {
     id: number;
     customer_name: string;
@@ -40,53 +39,33 @@ export interface Device {
     device_model_name?: string;
 }
 
-export interface Issue {
+/** Falla reportada en una orden (respuesta del backend) */
+export interface OrderIssue {
     id: number;
-    issue_name: string;
-    issue_description: string;
-    issue_type: number;
-    issue_type_description: string;
-    issue_severity: number;
-    issue_severity_description: 'low' | 'medium' | 'high';
-    issue_reproducibility: number;
-    issue_reproducibility_description: string;
-    issue_frequency: number;
-    issue_frequency_description: string;
-    issue_impact: number;
-    issue_impact_description: string;
-    issue_difficulty: number;
-    issue_difficulty_description: string;
-    issue_priority: number;
-    issue_priority_description: string;
-    issue_urgency: number;
-    issue_urgency_description: string;
-    issue_detection: number;
-    issue_detection_description: string;
-    issue_reported_by: string;
-    issue_reported_date: string;
-    issue_reported_time: string;
-    issue_additional_info: string;
-    issue_files: string[] | null;
-    issue_logs: string[] | null;
-    issue_attachments: string[] | null;
-    issue_steps_to_reproduce: string[] | null;
-    issue_environment: string;
-    issue_additional_notes: string;
-    issue_tags: string[] | null;
-    issue_custom_fields: any | null;
-    issue_related_orders: number[] | null;
-    order_id: number;
-    // Campos adicionales para compatibilidad con la nueva respuesta
-    failure_codes_id: number;
-    failure_codes_code: string;
-    failure_codes_name: string;
-    failure_codes_description: string;
-    failure_severities_name: string;
-    failure_categories_name: string;
-    device_types_name: string;
-    status: string;
+    title: string;
+    description: string;
+    additional_notes?: string;
+    attachments?: string[];
+    steps_to_reproduce?: string[];
+    reported_by?: string;
+    reported_date?: string;
+    // Clasificación (desde FailureCode)
+    failure_code_id?: number;
+    failure_code?: string;
+    failure_code_name?: string;
+    failure_code_description?: string;
+    severity?: string;
+    category?: string;
+    device_type?: string;
+    // Estado
+    status: 'PENDING' | 'RESOLVED' | 'REJECTED';
     is_resolved: boolean;
 }
+
+/** @deprecated Usar OrderIssue en su lugar */
+export type Issue = OrderIssue;
+
+export type OrderIssueStatus = 'PENDING' | 'RESOLVED' | 'REJECTED';
 
 export interface DeviceType {
     id: number;
@@ -107,10 +86,10 @@ export interface DeviceBrand {
 }
 
 export interface Notes {
-    id: number,
-    author: string,
-    timestamp: string,
-    content: string,
+    id: number;
+    author: string;
+    timestamp: string;
+    content: string;
     type: string;
 }
 
@@ -143,7 +122,7 @@ export interface WorkOrder {
     customer: Customer;
     technician: Technician | null;
     devices: Device[];
-    issues: Issue[];
+    issues: OrderIssue[];
     notes: Notes[];
 
     // order_type

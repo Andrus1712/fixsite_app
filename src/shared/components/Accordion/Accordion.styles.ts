@@ -66,14 +66,13 @@ export const ChevronIcon = styled.span<{ $expanded: boolean }>`
 `;
 
 export const AccordionBody = styled.div<{ $expanded: boolean; $depth: number }>`
-  overflow: hidden;
   transition: max-height 0.3s ease, opacity 0.3s ease;
   border-radius: ${({ theme, $depth }) =>
     `0 0 ${$depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg} ${$depth > 0 ? theme.borderRadius.md : theme.borderRadius.lg}`};
   ${({ $expanded }) =>
     $expanded
-      ? css`max-height: 9999px; opacity: 1;`
-      : css`max-height: 0; opacity: 0;`}
+      ? css`max-height: 9999px; opacity: 1; overflow: visible;`
+      : css`max-height: 0; opacity: 0; overflow: hidden;`}
 `;
 
 export const AccordionContent = styled.div<{ $depth: number }>`

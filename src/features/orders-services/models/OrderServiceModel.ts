@@ -1,41 +1,55 @@
-export interface OrderServiceRequest {
+/** Body para POST /services/available */
+export interface AvailableServicesRequest {
     orderTypeId: number;
-    orderServiceIds: number[];
+    orderIssueIds: number[];
     orderId: number;
 }
 
+/** @deprecated Usar AvailableServicesRequest */
+export type OrderServiceRequest = AvailableServicesRequest;
+
+/** Body para POST /orders-service/create */
 export interface CreateOrderServiceDto {
     order_id: number;
     service_id: number;
-    precio?: number;
-    tiempo_estimado_minutos?: number;
-    notas?: string;
-    activo?: boolean;
-    /** Código de la orden — usado solo en frontend para invalidar el cache de la orden */
+    price?: number;
+    estimated_minutes?: number;
+    notes?: string;
+    /** Código de la orden — usado solo en frontend para invalidar el cache */
     order_code?: string;
-    issues_ids: number[];
+    issue_ids: number[];
 }
 
-export interface ServiceIssue {
+/** Falla vinculada a un servicio (respuesta de GET /orders-service/order/:id) */
+export interface OrderServiceIssue {
     id: number;
-    issue_name: string;
-    issue_description: string;
-    issue_type: number;
-    issue_type_description: string;
-    issue_severity: number;
-    issue_severity_description: string;
+    title: string;
+    description: string;
+    status: 'PENDING' | 'RESOLVED' | 'REJECTED';
+    is_resolved: boolean;
+    failure_code: string | null;
+    failure_code_name: string | null;
 }
 
+/** @deprecated Usar OrderServiceIssue */
+export type ServiceIssue = OrderServiceIssue;
+
+/** Item de respuesta de POST /services/available */
 export interface AvailableService {
     service_id: number;
-    codigo: string;
-    descripcion: string;
-    precio_base: string;
+    code: string;
+    description: string;
+    base_price: number;
     order_type_id: number;
-    order_type_nombre: string;
-    precio: string;
-    tiempoEstimadoMinutos: number;
-    issue: ServiceIssue;
+    order_type_name: string;
+    price: number;
+    estimatedMinutes: number;
+    failure_code: {
+        id: number;
+        code: string;
+        name: string;
+        description: string;
+    } | null;
 }
 
 export interface AvailableServicesResponse {
@@ -43,38 +57,29 @@ export interface AvailableServicesResponse {
     total: number;
 }
 
-/** Servicio registrado en una orden (respuesta de orders-service/order/:id) */
+/** Servicio del catálogo (respuesta de GET /services) */
+export interface Service {
+    id: number;
+    code: string;
+    description: string;
+    base_price: number;
+    is_active: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+/** Servicio registrado en una orden (respuesta de GET /orders-service/order/:id) */
 export interface OrderService {
     id: number;
     order_id: number;
     service_id: number;
-    codigo: string;
-    descripcion: string;
-    precio_base: string;
-    precio: string;
-    tiempo_estimado_minutos: number;
-    notas: string | null;
-    activo: boolean;
+    price: string;
+    estimated_minutes: number;
+    notes: string | null;
     createdAt: string;
     updatedAt: string;
-    service: {
-        id: number;
-        codigo: string;
-        descripcion: string;
-        precio_base: string;
-        activo: boolean;
-        createdAt: string;
-        updatedAt: string;
-    },
-    issues: [{
-        id: number;
-        issue_name: string;
-        issue_description: string;
-        status: string;
-        is_resolved: boolean;
-        failure_code: string;
-        failure_name: string;
-    }];
+    service: Service;
+    issues: OrderServiceIssue[];
 }
 
 export interface OrderServicesResponse {

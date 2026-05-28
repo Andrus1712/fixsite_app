@@ -22,22 +22,36 @@ import type { ColumnDef } from "@tanstack/react-table";
 import DataTable from "../../../../shared/components/Tables/Table";
 import { useNavigate } from "react-router";
 
+// export interface RepairPart {
+//     id: string;
+//     name: string;
+//     description: string;
+//     partNumber: string;
+//     quantity: number;
+//     estimatedCost: number;
+//     actualCost?: number;
+//     supplier: string;
+//     status: "requested" | "approved" | "ordered" | "received" | "installed" | "rejected";
+//     requestedBy: string;
+//     requestedDate: string;
+//     approvedBy?: string;
+//     approvedDate?: string;
+//     notes?: string;
+//     category: "screen" | "battery" | "board" | "camera" | "other";
+// }
+
 export interface RepairPart {
-    id: string;
-    name: string;
-    description: string;
-    partNumber: string;
+    id: number;
+    article_id: number;
+    article_name: string;
+    article_sku: string;
+    article_brand_name: string;
+    article_category_name: string;
+    article_unit_measurement: string;
     quantity: number;
-    estimatedCost: number;
-    actualCost?: number;
-    supplier: string;
-    status: "requested" | "approved" | "ordered" | "received" | "installed" | "rejected";
-    requestedBy: string;
-    requestedDate: string;
-    approvedBy?: string;
-    approvedDate?: string;
-    notes?: string;
-    category: "screen" | "battery" | "board" | "camera" | "other";
+    order_id: number;
+    issues_id: number;
+    status: string;
 }
 
 export interface PartsManagementProps {
@@ -127,7 +141,7 @@ const getStatusText = (status: RepairPart["status"]): string => {
     }
 };
 
-const getCategoryIcon = (category: RepairPart["category"]): React.ReactNode => {
+const getCategoryIcon = (category: RepairPart["article_category_name"]): React.ReactNode => {
     switch (category) {
         case "screen":
             return <IoHardwareChip size={16} />;
@@ -168,24 +182,24 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
         quantity: 1,
         estimatedCost: 0,
         supplier: "",
-        category: "other" as RepairPart["category"],
+        category: "other" as RepairPart["article_category_name"],
         notes: "",
     });
 
     const columns = useMemo<ColumnDef<RepairPart>[]>(
         () => [
             {
-                accessorKey: "name",
+                accessorKey: "article_name",
                 header: "Pieza",
                 cell: ({ row }) => (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {getCategoryIcon(row.original.category)}
+                        {getCategoryIcon(row.original.article_category_name)}
                         <div>
                             <Text variant="body2" weight="semibold">
-                                {row.original.name}
+                                {row.original.article_name}
                             </Text>
                             <Text variant="caption" color="muted">
-                                #{row.original.partNumber}
+                                #{row.original.article_sku}
                             </Text>
                         </div>
                     </div>
@@ -199,18 +213,18 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
             {
                 accessorKey: "estimatedCost",
                 header: "Costo Est.",
-                cell: ({ row }) => <Text variant="body2">${row.original.estimatedCost.toFixed(2)}</Text>,
+                cell: ({ row }) => <Text variant="body2">${row.original.quantity.toFixed(2)}</Text>,
             },
             {
                 accessorKey: "supplier",
                 header: "Proveedor",
-                cell: ({ row }) => <Text variant="body2">{row.original.supplier}</Text>,
+                cell: ({ row }) => <Text variant="body2">{row.original.quantity}</Text>,
             },
             {
                 accessorKey: "status",
                 header: "Estado",
                 cell: ({ row }) => (
-                    <Badge variant={getStatusColor(row.original.status)}>{getStatusText(row.original.status)}</Badge>
+                    <Badge variant={getStatusColor(row.original.article_brand_name)}>{getStatusText(row.original.article_brand_name)}</Badge>
                 ),
             },
             {
@@ -218,67 +232,24 @@ export const PartsManagement: React.FC<PartsManagementProps> = ({
                 header: "Fecha",
                 cell: ({ row }) => (
                     <Text variant="caption" color="muted">
-                        {new Date(row.original.requestedDate).toLocaleDateString("es-ES")}
+                        {new Date(row.original.article_brand_name).toLocaleDateString("es-ES")}
                     </Text>
                 ),
             },
-            {
-                id: "actions",
-                header: "Acciones",
-                cell: ({ row }) => {
-                    const part = row.original;
-                    const actions = [];
-
-                    if (canApproveParts && part.status === "requested") {
-                        actions.push(
-                            {
-                                id: "approve",
-                                label: "Aprobar",
-                                icon: <IoCheckmark />,
-                                onClick: () => onApprovePart?.(part.id),
-                            },
-                            {
-                                id: "reject",
-                                label: "Rechazar",
-                                icon: <IoClose />,
-                                onClick: () => {
-                                    setSelectedPart(part);
-                                    setShowRejectModal(true);
-                                },
-                            }
-                        );
-                    }
-
-                    actions.push({
-                        id: "view",
-                        label: "Ver detalles",
-                        icon: <IoEye />,
-                        onClick: () => setSelectedPart(part),
-                    });
-
-                    return (
-                        <DropdownButton
-                            items={[{ label: "Acciones", options: actions }]}
-                            rightIcon={<HiDotsVertical />}
-                            size="sm"
-                        />
-                    );
-                },
-            },
         ],
-        [canApproveParts, onApprovePart]
+        [navigator]
     );
 
-    const stats = useMemo(() => {
-        const total = parts.length;
-        const requested = parts.filter((p) => p.status === "requested").length;
-        const approved = parts.filter((p) => p.status === "approved").length;
-        const received = parts.filter((p) => p.status === "received").length;
-        const installed = parts.filter((p) => p.status === "installed").length;
-        const totalCost = parts.reduce((sum, p) => sum + p.estimatedCost, 0);
+    // const stats = useMemo(() => {
+    //     const total = parts.length;
+    //     const requested = parts.filter((p) => p.status === "requested").length;
+    //     const approved = parts.filter((p) => p.status === "approved").length;
+    //     const received = parts.filter((p) => p.status === "received").length;
+    //     const installed = parts.filter((p) => p.status === "installed").length;
+    //     const totalCost = parts.reduce((sum, p) => sum + p.estimatedCost, 0);
 
-        return { total, requested, approved, received, installed, totalCost };
-    }, [parts]);
+    //     return { total, requested, approved, received, installed, totalCost };
+    // }, [parts]);
 
     // const handleRequestPart = () => {
     //     if (onRequestPart) {

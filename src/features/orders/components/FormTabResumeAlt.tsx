@@ -145,24 +145,13 @@ export const FormTabResumeAlt = ({ formData }: FormProps) => {
                                 {formData.issues.map((issue, index) => (
                                     <Row key={index} $justify="space-between" $align="start" style={{ padding: '12px', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
                                         <Column gap="xs" style={{ flex: 1 }}>
-                                            <Text weight="semibold">#{index + 1} - {getIssueTypeLabel(issue.issue_type)}</Text>
-                                            {issue.issue_description && (
+                                            <Text weight="semibold">#{index + 1} - {issue.title || "Sin título"}</Text>
+                                            {issue.description && (
                                                 <Text variant="body2" color="secondary">
-                                                    {issue.issue_description}
+                                                    {issue.description}
                                                 </Text>
                                             )}
                                         </Column>
-                                        <span style={{ 
-                                            padding: '4px 12px', 
-                                            borderRadius: '12px', 
-                                            fontSize: '12px', 
-                                            fontWeight: '600',
-                                            backgroundColor: issue.issue_severity === 1 ? '#fee2e2' : issue.issue_severity === 2 ? '#fef3c7' : '#f3f4f6',
-                                            color: issue.issue_severity === 1 ? '#dc2626' : issue.issue_severity === 2 ? '#d97706' : '#6b7280',
-                                            whiteSpace: 'nowrap'
-                                        }}>
-                                            {getSeverityLabel(issue.issue_severity)}
-                                        </span>
                                     </Row>
                                 ))}
                             </Column>

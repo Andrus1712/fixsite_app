@@ -45,6 +45,11 @@ const MaterialIssuesApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Request"],
         }),
+        getItemsByDestRef: builder.query<any, { destinationReference: string; }>({
+            query: ({ destinationReference }) =>
+                `/material-issues/items?destinationReference=${destinationReference}`,
+            providesTags: ["Request"],
+        }),
     }),
 });
 
@@ -54,4 +59,5 @@ export const {
     useApproveMaterialIssueMutation,
     useRejectMaterialIssueMutation,
     useCancelMaterialIssueMutation,
+    useGetItemsByDestRefQuery,
 } = MaterialIssuesApi;

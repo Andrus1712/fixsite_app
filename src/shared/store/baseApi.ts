@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { logout } from '../../features/auth/store/authSlice';
 
-const baseQuery = fetchBaseQuery({
+const rawBaseQuery = fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
     credentials: 'include', // Incluir cookies automáticamente
 });
@@ -12,7 +12,26 @@ const baseQueryWithReauth: BaseQueryFn<
     unknown,
     FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-    const result = await baseQuery(args, api, extraOptions);
+    // Inject X-Tenant-ID header from the active tenant in the Redux store
+    const state = api.getState() as { auth: { currentTenant: { id: number } | null } };
+    const tenantId = state.auth?.currentTenant?.id;
+
+    let modifiedArgs = args;
+    if (tenantId) {
+        if (typeof args === 'string') {
+            modifiedArgs = { url: args, headers: { 'X-Tenant-ID': String(tenantId) } };
+        } else {
+            modifiedArgs = {
+                ...args,
+                headers: {
+                    ...(args as FetchArgs).headers,
+                    'X-Tenant-ID': String(tenantId),
+                },
+            };
+        }
+    }
+
+    const result = await rawBaseQuery(modifiedArgs, api, extraOptions);
 
     if (result.error) {
         // Error de conexión (ERR_CONNECTION_REFUSED)
@@ -23,7 +42,7 @@ const baseQueryWithReauth: BaseQueryFn<
 
         // Token expirado o inválido
         if (result.error.status === 401) {
-            await baseQuery({ url: 'auth/logout', method: 'POST' }, api, extraOptions);
+            await rawBaseQuery({ url: 'auth/logout', method: 'POST' }, api, extraOptions);
             api.dispatch(logout());
             window.location.href = '/login';
         }
@@ -57,7 +76,10 @@ export const baseApi = createApi({
         "Article",
         "Store",
         "Request",
-        "OrderService"
+        "OrderService",
+        "Service",
+        "FailureCode",
+        "ServiceOrderType",
     ],
 
     // Deshabilitar reintentos automáticos

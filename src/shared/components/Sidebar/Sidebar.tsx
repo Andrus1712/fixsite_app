@@ -9,19 +9,25 @@ import {
     IconWrapper,
 } from "./SidebarStyles";
 import { useAppSelector } from "../../store";
-import { FaBoxOpen, FaChartBar, FaCog, FaMicrochip, FaPeopleCarry, FaSignOutAlt, FaTags, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
+import { FaBoxOpen, FaChartBar, FaCog, FaRegBookmark, FaSignOutAlt, FaTags, FaTools, FaUsers, FaUsersCog } from "react-icons/fa";
 
 import TenantSelector from "../TenantSelector";
 import { Tooltip } from "../Tooltip";
 import { useLocation } from "react-router";
 import { GrConfigure } from "react-icons/gr";
-import { HiMiniBars3BottomLeft } from "react-icons/hi2";
+import { HiMiniBars3BottomLeft, HiOutlineWrench } from "react-icons/hi2";
 import { IoKey } from "react-icons/io5";
 import { MdOutlineWebAsset } from "react-icons/md";
 import { IoIosArrowDown } from "react-icons/io";
 import { useTheme } from "styled-components";
 import { FaScrewdriverWrench } from "react-icons/fa6";
-import { TbAwardFilled } from "react-icons/tb";
+import { TbAwardFilled, TbFileAlert } from "react-icons/tb";
+import { LuDatabase, LuSlidersHorizontal } from "react-icons/lu";
+import { GoPackage } from "react-icons/go";
+import { BiLayer } from "react-icons/bi";
+import { FiShoppingBag } from "react-icons/fi";
+import { TfiPackage } from "react-icons/tfi";
+import { BsPersonLinesFill } from "react-icons/bs";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -43,10 +49,18 @@ const iconMap: Record<string, JSX.Element> = {
     GrConfigure: <GrConfigure />,
     IoIosArrowDown: <IoIosArrowDown />,
     FaScrewdriverWrench: <FaScrewdriverWrench />,
-    FaPeopleCarry: <FaPeopleCarry />,
-    FaMicrochip: <FaMicrochip />,
+    BsPersonLinesFill: <BsPersonLinesFill />,
+    GoPackage: <GoPackage />,
     FaTags: <FaTags />,
     TbAwardFilled: <TbAwardFilled />,
+    TbFileAlert: <TbFileAlert />,
+    LuSlidersHorizontal: <LuSlidersHorizontal />,
+    HiOutlineWrench: <HiOutlineWrench />,
+    BiLayer: <BiLayer />,
+    FiShoppingBag: <FiShoppingBag />,
+    TfiPackage: <TfiPackage />,
+    FaRegBookmark: <FaRegBookmark />,
+    LuDatabase: <LuDatabase />
 };
 
 function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {

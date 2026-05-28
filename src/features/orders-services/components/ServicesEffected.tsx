@@ -9,26 +9,26 @@ import { IoTrash } from 'react-icons/io5';
 
 const addServiceSchema = z.object({
     service_id: z.number({ required_error: 'Selecciona un servicio' }),
-    precio: z
+    price: z
         .number({ invalid_type_error: 'Debe ser un número' })
         .positive('Debe ser mayor a 0')
         .optional()
         .or(z.nan().transform(() => undefined)),
-    tiempo_estimado_minutos: z
+    estimated_minutes: z
         .number({ invalid_type_error: 'Debe ser un entero' })
         .int()
         .positive('Debe ser mayor a 0')
         .optional()
         .or(z.nan().transform(() => undefined)),
-    notas: z.string().optional(),
+    notes: z.string().optional(),
 });
 
 type AddServiceForm = z.infer<typeof addServiceSchema>;
 
 export interface SelectedService extends AvailableService {
-    precio_override?: number;
-    tiempo_override?: number;
-    notas?: string;
+    price_override?: number;
+    estimated_minutes_override?: number;
+    notes?: string;
 }
 
 interface ServicesEffectedProps {
@@ -58,7 +58,7 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
         () =>
             services
                 .filter((s) => !selected.some((sel) => sel.service_id === s.service_id))
-                .map((s) => ({ value: s.service_id, label: `${s.codigo} - ${s.descripcion}` })),
+                .map((s) => ({ value: s.service_id, label: `${s.code} - ${s.description}` })),
         [services, selected]
     );
 
@@ -67,9 +67,9 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
         if (!service) return;
         onAdd({
             ...service,
-            precio_override: data.precio,
-            tiempo_override: data.tiempo_estimado_minutos,
-            notas: data.notas,
+            price_override: data.price,
+            estimated_minutes_override: data.estimated_minutes,
+            notes: data.notes,
         });
         reset();
     };
@@ -77,29 +77,29 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
     const columns = useMemo<ColumnDef<SelectedService>[]>(
         () => [
             { accessorKey: 'service_id', header: 'ID', size: 60 },
-            { accessorKey: 'codigo', header: 'Código', size: 110 },
-            { accessorKey: 'descripcion', header: 'Descripción' },
+            { accessorKey: 'code', header: 'Código', size: 110 },
+            { accessorKey: 'description', header: 'Descripción' },
             {
-                accessorKey: 'precio_base',
+                accessorKey: 'base_price',
                 header: 'Precio Base',
                 size: 110,
-                cell: ({ getValue }) => `$${getValue<string>()}`,
+                cell: ({ getValue }) => `$${getValue<number>()}`,
             },
             {
-                accessorKey: 'precio_override',
+                accessorKey: 'price_override',
                 header: 'Precio',
                 size: 100,
                 cell: ({ row }) =>
-                    row.original.precio_override != null
-                        ? `$${row.original.precio_override}`
-                        : `$${row.original.precio}`,
+                    row.original.price_override != null
+                        ? `$${row.original.price_override}`
+                        : `$${row.original.price}`,
             },
             {
-                accessorKey: 'tiempo_override',
+                accessorKey: 'estimated_minutes_override',
                 header: 'Tiempo (min)',
                 size: 110,
                 cell: ({ row }) =>
-                    row.original.tiempo_override ?? row.original.tiempoEstimadoMinutos,
+                    row.original.estimated_minutes_override ?? row.original.estimatedMinutes,
             },
             {
                 id: 'accion',
@@ -137,8 +137,8 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
                                     field.onChange(val);
                                     const svc = services.find((s) => s.service_id === val);
                                     if (svc) {
-                                        setValue('precio', Number(svc.precio));
-                                        setValue('tiempo_estimado_minutos', svc.tiempoEstimadoMinutos);
+                                        setValue('price', svc.price);
+                                        setValue('estimated_minutes', svc.estimatedMinutes);
                                     }
                                 }}
                                 onSearch={onSearch}
@@ -153,7 +153,7 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
                         <>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <Controller
-                                    name="precio"
+                                    name="price"
                                     control={control}
                                     render={({ field }) => (
                                         <Input
@@ -162,13 +162,13 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
                                             placeholder="Precio del servicio"
                                             value={field.value ?? ''}
                                             onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                            error={errors.precio?.message}
+                                            error={errors.price?.message}
                                             fullWidth
                                         />
                                     )}
                                 />
                                 <Controller
-                                    name="tiempo_estimado_minutos"
+                                    name="estimated_minutes"
                                     control={control}
                                     render={({ field }) => (
                                         <Input
@@ -177,14 +177,14 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
                                             placeholder="Minutos"
                                             value={field.value ?? ''}
                                             onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                            error={errors.tiempo_estimado_minutos?.message}
+                                            error={errors.estimated_minutes?.message}
                                             fullWidth
                                         />
                                     )}
                                 />
                             </div>
                             <Controller
-                                name="notas"
+                                name="notes"
                                 control={control}
                                 render={({ field }) => (
                                     <TextArea
@@ -192,7 +192,7 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
                                         placeholder="Observaciones del servicio..."
                                         rows={2}
                                         {...field}
-                                        error={errors.notas?.message}
+                                        error={errors.notes?.message}
                                     />
                                 )}
                             />

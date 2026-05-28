@@ -36,16 +36,13 @@ export default function NewOrderpage() {
             },
             issues: [
                 {
-                    issue_name: "Problema de ejemplo",
-                    issue_description: "dsdasd",
-                    issue_type: 1,
-                    issue_severity: 1,
-                    issue_code: 3,
-                    issue_additional_info: "",
-                    issue_steps_to_reproduce: ["sadsadassadsa"],
-                    issue_environment: "",
-                    issue_additional_notes: "",
-                    issue_files: [
+                    title: "Problema de ejemplo",
+                    description: "dsdasd",
+                    failure_code_id: 3,
+                    additional_notes: "",
+                    steps_to_reproduce: ["sadsadassadsa"],
+                    reported_by: "",
+                    attachments: [
                         {
                             filename: "1768344587980-466906072.jpg",
                             originalName: "1271131.jpg",

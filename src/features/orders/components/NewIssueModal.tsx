@@ -6,7 +6,7 @@ import type { CreateOrderIssueDto } from "../services/orderApi";
 
 type NewIssuePayload = Omit<CreateOrderIssueDto, "order_id">;
 
-interface Issue {
+interface IssueFormState {
     id: number;
     issueType: number | null;
     severity: number | null;
@@ -26,7 +26,7 @@ interface NewIssueModalProps {
     isLoading?: boolean;
 }
 
-const emptyIssue: Issue = {
+const emptyIssue: IssueFormState = {
     id: 1,
     issueType: null,
     severity: null,
@@ -38,29 +38,25 @@ const emptyIssue: Issue = {
 };
 
 export const NewIssueModal = ({ isOpen, onClose, onSave, isLoading, deviceTypeId }: NewIssueModalProps) => {
-    const [issue, setIssue] = useState<Issue>(emptyIssue);
+    const [issue, setIssue] = useState<IssueFormState>(emptyIssue);
 
-    // IssueCard requires a FormProvider context
     const methods = useForm({ defaultValues: { issues: [] } });
 
-    const handleUpdate = (id: number, field: keyof Issue, value: any) => {
+    const handleUpdate = (id: number, field: keyof IssueFormState, value: unknown) => {
         setIssue((prev) => ({ ...prev, [field]: value }));
     };
 
-    // No-op: single issue can't be removed from this modal
-    const handleRemove = () => {};
+    const handleRemove = () => { };
 
     const handleSave = async () => {
-        if (!issue.issueType || !issue.severity || !issue.code) return;
+        if (!issue.code || !issue.description) return;
 
         const issueData: NewIssuePayload = {
-            issue_name: `Falla #${issue.id}`,
-            issue_description: issue.description,
-            issue_type: issue.issueType,
-            issue_severity: issue.severity,
-            issue_code: Number(issue.code),
-            issue_steps_to_reproduce: issue.steps ? [issue.steps] : [],
-            issue_files: issue.uploadedFiles.map((f) => ({ ...f, size: String(f.size) })),
+            title: `Falla #${issue.id}`,
+            description: issue.description,
+            failure_code_id: Number(issue.code),
+            steps_to_reproduce: issue.steps ? [issue.steps] : [],
+            attachments: issue.uploadedFiles.map((f) => ({ ...f, size: String(f.size) })),
         };
         await onSave(issueData);
     };
@@ -85,7 +81,7 @@ export const NewIssueModal = ({ isOpen, onClose, onSave, isLoading, deviceTypeId
                         variant="primary"
                         onClick={handleSave}
                         loading={isLoading}
-                        disabled={!issue.issueType || !issue.severity || !issue.code || !issue.description}
+                        disabled={!issue.code || !issue.description}
                     >
                         Guardar Falla
                     </Button>

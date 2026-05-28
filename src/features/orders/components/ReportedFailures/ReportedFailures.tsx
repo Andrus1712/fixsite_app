@@ -1,84 +1,95 @@
 import React from "react";
 import { Row, Text, Badge, ImageGallery, Flex } from "../../../../shared/components";
-import type { Issue } from "../../models/ApiModel";
+import type { OrderIssue } from "../../models/OrderModel";
 
 export interface ReportedFailuresProps {
-    failures: Issue[];
-    onEditFailure?: (failure: Issue) => void;
-    onConfigureFailure?: (failure: Issue) => void;
+    failures: OrderIssue[];
     className?: string;
 }
 
-const getPriorityColor = (priority: string): any => {
-    switch (priority.toLowerCase()) {
-        case "crítica": case "high": return "danger";
-        case "medium": return "warning";
-        case "low": return "info";
-        default: return "default";
-    }
-};
-
-const getTypeColor = (type: string): any => {
-    switch (type.toLowerCase()) {
-        case "hardware": return "default";
-        case "software": case "network": return "default";
-        default: return "default";
+const getSeverityVariant = (severity: string | undefined): "danger" | "warning" | "info" | "default" => {
+    if (!severity) return "default";
+    switch (severity.toLowerCase()) {
+        case "crítica":
+        case "critica":
+            return "danger";
+        case "alta":
+            return "warning";
+        case "media":
+            return "info";
+        default:
+            return "default";
     }
 };
 
 /** Contenido interno de una falla para usar dentro del Accordion */
-export const FailureAccordionContent: React.FC<{ failure: Issue; }> = ({ failure }) => (
-    <div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-            <Badge variant={getPriorityColor(failure.failure_severities_name || failure.issue_priority_description)}>
-                {failure.failure_severities_name || failure.issue_priority_description}
-            </Badge>
-            <Badge variant="default">
-                {failure.failure_categories_name || failure.issue_type_description}
-            </Badge>
+export const FailureAccordionContent: React.FC<{ failure: OrderIssue }> = ({ failure }) => {
+    const attachment: string[] = (failure.attachments ?? [])
+        .map((att) => {
+            const image: Partial<{ url: string }> = JSON.parse(att);
+            return image.url;
+        })
+        .filter((url): url is string => !!url);
+
+    return (
+        <div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                {failure.severity && (
+                    <Badge variant={getSeverityVariant(failure.severity)}>
+                        {failure.severity}
+                    </Badge>
+                )}
+                {failure.category && (
+                    <Badge variant="default">
+                        {failure.category}
+                    </Badge>
+                )}
+            </div>
+
+            <Flex direction="column" gap={"lg"}>
+                {failure.failure_code_description && (
+                    <Text variant="body2" color="black" style={{ lineHeight: 1.6 }}>
+                        {failure.failure_code_description} - {failure.title}
+                    </Text>
+                )}
+
+                {failure.attachments && failure.attachments.length > 0 &&
+                    (
+                        <ImageGallery
+                            images={attachment}
+                            thumbnailSize={120}
+                            modalSize="lg"
+                            showCounter={true}
+                        />
+                    )
+                }
+            </Flex>
+
+            {(failure.reported_date || failure.reported_by) && (
+                <Row
+                    $align="center"
+                    $justify="space-between"
+                    $wrap
+                    style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e5e7eb' }}
+                >
+                    {failure.reported_date && (
+                        <Text variant="caption" color="muted">
+                            Reportado el: {failure.reported_date}
+                        </Text>
+                    )}
+                    {failure.reported_by && (
+                        <Text variant="caption" color="muted">
+                            Por: {failure.reported_by}
+                        </Text>
+                    )}
+                </Row>
+            )}
         </div>
-
-        <Flex direction="column" gap={"lg"}>
-            {failure.failure_codes_description && (
-                <Text variant="body2" color="black" style={{ lineHeight: 1.6 }}>
-                    {failure.failure_codes_description} - {failure.issue_name}
-                </Text>
-            )}
-
-            {failure.issue_files && failure.issue_files.length > 0 && (
-                <ImageGallery
-                    images={failure.issue_files}
-                    thumbnailSize={120}
-                    modalSize="lg"
-                    showCounter={true}
-                />
-            )}
-        </Flex>
-
-        {(failure.issue_reported_date || failure.issue_reported_by) && (
-            <Row
-                $align="center"
-                $justify="space-between"
-                $wrap
-                style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e5e7eb' }}
-            >
-                {failure.issue_reported_date && (
-                    <Text variant="caption" color="muted">
-                        Reportado el: {failure.issue_reported_date} {failure.issue_reported_time}
-                    </Text>
-                )}
-                {failure.issue_reported_by && (
-                    <Text variant="caption" color="muted">
-                        Por: {failure.issue_reported_by}
-                    </Text>
-                )}
-            </Row>
-        )}
-    </div>
-);
+    )
+};
 
 /** @deprecated Usar Accordion + FailureAccordionContent directamente */
-export const ReportedFailures: React.FC<ReportedFailuresProps> = ({ failures, onEditFailure, onConfigureFailure, className }) => (
+export const ReportedFailures: React.FC<ReportedFailuresProps> = ({ failures, className }) => (
     <div className={className}>
         {failures?.map((failure) => (
             <FailureAccordionContent key={failure.id} failure={failure} />

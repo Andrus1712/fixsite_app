@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Badge, Button, Flex, FormGroup, Modal, useToast } from "../../../shared/components";
-import type { Issue } from "../models/ApiModel";
+import type { OrderIssue } from "../models/OrderModel";
 import { useGetServicesAvailableMutation, useCreateOrderServiceMutation } from "../../orders-services/services/OrdersServicesApi";
 import { ServicesEffected } from "../../orders-services/components/ServicesEffected";
 import type { SelectedService } from "../../orders-services/components/ServicesEffected";
@@ -16,13 +16,12 @@ const FixIssueModal = ({
 }: {
     isOpen: boolean;
     onClose: () => void;
-    selectedIssues: Issue[] | null;
+    selectedIssues: OrderIssue[] | null;
     orderTypeId: number;
     orderId: number;
     orderCode: string;
 }) => {
     const { showSuccess, showError } = useToast();
-    const [searchValue, setSearchValue] = useState("");
     const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
     const [availableServices, setAvailableServices] = useState<AvailableService[]>([]);
 
@@ -31,12 +30,12 @@ const FixIssueModal = ({
 
     useEffect(() => {
         if (!isOpen || !selectedIssues?.length) return;
-        const orderServiceIds = selectedIssues.map((issue) => issue.failure_codes_id);
-        getServicesAvailable({ orderTypeId, orderServiceIds, orderId })
+        const orderIssueIds = selectedIssues.map((issue) => issue.id);
+        getServicesAvailable({ orderTypeId, orderIssueIds, orderId })
             .unwrap()
             .then((response) => setAvailableServices(response.data))
             .catch(console.error);
-    }, [isOpen, selectedIssues, orderTypeId, getServicesAvailable]);
+    }, [isOpen, selectedIssues, orderTypeId, getServicesAvailable, orderId]);
 
     const handleAdd = (service: SelectedService) => {
         setSelectedServices((prev) => [...prev, service]);
@@ -57,12 +56,11 @@ const FixIssueModal = ({
                     createOrderService({
                         order_id: orderId,
                         service_id: s.service_id,
-                        precio: s.precio_override ?? Number(s.precio),
-                        tiempo_estimado_minutos: s.tiempo_override ?? s.tiempoEstimadoMinutos,
-                        notas: s.notas,
-                        activo: true,
+                        price: s.price_override ?? s.price,
+                        estimated_minutes: s.estimated_minutes_override ?? s.estimatedMinutes,
+                        notes: s.notes,
                         order_code: orderCode,
-                        issues_ids: selectedIssues?.map(i => i.id) ?? []
+                        issue_ids: selectedIssues?.map((i) => i.id) ?? [],
                     }).unwrap()
                 )
             );
@@ -106,7 +104,7 @@ const FixIssueModal = ({
                     <Flex $wrap $gap="xs">
                         {selectedIssues?.map((issue) => (
                             <Badge variant="outline" key={issue.id}>
-                                {issue.failure_codes_code} - {issue.failure_codes_name}
+                                {issue.failure_code} - {issue.failure_code_name}
                             </Badge>
                         ))}
                     </Flex>
@@ -116,7 +114,7 @@ const FixIssueModal = ({
                         services={availableServices}
                         selected={selectedServices}
                         isLoading={isLoading}
-                        onSearch={setSearchValue}
+                        onSearch={() => { }}
                         onAdd={handleAdd}
                         onRemove={handleRemove}
                     />

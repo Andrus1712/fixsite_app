@@ -64,6 +64,14 @@ const CreateMaterialIssuePage = lazy(() => import("../../features/inventory/move
 // inventory-adjustments
 const CreateInventoryAdjustmentPage = lazy(() => import("../../features/inventory/movement/pages/CreateInventoryAdjustmentPage"));
 
+// Services catalog
+const ServicesPage = lazy(() => import("../../features/services-catalog/pages/ServicesPage"));
+const ServiceOrderTypesPage = lazy(() => import("../../features/services-catalog/pages/ServiceOrderTypesPage"));
+const CreateEditServiceOrderTypePage = lazy(() => import("../../features/services-catalog/pages/CreateEditServiceOrderTypePage"));
+
+// Maintenance — Failure Codes
+const FailureCodesPage = lazy(() => import("../../features/maintenance/pages/FailureCodesPage"));
+
 
 export const componentMap: Record<string, React.ComponentType> = {
     "user-index": UsersPage,
@@ -123,4 +131,16 @@ export const componentMap: Record<string, React.ComponentType> = {
     "material-issues-new": CreateMaterialIssuePage,
     // inventory-adjustments
     "inventory-adjustments-new": CreateInventoryAdjustmentPage,
+    // Services catalog
+    "service-index": ServicesPage,
+    "service-new": ServicesPage,
+    "service-edit": ServicesPage,
+    // Service Order Types
+    "service-order-type-index": ServiceOrderTypesPage,
+    "service-order-type-new": CreateEditServiceOrderTypePage,
+    "service-order-type-edit": CreateEditServiceOrderTypePage,
+    // Failure Codes
+    "failure-code-index": FailureCodesPage,
+    "failure-code-new": FailureCodesPage,
+    "failure-code-edit": FailureCodesPage,
 };

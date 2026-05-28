@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useUploadMultipleMutation } from "../../../shared/store/uploadApi";
 import {
@@ -16,9 +16,8 @@ import {
     useGetAllFailuresCategoriesQuery,
     useGetAllFailuresSeveritiesQuery,
 } from "../../maintenance/services/failureApi";
-import { useEffect } from "react";
 
-interface Issue {
+interface IssueFormState {
     id: number;
     issueType: number | null;
     severity: number | null;
@@ -30,9 +29,9 @@ interface Issue {
 }
 
 interface IssueCardProps {
-    issue: Issue;
+    issue: IssueFormState;
     index: number;
-    onUpdate: (id: number, field: keyof Issue, value: any) => void;
+    onUpdate: (id: number, field: keyof IssueFormState, value: unknown) => void;
     onRemove: (id: number) => void;
     deviceTypeId?: string;
 }
@@ -47,8 +46,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
         formState: { errors },
     } = useFormContext();
 
-    // Acceder a errores específicos de este issue
-    const issueErrors = errors.issues?.[index] as any;
+    const issueErrors = (errors.issues as Record<string, Record<string, { message?: string }>> | undefined)?.[index];
 
     const {
         data: categories,
@@ -89,7 +87,6 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
         setCodesFilter(searchTerm);
     };
 
-    // Limpiar código cuando cambien tipo o severidad
     useEffect(() => {
         if (issue.code && (!issue.issueType || !issue.severity)) {
             onUpdate(issue.id, "code", null);
@@ -99,7 +96,6 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
     const handleFileUpload = async (files: FileList | null) => {
         if (!files || files.length === 0) return;
 
-        console.log('Files to upload:', files);
         const formData = new FormData();
         Array.from(files).forEach((file) => {
             formData.append("files", file);
@@ -107,11 +103,8 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
 
         try {
             const result = await uploadMultiple(formData).unwrap();
-            console.log('Upload result:', result);
             if (result && result.files) {
                 onUpdate(issue.id, "uploadedFiles", result.files);
-            } else {
-                console.log('No files in result or result is undefined');
             }
         } catch (error) {
             console.error("Error uploading files:", error);
@@ -150,7 +143,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
             <Column gap={"md"}>
                 <Row $align="center" $justify="flex-start" fullWidth $gap={"lg"}>
                     <FormGroup fullWidth>
-                        <Label>Tipo de Falla</Label>
+                        <Label>Categoría de Falla</Label>
                         <SearchableSelect
                             fullWidth
                             value={issue.issueType ? issue.issueType : undefined}
@@ -158,16 +151,16 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                                 onUpdate(issue.id, "issueType", Number(value));
                             }}
                             options={
-                                categories?.data?.map((type: any) => ({
+                                categories?.data?.map((type: { id: number; name: string }) => ({
                                     value: type.id,
                                     label: type.name,
                                 })) || []
                             }
-                            placeholder="Seleccionar tipo de Falla"
+                            placeholder="Seleccionar categoría"
                             onSearch={handleCategorySearch}
                             isLoading={isLoadingCategories}
                             serverError={categoryError}
-                            error={issueErrors?.issue_type?.message}
+                            error={issueErrors?.failure_code_id?.message}
                         />
                     </FormGroup>
                     <FormGroup fullWidth>
@@ -179,7 +172,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                                 onUpdate(issue.id, "severity", Number(value));
                             }}
                             options={
-                                severities?.data?.map((severity: any) => ({
+                                severities?.data?.map((severity: { id: number; name: string }) => ({
                                     value: severity.id,
                                     label: severity.name,
                                 })) || []
@@ -188,7 +181,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                             onSearch={handleSeveritySearch}
                             isLoading={isLoadingSeverities}
                             serverError={severityError}
-                            error={issueErrors?.issue_severity?.message}
+                            error={issueErrors?.failure_code_id?.message}
                         />
                     </FormGroup>
                 </Row>
@@ -204,7 +197,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                             options={
                                 !issue.issueType || !issue.severity
                                     ? []
-                                    : codes?.data?.map((code: any) => ({
+                                    : codes?.data?.map((code: { id: number; code: string; name: string }) => ({
                                         value: code.id,
                                         label: code.code + " - " + code.name,
                                     })) || []
@@ -213,7 +206,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                             onSearch={handleCodesSearch}
                             isLoading={codesLoading}
                             serverError={codesError}
-                            error={issueErrors?.issue_code?.message}
+                            error={issueErrors?.failure_code_id?.message}
                         />
                     </FormGroup>
                 </Row>
@@ -224,7 +217,7 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                         onChange={(e) => onUpdate(issue.id, "description", e.target.value)}
                         placeholder="Describe el problema encontrado..."
                         rows={3}
-                        error={issueErrors?.issue_description?.message}
+                        error={issueErrors?.description?.message}
                     />
                 </FormGroup>
                 <FormGroup>
@@ -241,30 +234,13 @@ export const IssueCard = ({ issue, index, onUpdate, onRemove, deviceTypeId = "" 
                     <FileInput
                         multiple
                         accept="image/*,.pdf,.doc,.docx"
-                        onChange={(files) => {
-                            console.log('FileInput onChange triggered:', files);
-                            handleFileUpload(files);
-                        }}
+                        onChange={(files) => handleFileUpload(files)}
                         filesUplaod={issue.uploadedFiles}
                         error={(() => {
-                            const filesErrors = issueErrors?.issue_files;
+                            const filesErrors = issueErrors?.attachments;
                             if (!filesErrors) return undefined;
-
-                            // Caso 1: Error general del array (ej: minLength)
-                            if (filesErrors.message) return filesErrors.message;
-
-                            // Caso 2: Array de errores (errores específicos por archivo)
-                            if (Array.isArray(filesErrors)) {
-                                const errorIndex = filesErrors.findIndex((err: any) => err);
-                                if (errorIndex !== -1) {
-                                    const errorItem = filesErrors[errorIndex];
-                                    // Buscar la primera propiedad con error (ej: url)
-                                    const errorKey = Object.keys(errorItem || {}).find((k) => errorItem[k]?.message);
-                                    if (errorKey) {
-                                        const fileName = issue.uploadedFiles?.[errorIndex]?.originalName || `Archivo ${errorIndex + 1}`;
-                                        return `${fileName}: ${errorItem[errorKey].message}`;
-                                    }
-                                }
+                            if (typeof filesErrors === "object" && "message" in filesErrors) {
+                                return filesErrors.message;
                             }
                             return undefined;
                         })()}
