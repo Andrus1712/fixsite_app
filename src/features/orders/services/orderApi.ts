@@ -2,6 +2,23 @@ import { baseApi } from "../../../shared/store/baseApi";
 import type { StandardResponse } from "../../../shared/types/api";
 import type { WorkOrder } from "../models/OrderModel";
 
+/** Args para PUT /orders/update-status/:orderCode */
+export interface UpdateOrderStatusArgs {
+    orderCode: string;
+    status: number;
+    notes?: string;
+}
+
+/** Evento de log de transición de estado */
+export interface OrderLogEvent {
+    id: number;
+    order_id: number;
+    status: number;
+    notes: string | null;
+    created_at: string;
+    created_by: number;
+}
+
 /** Body para POST /orders/issues/create */
 export interface CreateOrderIssueDto {
     order_id: number;
@@ -59,6 +76,14 @@ export const ordersApiExternal = baseApi.injectEndpoints({
             }),
             invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.order_code }],
         }),
+        unassignOrderTechnician: builder.mutation<StandardResponse<null>, { order_code: string }>({
+            query: ({ order_code }) => ({
+                url: `orders/unassign`,
+                method: "POST",
+                body: { order_code },
+            }),
+            invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.order_code }],
+        }),
         createOrderIssue: builder.mutation<StandardResponse<null>, CreateOrderIssueDto & { order_code: string }>({
             query: ({ order_code: _omit, ...body }) => ({
                 url: 'orders/issues/create',
@@ -66,6 +91,22 @@ export const ordersApiExternal = baseApi.injectEndpoints({
                 body,
             }),
             invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.order_code }],
+        }),
+        updateOrderStatus: builder.mutation<StandardResponse<null>, UpdateOrderStatusArgs>({
+            query: ({ orderCode, status, notes }) => ({
+                url: `orders/update-status/${orderCode}`,
+                method: 'PUT',
+                body: { status, ...(notes ? { notes } : {}) },
+            }),
+            invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.orderCode }],
+        }),
+        getOrderLogEvents: builder.query<OrderLogEvent[], { orderCode: string }>({
+            query: ({ orderCode }) => ({
+                url: `orders/${orderCode}/log-events`,
+                method: 'GET',
+            }),
+            transformResponse: (response: StandardResponse<OrderLogEvent[]>) => response.data,
+            providesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.orderCode }],
         }),
     }),
 });
@@ -76,5 +117,8 @@ export const {
     useGetAllOrdersQuery,
     useGetOrdersByCodeQuery,
     useAssignOrderToTechnicianMutation,
+    useUnassignOrderTechnicianMutation,
     useCreateOrderIssueMutation,
+    useUpdateOrderStatusMutation,
+    useGetOrderLogEventsQuery,
 } = ordersApiExternal;

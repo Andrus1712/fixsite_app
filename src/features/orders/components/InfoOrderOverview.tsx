@@ -1,43 +1,117 @@
 import dayjs from "dayjs";
+import styled from "styled-components";
 import {
-    Badge,
     Box,
     Button,
     ButtonGroup,
-    Card,
     Column,
     Divider,
     DropdownButton,
-    DropdownButtonExample,
     Flex,
     Grid,
     Modal,
-    Row,
     SearchableSelect,
-    SearchInput,
     Table,
     Text,
     Tooltip,
+    useAlert,
     useToast,
 } from "../../../shared/components";
 import type { OrderIssue, Notes, WorkOrder } from "../models/OrderModel";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { HiDotsVertical } from "react-icons/hi";
-import { IoCheckmark, IoDocumentText, IoPencil, IoPrint, IoTrash } from "react-icons/io5";
-import { BsNut } from "react-icons/bs";
-import { FaCopy, FaEdit, FaTools, FaTrash } from "react-icons/fa";
+import { IoPrint } from "react-icons/io5";
+import { FaCopy, FaEdit, FaFileInvoiceDollar, FaTools, FaTrash } from "react-icons/fa";
 import { useGetAllTechnicniansQuery } from "../../technician/services/TechnicianApi";
-import { useAssignOrderToTechnicianMutation, useCreateOrderIssueMutation } from "../services/orderApi";
+import { useAssignOrderToTechnicianMutation, useUnassignOrderTechnicianMutation, useCreateOrderIssueMutation } from "../services/orderApi";
 import { Link } from "react-router";
 import { AiFillTool } from "react-icons/ai";
-import { IoIosCheckmarkCircle, IoMdAdd } from "react-icons/io";
+import { IoMdAdd } from "react-icons/io";
 import FixIssueModal from "./FixIssueModal";
 import { NewIssueModal } from "./NewIssueModal";
 import { Accordion, AccordionItem } from "../../../shared/components";
 import { FailureAccordionContent } from "./ReportedFailures";
 import IconButton from "../../../shared/components/Buttons/IconButton";
 import { OrderServicesAccordion } from "../../orders-services/components/OrderServicesAccordionContent";
+import { OrderStatusBadge } from "./OrderStatusBadge";
+import { OrderStatusStepper } from "./OrderStatusStepper";
+import { ConfirmStatusChangeModal } from "./ConfirmStatusChangeModal";
+import { OrderDeviceCard } from "./OrderDeviceCard";
+import { OrderCustomerCard } from "./OrderCustomerCard";
+import { useOrderStatusActions } from "../hooks/useOrderStatusActions";
+import { InvoiceModal } from "./Invoice";
+
+// ─── Styled Components ────────────────────────────────────────────────────────
+
+const PageWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${(props) => props.theme.spacing.md};
+`;
+
+const OrderHeader = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: ${(props) => props.theme.spacing.sm};
+    padding: ${(props) => props.theme.spacing.md} ${(props) => props.theme.spacing.lg};
+    background: ${(props) => props.theme.colors.surface};
+    border: 1px solid ${(props) => props.theme.colors.border};
+    border-radius: ${(props) => props.theme.borderRadius.lg};
+    box-shadow: ${(props) => props.theme.shadows.sm};
+`;
+
+const HeaderLeft = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${(props) => props.theme.spacing.md};
+    flex-wrap: wrap;
+`;
+
+const HeaderRight = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${(props) => props.theme.spacing.sm};
+    flex-wrap: wrap;
+`;
+
+const OrderCode = styled.span`
+    font-size: ${(props) => props.theme.fontSize.lg};
+    font-weight: ${(props) => props.theme.fontWeight.bold};
+    color: ${(props) => props.theme.colors.text};
+    display: flex;
+    align-items: center;
+    gap: ${(props) => props.theme.spacing.xs};
+`;
+
+const CopyIcon = styled(FaCopy)`
+    cursor: pointer;
+    color: ${(props) => props.theme.colors.textMuted};
+    font-size: ${(props) => props.theme.fontSize.sm};
+    transition: color 0.15s ease;
+
+    &:hover {
+        color: ${(props) => props.theme.colors.primary};
+    }
+`;
+
+const StepperSection = styled.div`
+    background: ${(props) => props.theme.colors.surface};
+    border: 1px solid ${(props) => props.theme.colors.border};
+    border-radius: ${(props) => props.theme.borderRadius.lg};
+    padding: ${(props) => props.theme.spacing.md} ${(props) => props.theme.spacing.lg};
+    box-shadow: ${(props) => props.theme.shadows.sm};
+`;
+
+const SidePanel = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${(props) => props.theme.spacing.md};
+`;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 interface DropdownMenuOption {
     id: string;
@@ -53,47 +127,42 @@ interface DropdownMenuSection {
     options: DropdownMenuOption[];
 }
 
-const getPriorityVariant = (priority: string): any => {
-    switch (priority?.toLowerCase()) {
-        case 'critical': case 'high': return 'danger';
-        case 'medium': return 'warning';
-        case 'low': return 'info';
-        default: return 'default';
-    }
-};
-
-
-const getStatusVariant = (status: string): any => {
+const getStatusTextVariant = (status: string): string => {
     switch (status?.toLowerCase()) {
-        case 'pending': return 'warning';
-        case 'resolved': return 'success';
-        case 'rejected': return 'danger';
-        default: return 'default';
-    }
-};
-const getStatusTextVariant = (status: string): any => {
-    switch (status?.toLowerCase()) {
-        case 'pending': return 'Pendiente';
-        case 'resolved': return 'Resuelta';
-        case 'rejected': return 'Cancelada';
-        default: return 'NaN';
+        case "pending": return "Pendiente";
+        case "resolved": return "Resuelta";
+        case "rejected": return "Cancelada";
+        default: return "NaN";
     }
 };
 
-export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
+const getStatusVariant = (status: string): "warning" | "success" | "danger" | "default" => {
+    switch (status?.toLowerCase()) {
+        case "pending": return "warning";
+        case "resolved": return "success";
+        case "rejected": return "danger";
+        default: return "default";
+    }
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
     const { showSuccess, showError } = useToast();
+    const { showWarning, closeAlert } = useAlert();
     const [showModalSetTechnician, setShowModalSetTechnician] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | number | null>(null);
     const [selectedIssuesId, setSelectedIssueId] = useState<OrderIssue[] | null>(null);
-
-    // Modal para corregir fallas
     const [showFixIssueModal, setShowFixIssueModal] = useState(false);
-
-    // Modal para nueva falla
     const [showNewIssueModal, setShowNewIssueModal] = useState(false);
+    const [pendingTransition, setPendingTransition] = useState<{ targetStatus: number } | null>(null);
+    const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+    const { statusOptions } = useOrderStatusActions(data);
 
     const [assignOrderToTechnician, { isLoading: isAssigning }] = useAssignOrderToTechnicianMutation();
+    const [unassignOrderTechnician] = useUnassignOrderTechnicianMutation();
     const [createOrderIssue, { isLoading: isCreatingIssue }] = useCreateOrderIssueMutation();
 
     const { data: technicians, isLoading } = useGetAllTechnicniansQuery(
@@ -103,33 +172,74 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
 
     const columns = useMemo<ColumnDef<Notes>[]>(
         () => [
-            {
-                accessorKey: "content",
-                header: "NOTA",
-            },
-            {
-                accessorKey: "author",
-                header: "AUTOR",
-            },
+            { accessorKey: "content", header: "NOTA" },
+            { accessorKey: "author", header: "AUTOR" },
             {
                 accessorKey: "timestamp",
-                header: "FECHA DE CREACION",
-                cell: ({ row }) => {
-                    return dayjs(row.original.timestamp).format("DD/MM/YYYY HH:mm:ss");
-                },
+                header: "FECHA",
+                cell: ({ row }) => dayjs(row.original.timestamp).format("DD/MM/YYYY HH:mm"),
             },
         ],
         []
     );
 
+    const handleUnassignTechnician = useCallback(() => {
+        showWarning(
+            "Desasignar técnico",
+            `¿Estás seguro de desasignar a ${data.technician?.name ?? "el técnico"} de esta orden?`,
+            [
+                { label: "Cancelar", variant: "outline", onClick: closeAlert },
+                {
+                    label: "Desasignar",
+                    variant: "danger",
+                    onClick: async () => {
+                        closeAlert();
+                        try {
+                            await unassignOrderTechnician({ order_code: data.order_code }).unwrap();
+                            showSuccess("Técnico desasignado correctamente");
+                        } catch {
+                            showError("Error al desasignar técnico. Intenta nuevamente.", "Error");
+                        }
+                    },
+                },
+            ]
+        );
+    }, [data.order_code, data.technician?.name, showWarning, closeAlert, unassignOrderTechnician, showSuccess, showError]);
+
     const acciones = useMemo<DropdownMenuOption[] | DropdownMenuSection[]>(() => {
-        const base: DropdownMenuOption[] = [
-            {
-                id: "repair",
-                label: "Iniciar Reparación",
-                onClick: () => showSuccess("Reparación iniciada"),
-                disabled: true,
-            },
+        // ─── Sección: Técnico ─────────────────────────────────────────────────
+        const technicianOptions: DropdownMenuOption[] = [];
+
+        if (data.assigned_technician_id == null) {
+            technicianOptions.push({
+                id: "assign_technician",
+                label: "Asignar Técnico",
+                onClick: () => setShowModalSetTechnician(true),
+            });
+        }
+
+        const UNASSIGNABLE_STATUSES = new Set([1, 2]);
+        if (data.assigned_technician_id != null && UNASSIGNABLE_STATUSES.has(data.status)) {
+            technicianOptions.push({
+                id: "unassign_technician",
+                label: "Desasignar Técnico",
+                onClick: handleUnassignTechnician,
+                isDanger: true,
+            });
+        }
+
+        // ─── Sección: Estado ──────────────────────────────────────────────────
+        const statusTransitionOptions: DropdownMenuOption[] = statusOptions
+            .filter((opt) => !opt.isDanger)
+            .map((opt) => ({
+                id: opt.id,
+                label: opt.label,
+                onClick: () => setPendingTransition({ targetStatus: opt.targetStatus }),
+                disabled: opt.disabled,
+            }));
+
+        // ─── Sección: Facturación ─────────────────────────────────────────────
+        const billingOptions: DropdownMenuOption[] = [
             {
                 id: "presupuesto",
                 label: "Hacer Presupuesto",
@@ -137,40 +247,38 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
             },
         ];
 
-        if (data.assigned_technician_id == null) {
-            base.unshift({
-                id: "assign_technician",
-                label: "Asignar Tecnico",
-                onClick: () => setShowModalSetTechnician(true),
+        // ─── Sección: Administración ──────────────────────────────────────────
+        const adminOptions: DropdownMenuOption[] = [
+            { id: "edit", label: "Editar Orden", onClick: () => showSuccess("Orden editada") },
+        ];
+
+        // Cancelar orden (extraída de statusOptions, es isDanger y solo admin)
+        const cancelOption = statusOptions.find((opt) => opt.isDanger);
+        if (cancelOption) {
+            adminOptions.push({
+                id: cancelOption.id,
+                label: cancelOption.label,
+                onClick: () => setPendingTransition({ targetStatus: cancelOption.targetStatus }),
+                disabled: cancelOption.disabled,
+                isDanger: true,
             });
         }
 
-        return [
-            {
-                label: "Gestión",
-                options: base,
-            },
-            {
-                label: "Administración",
-                options: [
-                    {
-                        id: "edit",
-                        label: "Editar Orden",
-                        onClick: () => showSuccess("Orden editada"),
-                    },
-                    {
-                        id: "cancel",
-                        label: "Cancelar Orden",
-                        icon: <IoTrash />,
-                        isDanger: true,
-                        onClick: () => showSuccess("Orden cancelada"),
-                    },
-                ],
-            },
-        ];
-    }, [data.assigned_technician_id, showSuccess]);
+        // ─── Construir secciones (solo incluir las que tengan opciones) ───────
+        const sections: DropdownMenuSection[] = [];
 
-    // Datos mock para fallas reportadas
+        if (technicianOptions.length > 0) {
+            sections.push({ label: "Técnico", options: technicianOptions });
+        }
+        if (statusTransitionOptions.length > 0) {
+            sections.push({ label: "Estado", options: statusTransitionOptions });
+        }
+        sections.push({ label: "Facturación", options: billingOptions });
+        sections.push({ label: "Administración", options: adminOptions });
+
+        return sections;
+    }, [data.assigned_technician_id, data.status, showSuccess, statusOptions, handleUnassignTechnician]);
+
     const reportedFailures = data.issues;
 
     const asignarTecnico = async () => {
@@ -178,7 +286,6 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
             showError("Selecciona un técnico antes de asignar", "Error");
             return;
         }
-
         try {
             await assignOrderToTechnician({
                 order_code: data.order_code,
@@ -192,123 +299,161 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
         }
     };
 
-    const hanldeFixOneIssue = (issue: OrderIssue) => {
+    const handleFixOneIssue = (issue: OrderIssue) => {
         setSelectedIssueId([issue]);
         setShowFixIssueModal(true);
     };
 
+    const handleCopyCode = () => {
+        navigator.clipboard.writeText(data.order_code);
+        showSuccess("Código copiado");
+    };
+
     return (
-        <div>
-            <Grid $columns={{ xs: 1, lg: "3fr 1fr" }} $gap={{ xs: "sm", lg: "sm" }}>
-                <Column>
-                    <Box
-                        bg="white"
-                        p={"lg"}
-                        rounded
-                        shadow
-                        fullWidth
-                        title={`Información de la orden`}
-                        headerActions={
-                            <Row $align="center" $justify="flex-end" $gap="xs" $wrap>
-                                <Button variant="secondary" leftIcon={<IoPrint />} size="sm">
-                                    Etiqueta
-                                </Button>
-                                <DropdownButton
-                                    label="Acciones"
-                                    variant="pink"
-                                    size="sm"
-                                    items={acciones}
-                                    rightIcon={<HiDotsVertical />}
-                                />
-                            </Row>
-                        }
-                        showDivider={true}
-                    >
-                        <Grid $columns="repeat(auto-fit, minmax(180px, 1fr))" $gap="md">
-                            <Column align="flex-start" justify="flex-start">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Codigo de Orden
-                                </Text>
-                                <Row $align="center" $gap={"xs"}>
-                                    <Text variant="body1">{data.order_code}</Text>
-                                    <FaCopy
-                                        onClick={() => {
-                                            alert("Click");
-                                        }}
-                                    />
-                                </Row>
-                            </Column>
-                            <Column align="flex-start" justify="flex-start">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Tipo de orden
-                                </Text>
-                                <Row $align="center" $gap={"xs"}>
-                                    <Text variant="body1">{data.order_type_name}</Text>
-                                </Row>
-                            </Column>
+        <PageWrapper>
+            {/* ─── Order Header: Code + Badge + Actions ─── */}
+            <OrderHeader>
+                <HeaderLeft>
+                    <OrderCode>
+                        {data.order_code}
+                        <CopyIcon onClick={handleCopyCode} title="Copiar código" />
+                    </OrderCode>
+                    <OrderStatusBadge status={data.status} />
+                    <Text variant="body2" color="muted">
+                        {data.order_type_name}
+                    </Text>
+                </HeaderLeft>
+                <HeaderRight>
+                    {data.status === 6 && (
+                        <Button
+                            variant="primary"
+                            leftIcon={<FaFileInvoiceDollar />}
+                            size="sm"
+                            onClick={() => setShowInvoiceModal(true)}
+                        >
+                            Ver factura
+                        </Button>
+                    )}
+                    <Button variant="secondary" leftIcon={<IoPrint />} size="sm">
+                        Etiqueta
+                    </Button>
+                    <DropdownButton
+                        label="Acciones"
+                        variant="indigo"
+                        size="sm"
+                        items={acciones}
+                        rightIcon={<HiDotsVertical />}
+                    />
+                </HeaderRight>
+            </OrderHeader>
+
+            {/* ─── Stepper Timeline ─── */}
+            <StepperSection>
+                <OrderStatusStepper order={data} />
+            </StepperSection>
+
+            {/* ─── Main Content Grid ─── */}
+            <Grid $columns={{ xs: 1, lg: "3fr 1fr" }} $gap="md">
+                <Column $gap="md">
+                    {/* Order Details */}
+                    <Box bg="white" p="lg" rounded shadow fullWidth title="Detalles de la orden" showDivider>
+                        <Grid $columns="repeat(auto-fit, minmax(200px, 1fr))" $gap="md">
                             <Column align="flex-start" justify="flex-start">
                                 <Text weight="normal" variant="overline" color="muted">
                                     Fecha de creación
                                 </Text>
-                                <Text variant="body1">{dayjs(data.createdAt).format("DD/MM/YYYY HH:mm:ss")}</Text>
+                                <Text variant="body2">
+                                    {dayjs(data.createdAt).format("DD/MM/YYYY HH:mm")}
+                                </Text>
                             </Column>
                             <Column align="flex-start" justify="flex-start">
                                 <Text weight="normal" variant="overline" color="muted">
-                                    Ultima Fecha de Modificación
+                                    Última modificación
                                 </Text>
-                                <Text variant="body1">{dayjs(data.createdAt).format("DD/MM/YYYY HH:mm:ss")}</Text>
+                                <Text variant="body2">
+                                    {dayjs(data.updatedAt).format("DD/MM/YYYY HH:mm")}
+                                </Text>
                             </Column>
                             <Column align="flex-start" justify="flex-start">
                                 <Text weight="normal" variant="overline" color="muted">
                                     Fecha vencimiento
                                 </Text>
-                                <Text variant="body1">{dayjs(data.createdAt).format("DD/MM/YYYY HH:mm:ss")}</Text>
+                                <Text variant="body2">
+                                    {data.sla_deadline
+                                        ? dayjs(data.sla_deadline).format("DD/MM/YYYY HH:mm")
+                                        : "Sin definir"}
+                                </Text>
                             </Column>
                             <Column align="flex-start" justify="flex-start">
                                 <Text weight="normal" variant="overline" color="muted">
                                     Prioridad
                                 </Text>
-                                <Text variant="body1">
-                                    {data.priority} - {data.priority_description} ANS 1222
+                                <Text variant="body2">
+                                    {data.priority_description}
                                 </Text>
                             </Column>
                             <Column align="flex-start" justify="flex-start">
                                 <Text weight="normal" variant="overline" color="muted">
-                                    Estado
-                                </Text>
-                                <Text variant="body1">
-                                    <Badge variant="warning">{data.status_description}</Badge>
-                                </Text>
-                            </Column>
-                            <Column align="flex-start" justify="flex-start">
-                                <Text weight="normal" variant="overline" color="muted">
-                                    Tecnico Asignado
+                                    Técnico asignado
                                 </Text>
                                 {data.assigned_technician_id ? (
                                     <Link to={`/app/technicians/${data.assigned_technician_id}`}>
-                                        <Text variant="body1">{data.technician?.name}</Text>
+                                        <Text variant="body2" color="primary">
+                                            {data.technician?.name}
+                                        </Text>
                                     </Link>
                                 ) : (
-                                    "No asignado"
+                                    <Text variant="body2" color="muted">No asignado</Text>
                                 )}
                             </Column>
+                            <Column align="flex-start" justify="flex-start">
+                                <Text weight="normal" variant="overline" color="muted">
+                                    Costo estimado
+                                </Text>
+                                <Text variant="body2">
+                                    {data.currency} {data.estimated_cost}
+                                </Text>
+                            </Column>
                         </Grid>
-                        <Divider />
-                        <Table columns={columns} data={data.notes || []} />
                     </Box>
+
+                    {/* Notes Table */}
+                    {data.notes && data.notes.length > 0 && (
+                        <Box bg="white" rounded shadow fullWidth showDivider>
+                            <Table columns={columns} data={data.notes} />
+                        </Box>
+                    )}
+
+                    {/* Reported Failures */}
                     <Accordion
                         title="Fallas Reportadas"
                         defaultExpanded
-                        badge={reportedFailures?.length ? { text: String(reportedFailures.length), variant: 'danger' } : undefined}
+                        badge={
+                            reportedFailures?.length
+                                ? { text: String(reportedFailures.length), variant: "danger" as const }
+                                : undefined
+                        }
                         headerActions={
                             <DropdownButton
-                                items={[{
-                                    label: 'Acción',
-                                    options: [
-                                        { id: 'fix_issue', label: 'Corregir fallas', onClick: () => setShowFixIssueModal(true), icon: <AiFillTool /> },
-                                        { id: 'new_issue', label: 'Nueva falla', icon: <IoMdAdd />, onClick: () => setShowNewIssueModal(true) },
-                                    ],
-                                }]}
+                                items={[
+                                    {
+                                        label: "Acción",
+                                        options: [
+                                            {
+                                                id: "fix_issue",
+                                                label: "Corregir fallas",
+                                                onClick: () => setShowFixIssueModal(true),
+                                                icon: <AiFillTool />,
+                                            },
+                                            {
+                                                id: "new_issue",
+                                                label: "Nueva falla",
+                                                icon: <IoMdAdd />,
+                                                onClick: () => setShowNewIssueModal(true),
+                                            },
+                                        ],
+                                    },
+                                ]}
                                 rightIcon={<HiDotsVertical />}
                                 size="sm"
                             />
@@ -319,189 +464,56 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                                 key={failure.id}
                                 defaultExpanded
                                 title={`${failure.failure_code || failure.id} - ${failure.failure_code_name || failure.title}`}
-                                badge={{ text: getStatusTextVariant(failure.status), variant: getStatusVariant(failure.status) }}
+                                badge={{
+                                    text: getStatusTextVariant(failure.status),
+                                    variant: getStatusVariant(failure.status),
+                                }}
                                 headerActions={
-                                    (!failure.is_resolved && <ButtonGroup>
-                                        <IconButton variant="ghost" color="neutral" size="xs" icon={<FaEdit />} />
-                                        <Tooltip position="bottom" content="Reparar falla">
-                                            <IconButton variant="ghost" color="neutral" size="xs" icon={<FaTools />} onClick={() => hanldeFixOneIssue(failure)} />
-                                        </Tooltip>
-                                        <IconButton variant="ghost" color="danger" size="xs" icon={<FaTrash />} />
-                                    </ButtonGroup>)
+                                    !failure.is_resolved && (
+                                        <ButtonGroup>
+                                            <IconButton variant="ghost" color="neutral" size="xs" icon={<FaEdit />} />
+                                            <Tooltip position="bottom" content="Reparar falla">
+                                                <IconButton
+                                                    variant="ghost"
+                                                    color="neutral"
+                                                    size="xs"
+                                                    icon={<FaTools />}
+                                                    onClick={() => handleFixOneIssue(failure)}
+                                                />
+                                            </Tooltip>
+                                            <IconButton variant="ghost" color="danger" size="xs" icon={<FaTrash />} />
+                                        </ButtonGroup>
+                                    )
                                 }
                             >
                                 <FailureAccordionContent failure={failure} />
                             </AccordionItem>
                         ))}
                     </Accordion>
-                    <OrderServicesAccordion orderId={data.id} orderCode={data.order_code} onNewService={() => { }} />
-                </Column>
-                <div>
-                    <Column align="flex-start" justify="flex-start" $gap="md">
-                        <Box bg="white" rounded shadow $fullWidth>
-                            <Box
-                                p={"lg"}
-                                title="Informacion del dispositivo"
-                                subtitle={data.devices[0].serial_number}
-                                headerActions={
-                                    <DropdownButton
-                                        items={[
-                                            {
-                                                label: "Accion",
-                                                options: [
-                                                    {
-                                                        id: "edit",
-                                                        label: "Editar",
-                                                        onClick: () => { },
-                                                        icon: <IoPencil />,
-                                                    },
-                                                    {
-                                                        id: "info",
-                                                        label: "Configuracion",
-                                                        icon: <BsNut />,
-                                                        onClick: () => { },
-                                                    },
-                                                ],
-                                            },
-                                        ]}
-                                        rightIcon={<HiDotsVertical />}
-                                    />
-                                }
-                                showDivider={false}
-                            >
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Dispositivo:
-                                    </Text>
-                                    <Text variant="body1">{data.devices[0].device_name}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Tipo:
-                                    </Text>
-                                    <Text variant="body1">
-                                        {data.devices[0].device_type} - {data.devices[0].device_type_name}
-                                    </Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Marca:
-                                    </Text>
-                                    <Text variant="body1">
-                                        {data.devices[0].device_brand} - {data.devices[0].device_brand_name}
-                                    </Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Imei:
-                                    </Text>
-                                    <Text variant="body1">
-                                        <Text>{data.devices[0].imei}</Text>
-                                    </Text>
-                                </Row>
 
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Serial:
-                                    </Text>
-                                    <Text variant="body1">
-                                        <Text>{data.devices[0].serial_number}</Text>
-                                    </Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Color:
-                                    </Text>
-                                    <Text variant="body1">
-                                        <Text>{data.devices[0].color}</Text>
-                                    </Text>
-                                </Row>
-                            </Box>
-                            <Box
-                                p={"lg"}
-                                title="Informacion del cliente"
-                                showDivider={false}
-                                headerActions={
-                                    <DropdownButton
-                                        items={[
-                                            {
-                                                label: "Accion",
-                                                options: [
-                                                    {
-                                                        id: "edit",
-                                                        label: "Editar",
-                                                        onClick: () => { },
-                                                        icon: <IoPencil />,
-                                                    },
-                                                    {
-                                                        id: "info",
-                                                        label: "Configuracion",
-                                                        icon: <BsNut />,
-                                                        onClick: () => { },
-                                                    },
-                                                ],
-                                            },
-                                        ]}
-                                        rightIcon={<HiDotsVertical />}
-                                    />
-                                }
-                            >
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Nombre del cliente
-                                    </Text>
-                                    <Text variant="body1">{data.customer.customer_name}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Email
-                                    </Text>
-                                    <Text variant="body1">{data.customer.customer_email}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Telefono de contacto
-                                    </Text>
-                                    <Text variant="body1">{data.customer.customer_phone}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Tipo Cliente
-                                    </Text>
-                                    <Text variant="body1">{data.customer.customer_type}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Ciudad
-                                    </Text>
-                                    <Text variant="body1">{data.customer.customer_city}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                                <Row $align="center" $justify="space-between" $wrap>
-                                    <Text weight="normal" variant="overline" color="muted">
-                                        Pais
-                                    </Text>
-                                    <Text variant="body1">{data.customer.customer_country}</Text>
-                                </Row>
-                                <Divider margin={"sm"} />
-                            </Box>
-                        </Box>
-                    </Column>
-                </div>
+                    {/* Services */}
+                    <OrderServicesAccordion
+                        orderId={data.id}
+                        orderCode={data.order_code}
+                        onNewService={() => { }}
+                    />
+                </Column>
+
+                {/* ─── Side Panel ─── */}
+                <SidePanel>
+                    <Box bg="white" rounded shadow $fullWidth>
+                        <OrderDeviceCard device={data.devices[0]} />
+                        <Divider />
+                        <OrderCustomerCard customer={data.customer} />
+                    </Box>
+                </SidePanel>
             </Grid>
+
+            {/* ─── Modals ─── */}
             <Modal
                 isOpen={showModalSetTechnician}
                 onClose={() => setShowModalSetTechnician(false)}
-                title="Asignar Tecnico"
+                title="Asignar Técnico"
                 footer={
                     <Flex $justify="flex-end" $gap="sm">
                         <Button variant="outline" onClick={() => setShowModalSetTechnician(false)}>
@@ -510,27 +522,45 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                         <Button
                             onClick={asignarTecnico}
                             disabled={
-                                !selectedTechnicianId || !technicians || technicians.data.length === 0 || isAssigning
+                                !selectedTechnicianId ||
+                                !technicians ||
+                                technicians.data.length === 0 ||
+                                isAssigning
                             }
                         >
-                            Asignar Tecnico
+                            Asignar Técnico
                         </Button>
                     </Flex>
                 }
             >
                 <SearchableSelect
-                    label="Listado de Tecnicos Activos"
+                    label="Listado de Técnicos Activos"
                     allowClear
                     fullWidth
                     isLoading={isLoading}
                     onSearch={setSearchValue}
                     value={selectedTechnicianId || undefined}
                     onChange={(val) => setSelectedTechnicianId(val)}
-                    options={technicians?.data.map((tech: any) => ({ label: tech.name, value: tech.id })) || []}
+                    options={
+                        technicians?.data.map((tech: any) => ({
+                            label: tech.name,
+                            value: tech.id,
+                        })) || []
+                    }
                 />
             </Modal>
 
-            <FixIssueModal isOpen={showFixIssueModal} onClose={() => { setShowFixIssueModal(false); setSelectedIssueId(null); }} selectedIssues={selectedIssuesId} orderTypeId={data.order_type_id} orderId={data.id} orderCode={data.order_code} />
+            <FixIssueModal
+                isOpen={showFixIssueModal}
+                onClose={() => {
+                    setShowFixIssueModal(false);
+                    setSelectedIssueId(null);
+                }}
+                selectedIssues={selectedIssuesId}
+                orderTypeId={data.order_type_id}
+                orderId={data.id}
+                orderCode={data.order_code}
+            />
 
             <NewIssueModal
                 isOpen={showNewIssueModal}
@@ -539,7 +569,11 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                 deviceTypeId={String(data.devices[0].device_type)}
                 onSave={async (issueData) => {
                     try {
-                        await createOrderIssue({ order_id: data.id, order_code: data.order_code, ...issueData }).unwrap();
+                        await createOrderIssue({
+                            order_id: data.id,
+                            order_code: data.order_code,
+                            ...issueData,
+                        }).unwrap();
                         showSuccess("Falla agregada correctamente");
                         setShowNewIssueModal(false);
                     } catch {
@@ -548,6 +582,27 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder; }) => {
                 }}
                 isLoading={isCreatingIssue}
             />
-        </div >
+
+            {pendingTransition && (
+                <ConfirmStatusChangeModal
+                    isOpen={true}
+                    onClose={() => setPendingTransition(null)}
+                    orderCode={data.order_code}
+                    currentStatus={data.status}
+                    targetStatus={pendingTransition.targetStatus}
+                    onSuccess={() => {
+                        if (pendingTransition.targetStatus === 6) {
+                            setShowInvoiceModal(true);
+                        }
+                    }}
+                />
+            )}
+
+            <InvoiceModal
+                isOpen={showInvoiceModal}
+                onClose={() => setShowInvoiceModal(false)}
+                orderCode={data.order_code}
+            />
+        </PageWrapper>
     );
 };
