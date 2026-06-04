@@ -78,6 +78,7 @@ export const baseApi = createApi({
         "Request",
         "OrderService",
         "Service",
+        "ServiceArticle",
         "FailureCode",
         "ServiceOrderType",
     ],

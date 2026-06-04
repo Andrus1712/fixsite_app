@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Label, Row, Button, Flex } from "../../../shared/components";
 import { FiPlus } from "react-icons/fi";
 import { useFormContext } from "react-hook-form";
@@ -16,31 +16,28 @@ interface IssueFormState {
     uploadedFiles: Array<{ filename: string; originalName: string; size: number; url: string }>;
 }
 
+function buildInitialIssues(formData: Record<string, unknown>): IssueFormState[] {
+    const issues = formData.issues as Record<string, unknown>[] | undefined;
+    if (!issues || issues.length === 0) return [];
+    return issues.map((issue, index) => ({
+        id: index + 1,
+        issueType: (issue.issueType as number) || null,
+        severity: (issue.severity as number) || null,
+        code: (issue.failure_code_id as number) || null,
+        description: (issue.description as string) || "",
+        steps: Array.isArray(issue.steps_to_reproduce) ? issue.steps_to_reproduce[0] || "" : "",
+        files: null,
+        uploadedFiles: (issue.attachments as IssueFormState["uploadedFiles"]) || [],
+    }));
+}
+
 export const FormTabIssues = ({ formData, updateField }: FormPropsOrder) => {
-    const [issues, setIssues] = useState<IssueFormState[]>([]);
+    // Inicializar solo una vez desde formData (evita que el useEffect resetee selecciones)
+    const [issues, setIssues] = useState<IssueFormState[]>(() => buildInitialIssues(formData));
 
     const {
         formState: { errors: _errors },
     } = useFormContext();
-
-    // Inicializar issues desde formData o crear vacío
-    useEffect(() => {
-        if (formData.issues && formData.issues.length > 0) {
-            const mappedIssues = formData.issues.map((issue: Record<string, unknown>, index: number) => ({
-                id: index + 1,
-                issueType: (issue.issueType as number) || null,
-                severity: (issue.severity as number) || null,
-                code: (issue.failure_code_id as number) || null,
-                description: (issue.description as string) || "",
-                steps: Array.isArray(issue.steps_to_reproduce) ? issue.steps_to_reproduce[0] || "" : "",
-                files: null,
-                uploadedFiles: (issue.attachments as IssueFormState["uploadedFiles"]) || [],
-            }));
-            setIssues(mappedIssues);
-        } else {
-            setIssues([]);
-        }
-    }, [formData]);
 
     const addIssue = () => {
         const newIssue: IssueFormState = {

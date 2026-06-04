@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router";
 import {
     Box,
     Button,
@@ -16,7 +17,7 @@ import {
     Badge,
     FormGroup,
 } from "../../../shared/components";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaCogs } from "react-icons/fa";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
     useGetAllServicesPaginatedQuery,
@@ -26,8 +27,11 @@ import {
     type Service,
 } from "../services/ServicesApi";
 import { ServiceSchema, type ServiceFormData, serviceDefaultValues } from "../schemas";
+import { useHasPermission } from "@/features/auth/hooks/useHasPermission";
 
 const ServicesPage = () => {
+    const navigate = useNavigate();
+    const { hasPermission } = useHasPermission();
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [searchValue, setSearchValue] = useState("");
@@ -55,6 +59,7 @@ const ServicesPage = () => {
     });
 
     const activoValue = watch("is_active");
+    const requiresArticlesValue = watch("requires_articles");
 
     const openCreate = () => {
         setEditingService(null);
@@ -69,6 +74,7 @@ const ServicesPage = () => {
             description: service.description,
             base_price: service.base_price,
             is_active: service.is_active,
+            requires_articles: service.requires_articles,
         });
         setIsModalOpen(true);
     };
@@ -269,6 +275,21 @@ const ServicesPage = () => {
                             checked={activoValue}
                             onChange={(e) => setValue("is_active", e.target.checked)}
                         />
+                        <Switch
+                            label="¿Requiere artículos de recambio?"
+                            checked={requiresArticlesValue}
+                            onChange={(e) => setValue("requires_articles", e.target.checked)}
+                        />
+                        {editingService && editingService.requires_articles && hasPermission("service-articles:read") && (
+                            <Button
+                                variant="outline"
+                                leftIcon={<FaCogs />}
+                                onClick={() => navigate(`/app/service-articles?service_id=${editingService.id}`)}
+                                type="button"
+                            >
+                                Configurar artículos de recambio
+                            </Button>
+                        )}
                     </FormGroup>
                 </form>
             </Modal>

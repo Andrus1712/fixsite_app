@@ -6,6 +6,7 @@ export interface Service {
     description: string;
     base_price: number;
     is_active: boolean;
+    requires_articles: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -33,6 +34,7 @@ export type CreateServiceDto = {
     description: string;
     base_price: number;
     is_active?: boolean;
+    requires_articles?: boolean;
 };
 
 export type UpdateServiceDto = Partial<CreateServiceDto>;

@@ -45,7 +45,12 @@ export interface OrderIssue {
     title: string;
     description: string;
     additional_notes?: string;
-    attachments?: string[];
+    attachments?: Array<{
+        filename: string;
+        originalName: string;
+        size: string;
+        url: string;
+    }>;
     steps_to_reproduce?: string[];
     reported_by?: string;
     reported_date?: string;

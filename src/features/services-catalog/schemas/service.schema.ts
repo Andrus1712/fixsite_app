@@ -10,6 +10,7 @@ export const ServiceSchema = z.object({
         .number({ error: "El precio base debe ser un número." })
         .positive("El precio base debe ser mayor a 0."),
     is_active: z.boolean(),
+    requires_articles: z.boolean(),
 });
 
 /** Tipo inferido del schema */
@@ -21,4 +22,5 @@ export const serviceDefaultValues: ServiceFormData = {
     description: "",
     base_price: 0,
     is_active: true,
+    requires_articles: false,
 };

@@ -88,6 +88,7 @@ export const ArticleApi = baseApi.injectEndpoints({
 
 export const {
     useGetAllArticlesQuery,
+    useLazyGetAllArticlesQuery,
     useGetArticleByIdQuery,
     useCreateArticleMutation,
     useUpdateArticleMutation,

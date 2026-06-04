@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Accordion, AlertModal, DataTable, Flex, Text, Tooltip } from "../../../shared/components";
 import { useDeleteOrderServiceMutation, useGetOrderServiceQuery } from "../services/OrdersServicesApi";
-import type { OrderService } from "../models/OrderServiceModel";
+import type { OrderService, MaterialIssueStatus } from "../models/OrderServiceModel";
 import IconButton from "../../../shared/components/Buttons/IconButton";
 import { FaTrash } from "react-icons/fa";
-import { useAlert } from "../../../shared/components";
+import { useAlert, useToast } from "../../../shared/components";
+import OrderServiceParts from "../../orders/components/OrderServiceParts";
 
 interface OrderServicesAccordionContentProps {
     orderId: number;
@@ -25,21 +26,46 @@ const formatMinutes = (minutes: number) => {
     return m > 0 ? `${h}h ${m}min` : `${h}h`;
 };
 
+type DeleteModalVariant = "standard" | "material-warning";
+
 export const OrderServicesAccordionContent = ({ orderId, orderCode }: OrderServicesAccordionContentProps) => {
     const { data, isLoading, isError } = useGetOrderServiceQuery({ order_id: orderId });
     const [deleteOrderService] = useDeleteOrderServiceMutation();
-    const { showError } = useAlert();
+    const { showError: showAlertError } = useAlert();
+    const { showError: showToastError } = useToast();
 
     const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+    const [deleteModalVariant, setDeleteModalVariant] = useState<DeleteModalVariant>("standard");
+
+    const handleDeleteClick = (orderService: OrderService) => {
+        const status: MaterialIssueStatus | null = orderService.material_issue_status;
+
+        if (status === "APPROVED") {
+            showAlertError(
+                "No se puede eliminar",
+                "No se puede eliminar: el egreso de material ya fue aprobado",
+                [{ label: "Cerrar", variant: "outline", onClick: () => { } }]
+            );
+            return;
+        }
+
+        if (status === "DRAFT" || status === "PENDING") {
+            setDeleteModalVariant("material-warning");
+            setPendingDeleteId(orderService.id);
+            return;
+        }
+
+        // No material issue → standard confirmation
+        setDeleteModalVariant("standard");
+        setPendingDeleteId(orderService.id);
+    };
 
     const handleDeleteConfirm = async () => {
         if (pendingDeleteId === null) return;
         try {
             await deleteOrderService({ order_service_id: pendingDeleteId, order_id: orderId, order_code: orderCode }).unwrap();
         } catch {
-            showError("Error", "No se pudo eliminar el servicio. Intenta nuevamente.", [
-                { label: "Cerrar", onClick: () => { } },
-            ]);
+            showToastError("No se pudo eliminar el servicio. Intenta nuevamente.");
         } finally {
             setPendingDeleteId(null);
         }
@@ -110,7 +136,7 @@ export const OrderServicesAccordionContent = ({ orderId, orderCode }: OrderServi
                             color="danger"
                             icon={<FaTrash />}
                             size="xs"
-                            onClick={() => setPendingDeleteId(row.original.id)}
+                            onClick={() => handleDeleteClick(row.original)}
                         />
                     </Tooltip>
                 ),
@@ -144,11 +170,34 @@ export const OrderServicesAccordionContent = ({ orderId, orderCode }: OrderServi
                 data={data?.data ?? []}
                 initialPageSize={10}
             />
+            {data?.data?.map((orderService) => {
+                const hasParts = orderService.parts && orderService.parts.length > 0;
+                const hasMaterialIssue = orderService.material_issue_id !== null;
+
+                if (!hasParts && !hasMaterialIssue) return null;
+
+                return (
+                    <div key={orderService.id} style={{ marginTop: "8px" }}>
+                        <Text variant="caption" color="muted" weight="medium">
+                            {orderService.service.description}
+                        </Text>
+                        <OrderServiceParts
+                            parts={orderService.parts ?? []}
+                            materialIssueId={orderService.material_issue_id}
+                            materialIssueStatus={orderService.material_issue_status}
+                        />
+                    </div>
+                );
+            })}
             <AlertModal
                 isOpen={pendingDeleteId !== null}
                 onClose={() => setPendingDeleteId(null)}
                 title="Eliminar servicio"
-                message="¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer."
+                message={
+                    deleteModalVariant === "material-warning"
+                        ? "El egreso de material asociado será cancelado. ¿Deseas continuar con la eliminación?"
+                        : "¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer."
+                }
                 type="warning"
                 animation="scale"
                 buttons={[

@@ -180,4 +180,4 @@ const StoreApi = baseApi.injectEndpoints({
     })
 });
 
-export const { useGetAllStoresQuery, useGetStoreInventoryByIdQuery, useUpdateStoreInventoryMutation, useGetAllRequestByStoreIdQuery } = StoreApi;
+export const { useGetAllStoresQuery, useLazyGetAllStoresQuery, useGetStoreInventoryByIdQuery, useUpdateStoreInventoryMutation, useGetAllRequestByStoreIdQuery } = StoreApi;

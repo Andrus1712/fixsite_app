@@ -24,7 +24,7 @@ import { HiDotsVertical } from "react-icons/hi";
 import { IoPrint } from "react-icons/io5";
 import { FaCopy, FaEdit, FaFileInvoiceDollar, FaTools, FaTrash } from "react-icons/fa";
 import { useGetAllTechnicniansQuery } from "../../technician/services/TechnicianApi";
-import { useAssignOrderToTechnicianMutation, useUnassignOrderTechnicianMutation, useCreateOrderIssueMutation } from "../services/orderApi";
+import { useAssignOrderToTechnicianMutation, useUnassignOrderTechnicianMutation, useCreateOrderIssueMutation, useUpdateOrderIssueMutation, useDeleteOrderIssueMutation } from "../services/orderApi";
 import { Link } from "react-router";
 import { AiFillTool } from "react-icons/ai";
 import { IoMdAdd } from "react-icons/io";
@@ -156,6 +156,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
     const [selectedIssuesId, setSelectedIssueId] = useState<OrderIssue[] | null>(null);
     const [showFixIssueModal, setShowFixIssueModal] = useState(false);
     const [showNewIssueModal, setShowNewIssueModal] = useState(false);
+    const [issueToEdit, setIssueToEdit] = useState<OrderIssue | null>(null);
     const [pendingTransition, setPendingTransition] = useState<{ targetStatus: number } | null>(null);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
@@ -164,6 +165,8 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
     const [assignOrderToTechnician, { isLoading: isAssigning }] = useAssignOrderToTechnicianMutation();
     const [unassignOrderTechnician] = useUnassignOrderTechnicianMutation();
     const [createOrderIssue, { isLoading: isCreatingIssue }] = useCreateOrderIssueMutation();
+    const [updateOrderIssue, { isLoading: isUpdatingIssue }] = useUpdateOrderIssueMutation();
+    const [deleteOrderIssue] = useDeleteOrderIssueMutation();
 
     const { data: technicians, isLoading } = useGetAllTechnicniansQuery(
         { filter: searchValue, limit: "todos" },
@@ -302,6 +305,39 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
     const handleFixOneIssue = (issue: OrderIssue) => {
         setSelectedIssueId([issue]);
         setShowFixIssueModal(true);
+    };
+
+    const handleEditIssue = (issue: OrderIssue) => {
+        console.log(issue);
+
+        setIssueToEdit(issue);
+        setShowNewIssueModal(true);
+    };
+
+    const handleDeleteIssue = (issue: OrderIssue) => {
+        showWarning(
+            "Eliminar falla",
+            `¿Estás seguro de eliminar la falla "${issue.failure_code_name || issue.title}"? Esta acción no se puede deshacer.`,
+            [
+                { label: "Cancelar", variant: "outline", onClick: closeAlert },
+                {
+                    label: "Eliminar",
+                    variant: "danger",
+                    onClick: async () => {
+                        closeAlert();
+                        try {
+                            await deleteOrderIssue({
+                                issue_id: issue.id,
+                                order_code: data.order_code,
+                            }).unwrap();
+                            showSuccess("Falla eliminada correctamente");
+                        } catch {
+                            showError("Error al eliminar la falla. Intenta nuevamente.", "Error");
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     const handleCopyCode = () => {
@@ -444,6 +480,7 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                                 label: "Corregir fallas",
                                                 onClick: () => setShowFixIssueModal(true),
                                                 icon: <AiFillTool />,
+                                                disabled: data.status !== 4,
                                             },
                                             {
                                                 id: "new_issue",
@@ -471,17 +508,35 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
                                 headerActions={
                                     !failure.is_resolved && (
                                         <ButtonGroup>
-                                            <IconButton variant="ghost" color="neutral" size="xs" icon={<FaEdit />} />
-                                            <Tooltip position="bottom" content="Reparar falla">
+                                            <Tooltip position="bottom" content={failure.status?.toLowerCase() !== "pending" ? "Solo editable en estado 'Pendiente'" : "Editar falla"}>
+                                                <IconButton
+                                                    variant="ghost"
+                                                    color="neutral"
+                                                    size="xs"
+                                                    icon={<FaEdit />}
+                                                    onClick={() => handleEditIssue(failure)}
+                                                    disabled={failure.status?.toLowerCase() !== "pending"}
+                                                />
+                                            </Tooltip>
+                                            <Tooltip position="bottom" content={data.status !== 4 ? "Solo disponible en estado 'En reparación'" : "Reparar falla"}>
                                                 <IconButton
                                                     variant="ghost"
                                                     color="neutral"
                                                     size="xs"
                                                     icon={<FaTools />}
                                                     onClick={() => handleFixOneIssue(failure)}
+                                                    disabled={data.status !== 4}
                                                 />
                                             </Tooltip>
-                                            <IconButton variant="ghost" color="danger" size="xs" icon={<FaTrash />} />
+                                            <Tooltip position="bottom" content="Eliminar falla">
+                                                <IconButton
+                                                    variant="ghost"
+                                                    color="danger"
+                                                    size="xs"
+                                                    icon={<FaTrash />}
+                                                    onClick={() => handleDeleteIssue(failure)}
+                                                />
+                                            </Tooltip>
                                         </ButtonGroup>
                                     )
                                 }
@@ -564,23 +619,42 @@ export const InfoOrderOverview = ({ data }: { data: WorkOrder }) => {
 
             <NewIssueModal
                 isOpen={showNewIssueModal}
-                onClose={() => setShowNewIssueModal(false)}
+                onClose={() => {
+                    setShowNewIssueModal(false);
+                    setIssueToEdit(null);
+                }}
                 orderId={data.id}
                 deviceTypeId={String(data.devices[0].device_type)}
+                issueToEdit={issueToEdit}
                 onSave={async (issueData) => {
                     try {
-                        await createOrderIssue({
-                            order_id: data.id,
-                            order_code: data.order_code,
-                            ...issueData,
-                        }).unwrap();
-                        showSuccess("Falla agregada correctamente");
+                        if (issueToEdit) {
+                            await updateOrderIssue({
+                                issue_id: issueToEdit.id,
+                                order_code: data.order_code,
+                                ...issueData,
+                            }).unwrap();
+                            showSuccess("Falla actualizada correctamente");
+                        } else {
+                            await createOrderIssue({
+                                order_id: data.id,
+                                order_code: data.order_code,
+                                ...issueData,
+                            }).unwrap();
+                            showSuccess("Falla agregada correctamente");
+                        }
                         setShowNewIssueModal(false);
+                        setIssueToEdit(null);
                     } catch {
-                        showError("Error al agregar la falla. Intenta nuevamente.", "Error");
+                        showError(
+                            issueToEdit
+                                ? "Error al actualizar la falla. Intenta nuevamente."
+                                : "Error al agregar la falla. Intenta nuevamente.",
+                            "Error"
+                        );
                     }
                 }}
-                isLoading={isCreatingIssue}
+                isLoading={isCreatingIssue || isUpdatingIssue}
             />
 
             {pendingTransition && (

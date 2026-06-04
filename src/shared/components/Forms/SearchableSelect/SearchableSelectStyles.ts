@@ -130,3 +130,22 @@ export const NoOptions = styled.li`
     color: ${(props) => props.theme.colors.textMuted};
     font-size: ${(props) => props.theme.fontSize.sm};
 `;
+
+export const SpinnerWrapper = styled.div`
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    svg {
+        animation: spin 0.8s linear infinite;
+        color: ${(props) => props.theme.colors.textMuted};
+    }
+`;

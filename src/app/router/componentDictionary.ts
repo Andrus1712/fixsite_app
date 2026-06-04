@@ -72,6 +72,9 @@ const CreateEditServiceOrderTypePage = lazy(() => import("../../features/service
 // Maintenance — Failure Codes
 const FailureCodesPage = lazy(() => import("../../features/maintenance/pages/FailureCodesPage"));
 
+// Service Articles
+const ServiceArticlesPage = lazy(() => import("../../features/service-articles/pages/ServiceArticlesPage"));
+
 
 export const componentMap: Record<string, React.ComponentType> = {
     "user-index": UsersPage,
@@ -143,4 +146,6 @@ export const componentMap: Record<string, React.ComponentType> = {
     "failure-code-index": FailureCodesPage,
     "failure-code-new": FailureCodesPage,
     "failure-code-edit": FailureCodesPage,
+    // Service Articles
+    "service-article-index": ServiceArticlesPage,
 };

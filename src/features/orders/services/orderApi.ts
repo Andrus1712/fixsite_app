@@ -28,12 +28,35 @@ export interface CreateOrderIssueDto {
     additional_notes?: string;
     steps_to_reproduce?: string[];
     reported_by?: string;
-    attachments?: {
+    attachments?: Array<{
         filename: string;
         originalName: string;
         size: string;
         url: string;
-    }[];
+    }>;
+}
+
+/** Body para PUT /orders/issues/:issueId */
+export interface UpdateOrderIssueDto {
+    issue_id: number;
+    order_code: string;
+    title?: string;
+    description?: string;
+    failure_code_id?: number;
+    additional_notes?: string;
+    steps_to_reproduce?: string[];
+    attachments?: Array<{
+        filename: string;
+        originalName: string;
+        size: string;
+        url: string;
+    }>;
+}
+
+/** Args para DELETE /orders/issues/:issueId */
+export interface DeleteOrderIssueArgs {
+    issue_id: number;
+    order_code: string;
 }
 
 export const ordersApiExternal = baseApi.injectEndpoints({
@@ -92,6 +115,21 @@ export const ordersApiExternal = baseApi.injectEndpoints({
             }),
             invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.order_code }],
         }),
+        updateOrderIssue: builder.mutation<StandardResponse<null>, UpdateOrderIssueDto>({
+            query: ({ issue_id, order_code: _omit, ...body }) => ({
+                url: `orders/issues/${issue_id}`,
+                method: 'PUT',
+                body,
+            }),
+            invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.order_code }],
+        }),
+        deleteOrderIssue: builder.mutation<StandardResponse<null>, DeleteOrderIssueArgs>({
+            query: ({ issue_id }) => ({
+                url: `orders/issues/${issue_id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: (_result, _error, arg) => [{ type: 'Order', id: arg.order_code }],
+        }),
         updateOrderStatus: builder.mutation<StandardResponse<null>, UpdateOrderStatusArgs>({
             query: ({ orderCode, status, notes }) => ({
                 url: `orders/update-status/${orderCode}`,
@@ -119,6 +157,8 @@ export const {
     useAssignOrderToTechnicianMutation,
     useUnassignOrderTechnicianMutation,
     useCreateOrderIssueMutation,
+    useUpdateOrderIssueMutation,
+    useDeleteOrderIssueMutation,
     useUpdateOrderStatusMutation,
     useGetOrderLogEventsQuery,
 } = ordersApiExternal;

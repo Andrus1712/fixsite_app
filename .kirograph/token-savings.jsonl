@@ -25,3 +25,11 @@
 {"timestamp":1780118767078,"command":"kirograph_context","originalTokens":15000,"compressedTokens":228,"strategy":"graph:kirograph_context","sessionId":"96f700e0074ce676","source":"graph"}
 {"timestamp":1780119744747,"command":"kirograph_context","originalTokens":15000,"compressedTokens":82,"strategy":"graph:kirograph_context","sessionId":"96f700e0074ce676","source":"graph"}
 {"timestamp":1780119926637,"command":"npm run build 2>&1 | tail -30","originalTokens":1091,"compressedTokens":1026,"strategy":"generic:deduped","sessionId":"96f700e0074ce676","source":"exec"}
+{"timestamp":1780165098204,"command":"npx tsc --noEmit --pretty 2>&1 | head -30","originalTokens":0,"compressedTokens":0,"strategy":"empty","sessionId":"96f700e0074ce676","source":"exec"}
+{"timestamp":1780532162180,"command":"npx tsc --noEmit --pretty 2>&1 | head -30","originalTokens":0,"compressedTokens":0,"strategy":"empty","sessionId":"96f700e0074ce676","source":"exec"}
+{"timestamp":1780535077063,"command":"kirograph_search","originalTokens":3300,"compressedTokens":12,"strategy":"graph:kirograph_search","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1780535094679,"command":"kirograph_search","originalTokens":3300,"compressedTokens":10,"strategy":"graph:kirograph_search","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1780536720148,"command":"kirograph_search","originalTokens":3300,"compressedTokens":11,"strategy":"graph:kirograph_search","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1780540122739,"command":"npx tsc --noEmit 2>&1 | head -100","originalTokens":0,"compressedTokens":0,"strategy":"empty","sessionId":"96f700e0074ce676","source":"exec"}
+{"timestamp":1780540127832,"command":"kirograph_search","originalTokens":3300,"compressedTokens":9,"strategy":"graph:kirograph_search","sessionId":"96f700e0074ce676","source":"graph"}
+{"timestamp":1780540133385,"command":"kirograph_context","originalTokens":15000,"compressedTokens":3754,"strategy":"graph:kirograph_context","sessionId":"96f700e0074ce676","source":"graph"}

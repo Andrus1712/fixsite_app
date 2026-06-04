@@ -24,9 +24,9 @@ const getSeverityVariant = (severity: string | undefined): "danger" | "warning" 
 
 /** Contenido interno de una falla para usar dentro del Accordion */
 export const FailureAccordionContent: React.FC<{ failure: OrderIssue }> = ({ failure }) => {
-    const attachment: string[] = (failure.attachments ?? [])
+    const attachment: {} = (failure.attachments ?? [])
         .map((att) => {
-            const image: Partial<{ url: string }> = JSON.parse(att);
+            const image: Partial<{ url: string }> = att;
             return image.url;
         })
         .filter((url): url is string => !!url);

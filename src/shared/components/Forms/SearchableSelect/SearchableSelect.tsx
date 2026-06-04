@@ -10,6 +10,7 @@ import {
     LoadingItem,
     NoOptions,
     SelectContainer,
+    SpinnerWrapper,
     StyledSearchInput
 } from "./SearchableSelectStyles";
 
@@ -73,11 +74,18 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
     useEffect(() => {
         if (value) {
             const selectedOption = options.find(option => option.value === value);
-            setDisplayValue(selectedOption?.label || "");
+            // Solo actualizar displayValue si encontramos la opción o si no está cargando.
+            // Esto evita borrar el label mientras las opciones están en tránsito.
+            if (selectedOption) {
+                setDisplayValue(selectedOption.label);
+            } else if (!loading && !isLoading && options.length > 0) {
+                // Las opciones ya cargaron pero no se encontró el valor — limpiar
+                setDisplayValue("");
+            }
         } else {
             setDisplayValue("");
         }
-    }, [value, options]);
+    }, [value, options, loading, isLoading]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -192,6 +200,14 @@ const SearchableSelect = forwardRef<HTMLInputElement, SearchableSelectProps>(({
                             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                         </svg>
                     </ClearButton>
+                )}
+                {(loading || isLoading) && !isOpen && (
+                    <SpinnerWrapper>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" opacity="0.3" />
+                            <path d="M12 2v4" />
+                        </svg>
+                    </SpinnerWrapper>
                 )}
                 {/* Dropdown is rendered via portal to avoid being clipped by overflow parents (e.g., Modal) */}
             </InputWrapper>
