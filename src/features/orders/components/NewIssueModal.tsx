@@ -4,10 +4,8 @@ import { Button, Flex, Modal, LoadingSpinner } from "../../../shared/components"
 import { IssueCard } from "./IssueCard";
 import type { CreateOrderIssueDto } from "../services/orderApi";
 import type { OrderIssue } from "../models/OrderModel";
-import {
-    useGetAllFailuresCategoriesQuery,
-    useGetAllFailuresSeveritiesQuery,
-} from "../../maintenance/services/failureApi";
+import { useGetAllFailuresCategoriesQuery, useGetAllFailuresSeveritiesQuery } from "../../maintenance/services/FailureApi";
+
 
 type NewIssuePayload = Omit<CreateOrderIssueDto, "order_id">;
 

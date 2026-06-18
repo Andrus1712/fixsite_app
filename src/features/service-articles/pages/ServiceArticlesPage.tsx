@@ -3,28 +3,16 @@ import { useSearchParams } from "react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 
-import {
-    AlertModal,
-    Badge,
-    Box,
-    Button,
-    Container,
-    DataTable,
-    Flex,
-    LoadingSpinner,
-    Modal,
-    TableIconButton,
-    Text,
-    useToast,
-} from "@/shared/components";
-import { useHasPermission } from "@/features/auth/hooks/useHasPermission";
-import { useGetServiceByIdQuery } from "@/features/services-catalog/services/ServicesApi";
+
 import {
     useGetServiceArticlesQuery,
     useDeleteServiceArticleMutation,
     type ServiceArticle,
 } from "../services/ServiceArticleApi";
 import ServiceArticleForm from "../components/ServiceArticleForm";
+import { useHasPermission } from "../../auth/hooks/useHasPermission";
+import { AlertModal, Badge, Box, Button, Container, DataTable, Flex, LoadingSpinner, Modal, TableIconButton, Text, useToast } from "../../../shared/components";
+import { useGetServiceByIdQuery } from "../../services-catalog/services/ServicesApi";
 
 const DEBOUNCE_MS = 300;
 

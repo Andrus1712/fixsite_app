@@ -8,10 +8,9 @@ import { ServicesEffected } from "../../orders-services/components/ServicesEffec
 import type { SelectedService } from "../../orders-services/components/ServicesEffected";
 import type { AvailableService } from "../../orders-services/models/OrderServiceModel";
 import AssignServiceParts from "./AssignServiceParts";
-import { StockErrorTable } from "@/features/service-articles/components/StockErrorTable";
-import { AssignmentPartsSchema, assignmentPartsDefaultValues } from "@/features/service-articles/schemas";
-import type { AssignmentPartsFormData } from "@/features/service-articles/schemas";
 import styled from "styled-components";
+import { assignmentPartsDefaultValues, AssignmentPartsSchema, type AssignmentPartsFormData } from "../../service-articles/schemas";
+import StockErrorTable from "../../service-articles/components/StockErrorTable";
 
 // ─── Styled Components ────────────────────────────────────────────────────────
 
@@ -265,7 +264,7 @@ const FixIssueModal = ({
         >
             <Flex gap={"lg"} direction="column">
                 <FormGroup title="Fallas Seleccionadas">
-                    <Flex $wrap $gap="xs">
+                    <Flex $wrap="wrap" $gap="xs">
                         {selectedIssues?.map((issue) => (
                             <Badge variant="outline" key={issue.id}>
                                 {issue.failure_code} - {issue.failure_code_name}
@@ -309,6 +308,7 @@ const FixIssueModal = ({
 
                         <AssignServiceParts
                             serviceId={requiresArticlesServiceId}
+                            ListArticles={selectedServices[0].services_articles}
                             requiresArticles={requiresArticles}
                             control={partsControl}
                             errors={partsErrors}

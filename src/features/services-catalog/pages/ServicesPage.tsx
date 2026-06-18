@@ -27,7 +27,7 @@ import {
     type Service,
 } from "../services/ServicesApi";
 import { ServiceSchema, type ServiceFormData, serviceDefaultValues } from "../schemas";
-import { useHasPermission } from "@/features/auth/hooks/useHasPermission";
+import { useHasPermission } from "../../auth/hooks/useHasPermission";
 
 const ServicesPage = () => {
     const navigate = useNavigate();
@@ -157,6 +157,16 @@ const ServicesPage = () => {
                     ),
             },
             {
+                accessorKey: "requires_articles",
+                header: "Requiere Partes",
+                size: 90,
+                cell: ({ row }) => (
+                    <Badge variant={row.original.requires_articles ? "success" : "danger"}>
+                        {row.original.requires_articles ? "Si" : "No"}
+                    </Badge>
+                ),
+            },
+            {
                 accessorKey: "is_active",
                 header: "Activo",
                 size: 90,
@@ -208,6 +218,7 @@ const ServicesPage = () => {
                     </Button>
                 }
             >
+                {/* <pre>{JSON.stringify(data?.data, null, 2)}</pre> */}
                 <DataTable
                     columns={columns}
                     data={data?.data ?? []}

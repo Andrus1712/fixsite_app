@@ -11,11 +11,8 @@ import {
     TextArea,
     SearchableSelect,
 } from "../../../shared/components";
-import {
-    useGetAllFailuresCodesQuery,
-    useGetAllFailuresCategoriesQuery,
-    useGetAllFailuresSeveritiesQuery,
-} from "../../maintenance/services/failureApi";
+import { useGetAllFailuresCategoriesQuery, useGetAllFailuresCodesQuery, useGetAllFailuresSeveritiesQuery } from "../../maintenance/services/FailureApi";
+
 
 interface IssueFormState {
     id: number;

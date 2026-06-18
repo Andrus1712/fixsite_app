@@ -21,7 +21,7 @@ import { MdOutlineWebAsset } from "react-icons/md";
 import { IoIosArrowDown } from "react-icons/io";
 import { useTheme } from "styled-components";
 import { FaScrewdriverWrench } from "react-icons/fa6";
-import { TbAwardFilled, TbFileAlert } from "react-icons/tb";
+import { TbAwardFilled, TbBasketCog, TbFileAlert } from "react-icons/tb";
 import { LuDatabase, LuSlidersHorizontal } from "react-icons/lu";
 import { GoPackage } from "react-icons/go";
 import { BiLayer } from "react-icons/bi";
@@ -60,7 +60,8 @@ const iconMap: Record<string, JSX.Element> = {
     FiShoppingBag: <FiShoppingBag />,
     TfiPackage: <TfiPackage />,
     FaRegBookmark: <FaRegBookmark />,
-    LuDatabase: <LuDatabase />
+    LuDatabase: <LuDatabase />,
+    TbBasketCog: <TbBasketCog />
 };
 
 function Sidebar({ isOpen, isCollapsed, onToggle }: SidebarProps) {

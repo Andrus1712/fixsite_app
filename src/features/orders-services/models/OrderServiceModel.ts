@@ -61,6 +61,15 @@ export interface AvailableService {
         name: string;
         description: string;
     } | null;
+    services_articles: Array<{
+        id: number;
+        article_id: number;
+        article_sku: string;
+        article_name: string;
+        article_unit_measurement: string;
+        default_quantity: string;
+        is_active: boolean;
+    }>
 }
 
 export interface AvailableServicesResponse {

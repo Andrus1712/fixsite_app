@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import styled from "styled-components";
-import { Badge, Flex, Text } from "@/shared/components";
+import { Badge, Flex, Text } from "../../../shared/components";
 
 type MaterialIssueStatus = "DRAFT" | "PENDING" | "APPROVED";
 

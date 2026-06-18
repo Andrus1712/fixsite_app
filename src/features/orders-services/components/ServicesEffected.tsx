@@ -8,14 +8,14 @@ import type { AvailableService } from '../models/OrderServiceModel';
 import { IoTrash } from 'react-icons/io5';
 
 const addServiceSchema = z.object({
-    service_id: z.number({ required_error: 'Selecciona un servicio' }),
+    service_id: z.number({ error: 'Selecciona un servicio' }),
     price: z
-        .number({ invalid_type_error: 'Debe ser un número' })
+        .number({ error: 'Debe ser un número' })
         .positive('Debe ser mayor a 0')
         .optional()
         .or(z.nan().transform(() => undefined)),
     estimated_minutes: z
-        .number({ invalid_type_error: 'Debe ser un entero' })
+        .number({ error: 'Debe ser un entero' })
         .int()
         .positive('Debe ser mayor a 0')
         .optional()
@@ -100,6 +100,23 @@ export const ServicesEffected: React.FC<ServicesEffectedProps> = ({
                 size: 110,
                 cell: ({ row }) =>
                     row.original.estimated_minutes_override ?? row.original.estimatedMinutes,
+            },
+            {
+                header: 'Requiere Articulos',
+                cell: ({ row }) => {
+                    console.log(row.original.services_articles);
+                    return (
+                        <span>{row.original.requires_articles ? <>
+                            <ul>
+                                {row.original.services_articles.map((article) => (
+                                    <li key={article.article_id}>
+                                        {article.article_sku} - {article.article_name} ({article.default_quantity} {article.article_unit_measurement})
+                                    </li>
+                                ))}
+                            </ul>
+                        </> : 'No'}</span>
+                    )
+                }
             },
             {
                 id: 'accion',

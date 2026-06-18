@@ -5,16 +5,16 @@ import styled from "styled-components";
 import {
     Flex,
     FormGroup,
-    IconButton,
     Input,
     SearchableSelect,
     Text,
-} from "@/shared/components";
-import { useGetServiceArticlesQuery } from "@/features/service-articles/services/ServiceArticleApi";
-import { useGetAllStoresQuery } from "@/features/inventory/storeModule/services/StoreApi";
-import { useLazyGetAllArticlesQuery } from "@/features/inventory/article/services/ArticleApi";
-import type { AssignmentPartsFormData, AssignmentPartItem } from "@/features/service-articles/schemas";
+} from "../../../shared/components";
 import { FaTrash } from "react-icons/fa";
+import { useGetServiceArticlesQuery } from "../../service-articles/services/ServiceArticleApi";
+import { useGetAllStoresQuery } from "../../inventory/storeModule/services/StoreApi";
+import { useLazyGetAllArticlesQuery } from "../../inventory/article/services/ArticleApi";
+import type { AssignmentPartItem, AssignmentPartsFormData } from "../../service-articles/schemas";
+import IconButton from "../../../shared/components/Buttons/IconButton";
 
 interface AssignServicePartsProps {
     serviceId: number;
@@ -23,6 +23,7 @@ interface AssignServicePartsProps {
     errors: FieldErrors<AssignmentPartsFormData>;
     setValue: UseFormSetValue<AssignmentPartsFormData>;
     watch: UseFormWatch<AssignmentPartsFormData>;
+    ListArticles: any
 }
 
 interface ArticleOption {
@@ -61,6 +62,7 @@ const MAX_ARTICLES = 50;
 const AssignServiceParts = ({
     serviceId,
     requiresArticles,
+    ListArticles,
     control,
     errors,
     setValue,
@@ -87,7 +89,7 @@ const AssignServiceParts = ({
         isLoading: isLoadingServiceArticles,
     } = useGetServiceArticlesQuery(
         { service_id: serviceId, page: 1, limit: 100 },
-        { skip: !requiresArticles || !serviceId }
+        { skip: !requiresArticles || !serviceId, refetchOnMountOrArgChange: true }
     );
 
     // Fetch active stores
@@ -249,6 +251,7 @@ const AssignServiceParts = ({
     return (
         <PartsContainer>
             <FormGroup title="Partes y almacén" description="Seleccione el almacén y configure los artículos a consumir">
+                <pre>{JSON.stringify(ListArticles, null, 2)}</pre>
                 {/* Error loading service articles */}
                 {isServiceArticlesError && (
                     <Text variant="body2" color="error">

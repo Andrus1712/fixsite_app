@@ -10,7 +10,7 @@ import {
     Switch,
     Text,
     useToast,
-} from "@/shared/components";
+} from "../../../shared/components";
 import {
     ServiceArticleSchema,
     type ServiceArticleFormData,
@@ -22,7 +22,7 @@ import {
     type ServiceArticle,
     type UpdateServiceArticleDto,
 } from "../services/ServiceArticleApi";
-import { useLazyGetAllArticlesQuery } from "@/features/inventory/article/services/ArticleApi";
+import { useLazyGetAllArticlesQuery } from "../../inventory/article/services/ArticleApi";
 
 interface ServiceArticleFormProps {
     serviceId: number;

@@ -13,23 +13,59 @@ export interface ServiceArticle {
     updated_at: string;
 }
 
+/** Shape returned by the API (nested article object) */
+interface ServiceArticleRaw {
+    id: number;
+    service_id: number;
+    article_id: number;
+    article: {
+        id: number;
+        sku: string;
+        name: string;
+        unit_measurement: string;
+        active: boolean;
+    };
+    default_quantity: string | number;
+    is_active: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
 interface ServiceArticleResponse {
     success: boolean;
     status: number;
     message: string;
-    data: ServiceArticle;
+    data: ServiceArticleRaw;
 }
 
 interface ServiceArticlesListResponse {
     success: boolean;
     status: number;
     message: string;
-    data: ServiceArticle[];
+    data: ServiceArticleRaw[];
     pagination: {
         page: number;
         limit: number;
         totalPages: number;
         total: number;
+    };
+}
+
+/** Maps raw API response to flat ServiceArticle */
+function mapRawToServiceArticle(raw: ServiceArticleRaw): ServiceArticle {
+    return {
+        id: raw.id,
+        service_id: raw.service_id,
+        article_id: raw.article_id,
+        article_name: raw.article?.name ?? "",
+        article_sku: raw.article?.sku ?? "",
+        unit_measurement: raw.article?.unit_measurement ?? "",
+        default_quantity: typeof raw.default_quantity === "string"
+            ? parseFloat(raw.default_quantity)
+            : raw.default_quantity,
+        is_active: raw.is_active,
+        created_at: raw.createdAt,
+        updated_at: raw.updatedAt,
     };
 }
 

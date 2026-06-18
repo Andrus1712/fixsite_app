@@ -65,7 +65,7 @@ export const servicesApi = baseApi.injectEndpoints({
         }),
         getServiceById: builder.query<Service, number>({
             query: (id) => ({ url: `/services/${id}` }),
-            transformResponse: (response: ServiceResponse) => response.data,
+            transformResponse: (response: Service) => response,
             providesTags: ["Service"],
         }),
         createService: builder.mutation<Service, CreateServiceDto>({
